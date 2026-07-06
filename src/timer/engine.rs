@@ -1,4 +1,20 @@
 use crate::timer::state::{SessionType, TimerState};
+use std::time::Duration;
+
+pub fn decrease_sec(state: &mut TimerState) {
+  if state.running {
+    let new_time = state.time_remaining - Duration::from_secs(1);
+    if new_time.is_zero() {
+      state.running = false;
+      on_finish();
+    }
+    state.time_remaining = new_time
+  }
+}
+
+pub fn on_finish() {
+  // TODO: Maybe notification or some hook
+}
 
 pub fn render_time(state: &TimerState) {
   let session_type = match &state.sessioin_type {
@@ -10,9 +26,7 @@ pub fn render_time(state: &TimerState) {
   let min_left = sec_left / 60;
   let sec_to_show = sec_left % 60;
   let icon = if state.running { "" } else { "" };
-  println!("{icon} - {session_type} - {min_left}:{sec_to_show}");
-
-  // TODO: I will do this soon;
+  println!("{icon} {session_type} - {min_left}:{sec_to_show}");
 }
 
 pub fn start_session(state: &mut TimerState) {
