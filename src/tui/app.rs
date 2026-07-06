@@ -1,5 +1,10 @@
 use std::io;
 
+use crate::timer::{
+  engine::render_time,
+  state::{SessionType, TimerState},
+};
+
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
@@ -8,13 +13,17 @@ use ratatui::{
   widgets::{Block, Paragraph, Widget},
 };
 
-pub fn main() -> io::Result<()> {
-  ratatui::run(|terminal| App::default().run(terminal))
+pub fn main(state: TimerState) -> io::Result<()> {
+  let mut app = App { exit: false, state };
+  let mut terminal = ratatui::init();
+  let result = app.run(&mut terminal);
+  ratatui::restore();
+  result
 }
 
-#[derive(Debug, Default)]
 struct App {
   exit: bool,
+  state: TimerState,
 }
 
 impl App {
@@ -52,7 +61,8 @@ impl App {
 impl Widget for &App {
   fn render(self, area: Rect, buf: &mut Buffer) {
     let block = Block::bordered();
-    Paragraph::new("hello")
+    let text = render_time(&self.state);
+    Paragraph::new(text)
       .centered()
       .block(block)
       .render(area, buf);

@@ -16,7 +16,7 @@ pub fn on_finish() {
   // TODO: Maybe notification or some hook
 }
 
-pub fn render_time(state: &TimerState) {
+pub fn render_time(state: &TimerState) -> String {
   let session_type = match &state.sessioin_type {
     SessionType::Work => "Work",
     SessionType::ShortBreak => "Short Break",
@@ -26,7 +26,7 @@ pub fn render_time(state: &TimerState) {
   let min_left = sec_left / 60;
   let sec_to_show = sec_left % 60;
   let icon = if state.running { "" } else { "" };
-  println!("{icon} {session_type} - {min_left}:{sec_to_show}");
+  format!("{icon} {session_type} - {min_left}:{sec_to_show}")
 }
 
 pub fn start_session(state: &mut TimerState) {
