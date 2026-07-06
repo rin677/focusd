@@ -1,6 +1,6 @@
 use crate::timer::state::{SessionType, TimerState};
 
-pub fn render_time(state: &mut TimerState) {
+pub fn render_time(state: &TimerState) {
   let session_type = match &state.sessioin_type {
     SessionType::Work => "Work",
     SessionType::ShortBreak => "Short Break",
@@ -15,22 +15,23 @@ pub fn render_time(state: &mut TimerState) {
   // TODO: I will do this soon;
 }
 
-pub fn start_session() {
-  // TODO: I will do this soon
+pub fn start_session(state: &mut TimerState) {
+  state.running = true
 }
 
-pub fn pause_session() {
-  // TODO: I will do this soon
+pub fn pause_session(state: &mut TimerState) {
+  state.running = false
 }
 
-pub fn resume_session() {
-  // TODO: I will do this soon
+pub fn resume_session(state: &mut TimerState) {
+  state.running = true
 }
 
-pub fn toggle_session() {
-  // if (session)
+pub fn toggle_session(state: &mut TimerState) {
+  state.running = !state.running
 }
 
-pub fn skip_sesion() {
+pub fn skip_sesion(state: &mut TimerState) {
   // TODO: I will do this soon
+  pause_session(state);
 }
