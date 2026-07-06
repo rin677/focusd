@@ -1,0 +1,12 @@
+name: focusd
+root: ~/Code/focusd/
+
+windows:
+  - editor: nvim :SessionLoad focusd
+
+  - build/run:
+      layout: main-vertical
+      panes:
+        - Build: fd -e rs | entr -r cargo build
+        - Run:
+  - misc:
