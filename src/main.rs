@@ -10,5 +10,5 @@ fn main() -> io::Result<()> {
     sessioin_type: SessionType::Work,
     time_remaining: Duration::from_mins(25),
   };
-  tui::app::main(state)
+  tui::app::main(&mut state)
 }

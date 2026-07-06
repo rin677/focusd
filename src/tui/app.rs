@@ -1,8 +1,11 @@
-use std::io;
+use std::{
+  io,
+  time::{Duration, Instant},
+};
 
 use crate::timer::{
-  engine::render_time,
-  state::{SessionType, TimerState},
+  engine::{decrease_sec, render_time, toggle_session},
+  state::TimerState,
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -13,30 +16,48 @@ use ratatui::{
   widgets::{Block, Paragraph, Widget},
 };
 
-pub fn main(state: TimerState) -> io::Result<()> {
-  let mut app = App { exit: false, state };
+pub fn main(state: &mut TimerState) -> io::Result<()> {
+  let mut app = App {
+    exit: false,
+    timer_state: state,
+  };
   let mut terminal = ratatui::init();
   let result = app.run(&mut terminal);
   ratatui::restore();
   result
 }
 
-struct App {
+struct App<'a> {
   exit: bool,
-  state: TimerState,
+  timer_state: &'a mut TimerState,
 }
 
-impl App {
+impl<'a> App<'a> {
   pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    let tick_rate = Duration::from_secs(1);
+    let mut last_tick = Instant::now();
     while !self.exit {
+      let timeout = tick_rate
+        .checked_sub(last_tick.elapsed())
+        .unwrap_or(Duration::from_secs(0));
+
+      if last_tick.elapsed() >= tick_rate {
+        if self.timer_state.running {
+          decrease_sec(self.timer_state);
+        }
+        last_tick = Instant::now();
+      }
+
       terminal.draw(|frame| self.draw(frame))?;
-      self.handle_events()?;
+      if event::poll(timeout)? {
+        self.handle_events()?;
+      }
     }
     Ok(())
   }
 
-  fn draw(&self, frame: &mut Frame) {
-    frame.render_widget(self, frame.area());
+  fn draw(&mut self, frame: &mut Frame) {
+    frame.render_widget(&*self, frame.area());
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
@@ -52,16 +73,16 @@ impl App {
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
       KeyCode::Char('q') => self.exit = true,
-      KeyCode::Char('s') => self.exit = true,
+      KeyCode::Char(' ') => toggle_session(self.timer_state),
       _ => {}
     }
   }
 }
 
-impl Widget for &App {
+impl Widget for &App<'_> {
   fn render(self, area: Rect, buf: &mut Buffer) {
     let block = Block::bordered();
-    let text = render_time(&self.state);
+    let text = render_time(self.timer_state);
     Paragraph::new(text)
       .centered()
       .block(block)

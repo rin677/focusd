@@ -2,14 +2,12 @@ use crate::timer::state::{SessionType, TimerState};
 use std::time::Duration;
 
 pub fn decrease_sec(state: &mut TimerState) {
-  if state.running {
-    let new_time = state.time_remaining - Duration::from_secs(1);
-    if new_time.is_zero() {
-      state.running = false;
-      on_finish();
-    }
-    state.time_remaining = new_time
+  let new_time = state.time_remaining - Duration::from_secs(1);
+  if new_time.is_zero() {
+    state.running = false;
+    on_finish();
   }
+  state.time_remaining = new_time
 }
 
 pub fn on_finish() {
