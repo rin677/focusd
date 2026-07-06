@@ -44,6 +44,6 @@ pub fn toggle_session(state: &mut TimerState) {
 }
 
 pub fn skip_sesion(state: &mut TimerState) {
-  // TODO: I will do this soon
+  state.time_remaining = Duration::from_mins(25);
   pause_session(state);
 }
