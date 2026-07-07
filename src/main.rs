@@ -1,3 +1,4 @@
+mod config;
 mod timer;
 mod tui;
 use std::{io, time::Duration};
