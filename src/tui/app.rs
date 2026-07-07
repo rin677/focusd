@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::timer::{
-  engine::{decrease_sec, render_time, skip_sesion, toggle_session},
+  engine::{decrease_sec, next_session, render_time, toggle_session},
   state::TimerState,
 };
 
@@ -74,7 +74,7 @@ impl<'a> App<'a> {
     match key_event.code {
       KeyCode::Char('q') => self.exit = true,
       KeyCode::Char(' ') => toggle_session(self.timer_state),
-      KeyCode::Char('n') => skip_sesion(self.timer_state),
+      KeyCode::Char('n') => next_session(self.timer_state),
       _ => {}
     }
   }

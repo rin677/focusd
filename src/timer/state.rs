@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+#[derive(Clone, Copy)]
 pub enum SessionType {
   Work,
   ShortBreak,

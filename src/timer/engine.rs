@@ -1,10 +1,14 @@
-use crate::timer::state::{SessionType, TimerState};
+use crate::timer::{
+  state::TimerState,
+  utils::{name_for_session, next_session as get_next_session, time_for_session},
+};
 use std::time::Duration;
 
 pub fn decrease_sec(state: &mut TimerState) {
   let new_time = state.time_remaining - Duration::from_secs(1);
   if new_time.is_zero() {
-    state.running = false;
+    // state.running = false;
+    next_session(state);
     on_finish();
   }
   state.time_remaining = new_time
@@ -15,11 +19,7 @@ pub fn on_finish() {
 }
 
 pub fn render_time(state: &TimerState) -> String {
-  let session_type = match &state.sessioin_type {
-    SessionType::Work => "Work",
-    SessionType::ShortBreak => "Short Break",
-    SessionType::LongBreak => "Long Break",
-  };
+  let session_type = name_for_session(state.sessioin_type);
   let sec_left = state.time_remaining.as_secs();
   let min_left = sec_left / 60;
   let sec_to_show = sec_left % 60;
@@ -43,7 +43,7 @@ pub fn toggle_session(state: &mut TimerState) {
   state.running = !state.running
 }
 
-pub fn skip_sesion(state: &mut TimerState) {
-  state.time_remaining = Duration::from_mins(25);
-  pause_session(state);
+pub fn next_session(state: &mut TimerState) {
+  state.sessioin_type = get_next_session(state.sessioin_type);
+  state.time_remaining = time_for_session(state.sessioin_type);
 }
