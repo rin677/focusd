@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::timer::state::SessionType;
+use crate::{config::settings::get_config, timer::state::SessionType};
 
 pub fn name_for_session(session: SessionType) -> String {
   match session {
@@ -11,10 +11,11 @@ pub fn name_for_session(session: SessionType) -> String {
 }
 
 pub fn time_for_session(session: SessionType) -> Duration {
+  let config = get_config();
   match session {
-    SessionType::Work => Duration::from_mins(25),
-    SessionType::ShortBreak => Duration::from_mins(5),
-    SessionType::LongBreak => Duration::from_mins(10),
+    SessionType::Work => Duration::from_mins(config.work_duration),
+    SessionType::ShortBreak => Duration::from_mins(config.short_break_duratoin),
+    SessionType::LongBreak => Duration::from_mins(config.long_break_duration),
   }
 }
 
