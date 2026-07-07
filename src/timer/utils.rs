@@ -27,3 +27,11 @@ pub fn next_session(session: SessionType) -> SessionType {
     SessionType::LongBreak => SessionType::Work,
   }
 }
+
+pub fn min_2_digit(time: u64) -> String {
+  if time >= 10 {
+    format!("{time}")
+  } else {
+    format!("0{time}")
+  }
+}

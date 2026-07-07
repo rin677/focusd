@@ -1,6 +1,6 @@
 use crate::timer::{
   state::TimerState,
-  utils::{name_for_session, next_session as get_next_session, time_for_session},
+  utils::{min_2_digit, name_for_session, next_session as get_next_session, time_for_session},
 };
 use std::time::Duration;
 
@@ -21,8 +21,9 @@ pub fn on_finish() {
 pub fn render_time(state: &TimerState) -> String {
   let session_type = name_for_session(state.sessioin_type);
   let sec_left = state.time_remaining.as_secs();
-  let min_left = sec_left / 60;
-  let sec_to_show = sec_left % 60;
+  let min_left = min_2_digit(sec_left / 60);
+  let s = sec_left % 60;
+  let sec_to_show = min_2_digit(s);
   let icon = if state.running { "" } else { "" };
   format!("{icon} {session_type} - {min_left}:{sec_to_show}")
 }
