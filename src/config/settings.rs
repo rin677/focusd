@@ -29,8 +29,8 @@ fn config_path() -> Option<PathBuf> {
   Some(PathBuf::from(home).join(".config/focusd/config.toml"))
 }
 
-fn load_config(path : &PathBuf) -> io::Result<Config> {
-  let contents = fs::read_to_string(&path)?;
+fn load_config(path: &PathBuf) -> io::Result<Config> {
+  let contents = fs::read_to_string(path)?;
   let config: Config =
     toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
@@ -44,8 +44,7 @@ pub fn get_config() -> Config {
       return Config::default();
     }
 
-      let Ok(config) = load_config(&path)
-    {
+    if let Ok(config) = load_config(&path) {
       return config;
     }
   }
@@ -60,11 +59,14 @@ pub fn create_config_file() {
   }
   if !path.exists() {
     let config = Config::default();
-    let _ = save_config(&path, &config);
+    let _ = save_config(&config);
   }
 }
 
-pub fn save_config(path: &PathBuf, config: &Config) -> io::Result<()> {
+pub fn save_config(config: &Config) -> io::Result<()> {
+  let Some(path) = config_path() else {
+    return Ok(());
+  };
   let toml_string = toml::to_string_pretty(config).expect("failed to serialize");
   fs::write(path, toml_string)
 }
