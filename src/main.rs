@@ -1,19 +1,12 @@
 mod config;
 mod timer;
 mod tui;
-use std::{io, time::Duration};
+use std::io;
 
-use crate::{
-  config::settings::create_config_file,
-  timer::state::{SessionType, TimerState},
-};
+use crate::{config::settings::create_config_file, timer::state::TimerState};
 
 fn main() -> io::Result<()> {
-  let mut state = TimerState {
-    running: false,
-    sessioin_type: SessionType::Work,
-    time_remaining: Duration::from_mins(25),
-  };
+  let mut state = TimerState::default();
   create_config_file();
   tui::app::main(&mut state)
 }
