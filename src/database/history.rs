@@ -16,7 +16,7 @@ use crate::timer::state::TimerState;
 pub struct HistoryEntry {
   pub end_time: u64,
   pub planned_duration: u64,
-  pub actual_duration: u64,
+  pub completed_duration: u64,
   pub session_type: u64,
 }
 
@@ -53,7 +53,7 @@ pub fn get_db() -> io::Result<Connection> {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           end_time TEXT NOT NULL,
           planned_duration INTEGER NOT NULL,
-          actual_duration INTEGER NOT NULL,
+          completed_duration INTEGER NOT NULL,
           session_type TEXT NOT NULL
   )
       ",
@@ -70,9 +70,9 @@ pub fn get_db() -> io::Result<Connection> {
 
 fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
   let cnn = get_db()?;
-  let actual_duration =
+  let completed_duration =
     (time_for_session(state.sessioin_type) - state.time_remaining).as_secs() as i64;
-  if actual_duration == 0 {
+  if completed_duration == 0 {
     return Ok(());
   };
   let now = Local::now();
@@ -81,8 +81,8 @@ fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error:
   let sessioin_type = name_for_session(state.sessioin_type);
   cnn.execute(
     "INSERT INTO history 
-    (end_time, planned_duration, actual_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
-    (end_time, planned_duration, actual_duration, sessioin_type),
+    (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
+    (end_time, planned_duration, completed_duration, sessioin_type),
   )?;
   Ok(())
 }
