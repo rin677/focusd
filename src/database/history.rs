@@ -23,7 +23,14 @@ pub struct HistoryEntry {
 
 fn history_db_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
-  Some(PathBuf::from(home).join(".local/share/focusd/db/history.db"))
+
+  #[cfg(feature = "dev-build")]
+  let path = ".local/share/focusd/db/history-dev.db";
+
+  #[cfg(not(feature = "dev-build"))]
+  let path = ".local/share/focusd/db/history.db";
+
+  Some(PathBuf::from(home).join(path))
 }
 
 pub fn get_db() -> io::Result<Connection> {

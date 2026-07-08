@@ -9,5 +9,5 @@ windows:
       panes:
         - Build: fd -e rs | entr -r cargo build --no-default-features --features dev-build
         - Run:
-  - SQL: sqlite3 ~/.local/share/focusd/db/history.db
+  - SQL: sqlite3 ~/.local/share/focusd/db/history-dev.db
   - misc:

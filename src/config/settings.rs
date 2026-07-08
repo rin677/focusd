@@ -26,7 +26,14 @@ impl Default for Config {
 
 fn config_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
-  Some(PathBuf::from(home).join(".config/focusd/config.toml"))
+
+  #[cfg(feature = "dev-build")]
+  let path = ".config/focusd/config-dev.toml";
+
+  #[cfg(not(feature = "dev-build"))]
+  let path = ".config/focusd/config.toml";
+
+  Some(PathBuf::from(home).join(path))
 }
 
 fn load_config(path: &PathBuf) -> io::Result<Config> {
