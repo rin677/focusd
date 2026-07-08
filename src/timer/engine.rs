@@ -9,11 +9,10 @@ use std::time::Duration;
 
 pub fn decrease_sec(state: &mut TimerState) {
   let new_time = state.time_remaining - Duration::from_secs(1);
+  state.time_remaining = new_time;
   if new_time.is_zero() {
     next_session(state);
     on_finish();
-  } else {
-    state.time_remaining = new_time
   }
 }
 
