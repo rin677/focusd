@@ -78,7 +78,7 @@ fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error:
     return Ok(());
   };
   let now = Local::now();
-  let end_time = now.to_sql()?;
+  let end_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
   let planned_duration = time_for_session(state.sessioin_type).as_secs() as i64;
   let sessioin_type = name_for_session(state.sessioin_type);
   let completion_status = if state.time_remaining.is_zero() {
