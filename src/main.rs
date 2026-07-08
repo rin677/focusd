@@ -1,5 +1,6 @@
 mod config;
 mod database;
+mod notification;
 mod stats;
 mod timer;
 mod tui;
@@ -9,6 +10,16 @@ use std::{env, io};
 use crate::{
   config::settings::create_config_file, stats::calculate::print_stats, timer::state::TimerState,
 };
+
+trait Ignore {
+  fn ignore(self);
+}
+
+impl<T, E> Ignore for Result<T, E> {
+  fn ignore(self) {
+    let _ = self;
+  }
+}
 
 fn main() -> io::Result<()> {
   let mut state = TimerState::default();

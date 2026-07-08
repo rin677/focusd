@@ -13,6 +13,7 @@ pub struct Config {
   pub short_break_duratoin: u64,
   pub long_break_duration: u64,
   pub work_duration: u64,
+  pub show_notifications: bool,
 }
 
 impl Default for Config {
@@ -22,6 +23,7 @@ impl Default for Config {
       short_break_duratoin: 5,
       long_break_duration: 15,
       work_duration: 25,
+      show_notifications: true,
     }
   }
 }

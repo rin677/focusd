@@ -1,5 +1,6 @@
 use crate::{
   database::history::add_session_to_db,
+  notification::show_complete_notification,
   timer::{
     state::TimerState,
     utils::{min_2_digit, name_for_session, next_session as next_session_name, time_for_session},
@@ -48,6 +49,7 @@ pub fn toggle_session(state: &mut TimerState) {
 
 pub fn next_session(state: &mut TimerState) {
   add_session_to_db(state);
+  show_complete_notification(state);
   state.session_type = next_session_name(state.session_type);
   state.time_remaining = time_for_session(state.session_type);
 }

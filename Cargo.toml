@@ -11,6 +11,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 toml = "1.1.2"
 rusqlite = { version = "0.40.1", default-features = false }
 chrono = { version = "0.4.45" }
+notify-rust = "4.18.0"
 
 [features]
 default = ["bundled-sqlite"]
