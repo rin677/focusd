@@ -1,3 +1,4 @@
+use figlet_rs::FIGlet;
 use std::{
   io,
   time::{Duration, Instant},
@@ -112,7 +113,10 @@ impl<'a> App<'a> {
 impl Widget for &App<'_> {
   fn render(self, area: Rect, buf: &mut Buffer) {
     let block = Block::bordered();
-    let text = render_time(self.timer_state);
+    let t = render_time(self.timer_state);
+    let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
+    // TODO: Also show session type and paused play (removed currently to show figlet)
+    let text = font.convert(&t).unwrap().to_string();
     Paragraph::new(text)
       .centered()
       .block(block)
