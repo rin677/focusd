@@ -19,9 +19,30 @@ use ratatui::{
   widgets::{Block, Paragraph, Widget},
 };
 
+pub enum Pages {
+  Timer,
+  Stats,
+  History,
+  Settings,
+}
+
+struct AppState {
+  exit: bool,
+  current_page: Pages,
+}
+
+impl Default for AppState {
+  fn default() -> Self {
+    AppState {
+      exit: false,
+      current_page: Pages::Timer,
+    }
+  }
+}
+
 pub fn main(state: &mut TimerState) -> io::Result<()> {
   let mut app = App {
-    exit: false,
+    app_state: AppState::default(),
     timer_state: state,
   };
   let mut terminal = ratatui::init();
@@ -31,7 +52,7 @@ pub fn main(state: &mut TimerState) -> io::Result<()> {
 }
 
 struct App<'a> {
-  exit: bool,
+  app_state: AppState,
   timer_state: &'a mut TimerState,
 }
 
@@ -39,7 +60,7 @@ impl<'a> App<'a> {
   pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
     let tick_rate = Duration::from_secs(1);
     let mut last_tick = Instant::now();
-    while !self.exit {
+    while !self.app_state.exit {
       let timeout = tick_rate
         .checked_sub(last_tick.elapsed())
         .unwrap_or(Duration::from_secs(0));
@@ -75,7 +96,7 @@ impl<'a> App<'a> {
 
   fn quit(&mut self) {
     add_session_to_db(self.timer_state);
-    self.exit = true;
+    self.app_state.exit = true;
   }
 
   fn handle_key_event(&mut self, key_event: KeyEvent) {
