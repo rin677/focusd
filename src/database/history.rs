@@ -63,36 +63,32 @@ pub fn get_db() -> io::Result<Connection> {
   Ok(cnn)
 }
 
-pub fn add_session_to_db(state: &TimerState) {
-  match get_db() {
-    Ok(cnn) => {
-      let actual_duration =
-        (time_for_session(state.sessioin_type) - state.time_remaining).as_secs() as i64;
-      if actual_duration == 0 {
-        return;
-      };
-      let now = Local::now();
-      if let Ok(end_time) = now.to_sql() {
-        let planned_duration = time_for_session(state.sessioin_type).as_secs() as i64;
-        let sessioin_type = name_for_session(state.sessioin_type);
-        let completion_status = if state.time_remaining.is_zero() {
-          "Completed".to_string()
-        } else {
-          "Incomplete".to_string()
-        };
+fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
+  let cnn = get_db()?;
+  let actual_duration =
+    (time_for_session(state.sessioin_type) - state.time_remaining).as_secs() as i64;
+  if actual_duration == 0 {
+    return Ok(());
+  };
+  let now = Local::now();
+  let end_time = now.to_sql()?;
+  let planned_duration = time_for_session(state.sessioin_type).as_secs() as i64;
+  let sessioin_type = name_for_session(state.sessioin_type);
+  let completion_status = if state.time_remaining.is_zero() {
+    "Completed".to_string()
+  } else {
+    "Incomplete".to_string()
+  };
+  cnn.execute(
+    "INSERT INTO history 
+    (end_time, planned_duration, actual_duration, completion_status, session_type) VALUES (?1, ?2, ?3, ?4, ?5)",
+    (end_time, planned_duration, actual_duration, completion_status, sessioin_type),
+  )?;
+  Ok(())
+}
 
-        let s = cnn.execute(
-            "INSERT INTO history (end_time, planned_duration, actual_duration, completion_status, session_type) VALUES (?1, ?2, ?3, ?4, ?5)",
-            (end_time, planned_duration, actual_duration ,completion_status ,sessioin_type ),
-        );
-        match s {
-          Ok(_) => {}
-          Err(e) => {
-            println!("Got error while adding history to database {e}")
-          }
-        }
-      }
-    }
-    Err(e) => println!("{e}"),
+pub fn add_session_to_db(state: &TimerState) {
+  if let Err(e) = add_session_to_db_inner(state) {
+    println!("{e}")
   }
 }
