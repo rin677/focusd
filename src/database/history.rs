@@ -22,15 +22,15 @@ fn history_db_path() -> Option<PathBuf> {
   Some(PathBuf::from(home).join(".local/share/focusd/db/history.db"))
 }
 
-fn create_db() -> io::Result<()> {
+pub fn create_db() -> io::Result<Connection> {
   let Some(path) = history_db_path() else {
     throw!("Path for database not found");
   };
 
-  if let Some(parent) = path.parent() {
-    if let Err(_e) = fs::create_dir_all(parent) {
-      throw!("Failed to create parent directory");
-    }
+  if let Some(parent) = path.parent()
+    && let Err(_e) = fs::create_dir_all(parent)
+  {
+    throw!("Failed to create parent directory");
   }
 
   let cnn = match Connection::open(&path) {
@@ -38,7 +38,7 @@ fn create_db() -> io::Result<()> {
     Err(_) => throw!("Database could not be loaded"),
   };
 
-  cnn.execute(
+  let s = cnn.execute(
     "CREATE TABLE IF NOT EXISTS history(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           end_time TEXT NOT NULL,
@@ -49,7 +49,13 @@ fn create_db() -> io::Result<()> {
       ",
     [],
   );
-  return Ok(());
+  match s {
+    Ok(_) => {}
+    Err(e) => {
+      println!("Got error while creating database {e}")
+    }
+  }
+  Ok(cnn)
 }
 
 pub fn add_session_to_db(_state: &TimerState) {

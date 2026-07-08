@@ -9,7 +9,7 @@ crossterm = "0.29.0"
 ratatui = "0.30.2"
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "1.1.2"
-rusqlite = { version = "0.40.1", default-features = false, optional = true }
+rusqlite = { version = "0.40.1", default-features = false }
 
 [features]
 default = ["bundled-sqlite"]
