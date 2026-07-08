@@ -15,8 +15,6 @@ use crate::{
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  buffer::Buffer,
-  layout::Rect,
   widgets::{Block, Paragraph, Widget},
 };
 
@@ -82,7 +80,15 @@ impl<'a> App<'a> {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    frame.render_widget(&*self, frame.area());
+    let block = Block::bordered();
+    let t = render_time(self.timer_state);
+    let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
+    // TODO: Also show session type and paused play (removed currently to show figlet)
+    let text = font.convert(&t).unwrap().to_string();
+    Paragraph::new(text)
+      .centered()
+      .block(block)
+      .render(frame.area(), frame.buffer_mut());
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
@@ -107,19 +113,5 @@ impl<'a> App<'a> {
       KeyCode::Char('n') => next_session(self.timer_state),
       _ => {}
     }
-  }
-}
-
-impl Widget for &App<'_> {
-  fn render(self, area: Rect, buf: &mut Buffer) {
-    let block = Block::bordered();
-    let t = render_time(self.timer_state);
-    let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
-    // TODO: Also show session type and paused play (removed currently to show figlet)
-    let text = font.convert(&t).unwrap().to_string();
-    Paragraph::new(text)
-      .centered()
-      .block(block)
-      .render(area, buf);
   }
 }
