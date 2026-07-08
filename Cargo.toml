@@ -10,8 +10,9 @@ ratatui = "0.30.2"
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "1.1.2"
 rusqlite = { version = "0.40.1", default-features = false }
+chrono = { version = "0.4.45" }
 
 [features]
 default = ["bundled-sqlite"]
-bundled-sqlite = ["rusqlite/bundled"]
-dev-build = []
+bundled-sqlite = ["rusqlite/bundled", "rusqlite/chrono"]
+dev-build = ["rusqlite/chrono"]

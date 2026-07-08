@@ -1,6 +1,9 @@
-use crate::timer::{
-  state::TimerState,
-  utils::{min_2_digit, name_for_session, next_session as get_next_session, time_for_session},
+use crate::{
+  database::history::add_session_to_db,
+  timer::{
+    state::TimerState,
+    utils::{min_2_digit, name_for_session, next_session as get_next_session, time_for_session},
+  },
 };
 use std::time::Duration;
 
@@ -45,6 +48,7 @@ pub fn toggle_session(state: &mut TimerState) {
 }
 
 pub fn next_session(state: &mut TimerState) {
+  add_session_to_db(state);
   state.sessioin_type = get_next_session(state.sessioin_type);
   state.time_remaining = time_for_session(state.sessioin_type);
 }
