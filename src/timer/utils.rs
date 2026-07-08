@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use crate::{config::settings::get_config, timer::state::SessionType};
 
-pub fn name_for_session(session: SessionType) -> String {
+pub fn name_for_session<'a>(session: SessionType) -> &'a str {
   match session {
-    SessionType::Work => String::from("Work"),
-    SessionType::ShortBreak => String::from("Short Break"),
-    SessionType::LongBreak => String::from("Long Break"),
+    SessionType::Work => "Work",
+    SessionType::ShortBreak => "Short Break",
+    SessionType::LongBreak => "Long Break",
   }
 }
 
