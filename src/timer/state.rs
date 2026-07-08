@@ -12,7 +12,7 @@ pub enum SessionType {
 pub struct TimerState {
   pub running: bool,
   pub time_remaining: Duration,
-  pub sessioin_type: SessionType,
+  pub session_type: SessionType,
 }
 
 impl Default for TimerState {
@@ -20,7 +20,7 @@ impl Default for TimerState {
     TimerState {
       running: false,
       time_remaining: time_for_session(SessionType::Work),
-      sessioin_type: SessionType::Work,
+      session_type: SessionType::Work,
     }
   }
 }

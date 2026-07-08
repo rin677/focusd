@@ -2,7 +2,7 @@ use crate::{
   database::history::add_session_to_db,
   timer::{
     state::TimerState,
-    utils::{min_2_digit, name_for_session, next_session as get_next_session, time_for_session},
+    utils::{min_2_digit, name_for_session, next_session as next_session_name, time_for_session},
   },
 };
 use std::time::Duration;
@@ -21,7 +21,7 @@ pub fn on_finish() {
 }
 
 pub fn render_time(state: &TimerState) -> String {
-  let session_type = name_for_session(state.sessioin_type);
+  let session_type = name_for_session(state.session_type);
   let sec_left = state.time_remaining.as_secs();
   let min_left = min_2_digit(sec_left / 60);
   let s = sec_left % 60;
@@ -48,6 +48,6 @@ pub fn toggle_session(state: &mut TimerState) {
 
 pub fn next_session(state: &mut TimerState) {
   add_session_to_db(state);
-  state.sessioin_type = get_next_session(state.sessioin_type);
-  state.time_remaining = time_for_session(state.sessioin_type);
+  state.session_type = next_session_name(state.session_type);
+  state.time_remaining = time_for_session(state.session_type);
 }

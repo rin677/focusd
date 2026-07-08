@@ -71,14 +71,14 @@ pub fn get_db() -> io::Result<Connection> {
 fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
   let cnn = get_db()?;
   let completed_duration =
-    (time_for_session(state.sessioin_type) - state.time_remaining).as_secs() as i64;
+    (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
   if completed_duration == 0 {
     return Ok(());
   };
   let now = Local::now();
   let end_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
-  let planned_duration = time_for_session(state.sessioin_type).as_secs() as i64;
-  let sessioin_type = name_for_session(state.sessioin_type);
+  let planned_duration = time_for_session(state.session_type).as_secs() as i64;
+  let sessioin_type = name_for_session(state.session_type);
   cnn.execute(
     "INSERT INTO history 
     (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",

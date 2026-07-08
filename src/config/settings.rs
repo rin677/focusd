@@ -5,6 +5,8 @@ use std::{
   path::PathBuf,
 };
 
+use crate::throw;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
   pub num_session: u64,
@@ -38,10 +40,7 @@ fn config_path() -> Option<PathBuf> {
 
 fn load_config(path: &PathBuf) -> io::Result<Config> {
   let contents = fs::read_to_string(path)?;
-  let config: Config =
-    toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-
-  Ok(config)
+  toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }
 
 pub fn get_config() -> Config {
@@ -72,7 +71,7 @@ pub fn create_config_file() {
 
 pub fn save_config(config: &Config) -> io::Result<()> {
   let Some(path) = config_path() else {
-    return Ok(());
+    throw!("file not found");
   };
   let toml_string = toml::to_string_pretty(config).expect("failed to serialize");
   fs::write(path, toml_string)
