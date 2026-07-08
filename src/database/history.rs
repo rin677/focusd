@@ -17,7 +17,6 @@ pub struct HistoryEntry {
   pub end_time: u64,
   pub planned_duration: u64,
   pub actual_duration: u64,
-  pub completion_status: u64,
   pub session_type: u64,
 }
 
@@ -55,7 +54,6 @@ pub fn get_db() -> io::Result<Connection> {
           end_time TEXT NOT NULL,
           planned_duration INTEGER NOT NULL,
           actual_duration INTEGER NOT NULL,
-          completion_status TEXT NOT NULL,
           session_type TEXT NOT NULL
   )
       ",
@@ -81,15 +79,10 @@ fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error:
   let end_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
   let planned_duration = time_for_session(state.sessioin_type).as_secs() as i64;
   let sessioin_type = name_for_session(state.sessioin_type);
-  let completion_status = if state.time_remaining.is_zero() {
-    "Completed".to_string()
-  } else {
-    "Incomplete".to_string()
-  };
   cnn.execute(
     "INSERT INTO history 
-    (end_time, planned_duration, actual_duration, completion_status, session_type) VALUES (?1, ?2, ?3, ?4, ?5)",
-    (end_time, planned_duration, actual_duration, completion_status, sessioin_type),
+    (end_time, planned_duration, actual_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
+    (end_time, planned_duration, actual_duration, sessioin_type),
   )?;
   Ok(())
 }
