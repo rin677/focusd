@@ -14,7 +14,7 @@ pub fn time_for_session(session: SessionType) -> Duration {
   let config = get_config();
   match session {
     SessionType::Work => Duration::from_mins(config.work_duration),
-    SessionType::ShortBreak => Duration::from_mins(config.short_break_duratoin),
+    SessionType::ShortBreak => Duration::from_mins(config.short_break_duration),
     SessionType::LongBreak => Duration::from_mins(config.long_break_duration),
   }
 }

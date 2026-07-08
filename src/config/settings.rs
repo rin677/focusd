@@ -10,7 +10,7 @@ use crate::throw;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
   pub num_session: u64,
-  pub short_break_duratoin: u64,
+  pub short_break_duration: u64,
   pub long_break_duration: u64,
   pub work_duration: u64,
   pub show_notifications: bool,
@@ -20,7 +20,7 @@ impl Default for Config {
   fn default() -> Self {
     Self {
       num_session: 4,
-      short_break_duratoin: 5,
+      short_break_duration: 5,
       long_break_duration: 15,
       work_duration: 25,
       show_notifications: true,
