@@ -1,6 +1,8 @@
 mod config;
+mod database;
 mod timer;
 mod tui;
+mod utils;
 use std::io;
 
 use crate::{config::settings::create_config_file, timer::state::TimerState};
