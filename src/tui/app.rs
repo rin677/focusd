@@ -3,9 +3,12 @@ use std::{
   time::{Duration, Instant},
 };
 
-use crate::timer::{
-  engine::{decrease_sec, next_session, render_time, toggle_session},
-  state::TimerState,
+use crate::{
+  database::history::add_session_to_db,
+  timer::{
+    engine::{decrease_sec, next_session, render_time, toggle_session},
+    state::TimerState,
+  },
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -70,9 +73,14 @@ impl<'a> App<'a> {
     Ok(())
   }
 
+  fn quit(&mut self) {
+    add_session_to_db(self.timer_state);
+    self.exit = true;
+  }
+
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
-      KeyCode::Char('q') => self.exit = true,
+      KeyCode::Char('q') => self.quit(),
       KeyCode::Char(' ') => toggle_session(self.timer_state),
       KeyCode::Char('n') => next_session(self.timer_state),
       _ => {}
