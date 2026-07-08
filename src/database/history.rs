@@ -3,7 +3,7 @@ use crate::{
   timer::utils::{name_for_session, time_for_session},
 };
 use chrono::Local;
-use rusqlite::{Connection, ToSql};
+use rusqlite::Connection;
 use std::{
   env::{self},
   fs, io,
@@ -69,12 +69,12 @@ pub fn get_db() -> io::Result<Connection> {
 }
 
 fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
-  let cnn = get_db()?;
   let completed_duration =
     (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
-  if completed_duration == 0 {
+  if completed_duration < 20 {
     return Ok(());
   };
+  let cnn = get_db()?;
   let now = Local::now();
   let end_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
   let planned_duration = time_for_session(state.session_type).as_secs() as i64;
