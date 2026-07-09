@@ -1,6 +1,4 @@
-use figlet_rs::FIGlet;
-
-use crate::timer::state::TimerState;
+use crate::{timer::state::TimerState, utils::figlet::big_text};
 use ratatui::{
   buffer::Buffer,
   layout::Rect,
@@ -9,7 +7,6 @@ use ratatui::{
 
 pub fn show_settings(timer_state: &TimerState, area: Rect, buffer: &mut Buffer) {
   // TODO: Implement this
-  let font = FIGlet::from_content(include_str!("../../../resources/terminus.flf")).unwrap();
-  let text = font.convert("Settings will be here").unwrap().to_string();
+  let text = big_text("Settings will be here");
   Paragraph::new(text).centered().render(area, buffer);
 }

@@ -1,6 +1,7 @@
-use figlet_rs::FIGlet;
-
-use crate::timer::{engine::render_time, state::TimerState, utils::time_for_session};
+use crate::{
+  timer::{engine::render_time, state::TimerState, utils::time_for_session},
+  utils::figlet::big_text,
+};
 use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect},
@@ -15,8 +16,7 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   let percent = (timer_state.time_remaining.as_secs()) as f64
     / (time_for_session(timer_state.session_type).as_secs()) as f64;
   let t = render_time(timer_state);
-  let font = FIGlet::from_content(include_str!("../../../resources/terminus.flf")).unwrap();
-  let text = font.convert(&t).unwrap().to_string();
+  let text = big_text(&t);
   frame.render_widget(Paragraph::new(text).centered(), first);
   let progress = LineGauge::default()
     .style(Modifier::BOLD)
