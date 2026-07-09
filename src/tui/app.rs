@@ -133,7 +133,7 @@ impl<'a> App<'a> {
     frame.render_widget(Line::from(divider), sep2);
 
     match self.app_state.current_page {
-      Pages::Timer => show_timer(self.timer_state, mid, frame.buffer_mut()),
+      Pages::Timer => show_timer(self.timer_state, mid, frame),
       Pages::History => show_history(self.timer_state, mid, frame.buffer_mut()),
       Pages::Stats => show_stats(self.timer_state, mid, frame.buffer_mut()),
       Pages::Settings => show_settings(self.timer_state, mid, frame.buffer_mut()),
