@@ -9,7 +9,7 @@ use crate::{
     engine::{decrease_sec, next_session, toggle_session},
     state::TimerState,
   },
-  tui::timer::show_timer,
+  tui::{history::show_history, settings::show_settings, stats::show_stats, timer::show_timer},
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -20,6 +20,7 @@ use ratatui::{
   widgets::Block,
 };
 
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Pages {
   Timer,
   Stats,
@@ -41,20 +42,22 @@ impl Default for AppState {
   }
 }
 
+struct App<'a> {
+  app_state: AppState,
+  timer_state: &'a mut TimerState,
+  all_pages: Vec<Pages>,
+}
+
 pub fn main(state: &mut TimerState) -> io::Result<()> {
   let mut app = App {
     app_state: AppState::default(),
     timer_state: state,
+    all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
   };
   let mut terminal = ratatui::init();
   let result = app.run(&mut terminal);
   ratatui::restore();
   result
-}
-
-struct App<'a> {
-  app_state: AppState,
-  timer_state: &'a mut TimerState,
 }
 
 impl<'a> App<'a> {
@@ -111,7 +114,12 @@ impl<'a> App<'a> {
     frame.render_widget(Line::from(divider.clone()), sep1);
     frame.render_widget(Line::from(divider), sep2);
 
-    show_timer(self.timer_state, mid, frame.buffer_mut());
+    match self.app_state.current_page {
+      Pages::Timer => show_timer(self.timer_state, mid, frame.buffer_mut()),
+      Pages::History => show_history(self.timer_state, mid, frame.buffer_mut()),
+      Pages::Stats => show_stats(self.timer_state, mid, frame.buffer_mut()),
+      Pages::Settings => show_settings(self.timer_state, mid, frame.buffer_mut()),
+    }
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
@@ -124,17 +132,33 @@ impl<'a> App<'a> {
     Ok(())
   }
 
-  fn quit(&mut self) {
-    add_session_to_db(self.timer_state);
-    self.app_state.exit = true;
-  }
-
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
       KeyCode::Char('q') => self.quit(),
       KeyCode::Char(' ') => toggle_session(self.timer_state),
       KeyCode::Char('n') => next_session(self.timer_state),
+      KeyCode::Char('[') => self.select_page(-1),
+      KeyCode::Char(']') => self.select_page(1),
       _ => {}
+    }
+  }
+
+  fn quit(&mut self) {
+    add_session_to_db(self.timer_state);
+    self.app_state.exit = true;
+  }
+
+  fn select_page(&mut self, offset: isize) {
+    if let Some(i) = self
+      .all_pages
+      .iter()
+      .position(|x| *x == self.app_state.current_page)
+    {
+      let total_pages = self.all_pages.len();
+      let new_index = i as isize + offset;
+      let m = new_index % total_pages as isize;
+      let abs_new_index: usize = (total_pages as isize + m) as usize % total_pages;
+      self.app_state.current_page = self.all_pages[abs_new_index]
     }
   }
 }
