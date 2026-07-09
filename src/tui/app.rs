@@ -16,7 +16,8 @@ use crate::{
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  layout::{Constraint, Layout, Margin},
+  layout::{Constraint, Layout},
+  style::Style,
   text::{Line, Text},
   widgets::Block,
 };
@@ -86,25 +87,6 @@ impl<'a> App<'a> {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    let outer = Block::bordered();
-    let inner = frame.area().inner(Margin {
-      vertical: 1,
-      horizontal: 0,
-    });
-
-    frame.render_widget(outer, frame.area());
-
-    let layout = Layout::vertical([
-      Constraint::Length(1), // Header
-      Constraint::Length(1), // Seperator
-      Constraint::Fill(1),   // Main content
-      Constraint::Length(1), // Another seperator
-      Constraint::Length(1), // Bottom hints
-    ])
-    .spacing(0);
-
-    let [top, sep1, mid, sep2, bot] = inner.layout(&layout);
-
     let icon = if self.timer_state.running {
       ""
     } else {
@@ -121,22 +103,29 @@ impl<'a> App<'a> {
     ])
     .spacing(2);
 
-    let bottom_text = Line::from(":Press q to quit: Space to toggle timer : and N to skip :");
+    let outer_layout = Layout::vertical([
+      Constraint::Length(1), // Header
+      Constraint::Fill(1),   // Main area
+    ])
+    .spacing(0);
+
+    let [top, main_area] = frame.area().layout(&outer_layout);
+
     let [left_space, right_space] = top.layout(&top_layout);
-    frame.render_widget(Text::from("│  Focusd"), left_space);
+    frame.render_widget(Text::from("Focusd"), left_space);
     frame.render_widget(Text::from(right_header_text), right_space);
 
-    frame.render_widget(bottom_text.centered(), bot);
-    let width = sep1.width.saturating_sub(2) as usize;
-    let divider = format!("├{}┤", "─".repeat(width));
-    frame.render_widget(Line::from(divider.clone()), sep1);
-    frame.render_widget(Line::from(divider), sep2);
+    let main_block = Block::bordered().title_bottom(
+      Line::from(":Press q to quit: Space to toggle timer : and N to skip :").centered(),
+    );
+    frame.render_widget(&main_block, main_area);
 
+    let inner_area = main_block.inner(main_area);
     match self.app_state.current_page {
-      Pages::Timer => show_timer(self.timer_state, mid, frame),
-      Pages::History => show_history(self.timer_state, mid, frame.buffer_mut()),
-      Pages::Stats => show_stats(self.timer_state, mid, frame.buffer_mut()),
-      Pages::Settings => show_settings(self.timer_state, mid, frame.buffer_mut()),
+      Pages::Timer => show_timer(self.timer_state, inner_area, frame),
+      Pages::History => show_history(self.timer_state, inner_area, frame.buffer_mut()),
+      Pages::Stats => show_stats(self.timer_state, inner_area, frame.buffer_mut()),
+      Pages::Settings => show_settings(self.timer_state, inner_area, frame.buffer_mut()),
     }
   }
 
