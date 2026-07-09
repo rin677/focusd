@@ -48,6 +48,7 @@ pub fn get_db() -> io::Result<Connection> {
     Err(_) => throw!("Database could not be loaded"),
   };
 
+  // TODO: Session tags
   let s = cnn.execute(
     "CREATE TABLE IF NOT EXISTS history(
           id INTEGER PRIMARY KEY AUTOINCREMENT,

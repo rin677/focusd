@@ -7,6 +7,7 @@ use std::{
 
 use crate::throw;
 
+// TODO: allow selecting preset
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
   pub num_session: u64,
@@ -52,6 +53,7 @@ pub fn get_config() -> Config {
       return Config::default();
     }
 
+    // FIX: Gives default config if something is wrong in config file Ignoring all the configs
     if let Ok(config) = load_config(&path) {
       return config;
     }
@@ -62,6 +64,7 @@ pub fn get_config() -> Config {
 
 pub fn create_config_file() {
   let Some(path) = config_path() else { return };
+  // TODO: create better config with commnet explaining what each key does
   if let Some(parent) = path.parent() {
     let _ = fs::create_dir_all(parent);
   }

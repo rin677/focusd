@@ -25,5 +25,7 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     .label("")
     .ratio(1_f64 - percent);
 
+  // TODO: Include other things as well, ASCCI art or dashboard.
+
   frame.render_widget(progress, second);
 }

@@ -17,6 +17,7 @@ pub enum DurType {
   All,
 }
 
+// FIX: Only calculate work sessions here
 fn get_sql_condition<'a>(dur: DurType) -> &'a str {
   match dur {
     DurType::Today => "WHERE date(end_time) = date('now')",
