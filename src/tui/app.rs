@@ -15,7 +15,10 @@ use crate::{
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  widgets::{Block, Paragraph, Widget},
+  layout::{Constraint, Layout, Margin, Rect},
+  symbols::line::TOP_LEFT,
+  text::Line,
+  widgets::{Block, Borders, Padding, Paragraph, Widget},
 };
 
 pub enum Pages {
@@ -80,15 +83,32 @@ impl<'a> App<'a> {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    let block = Block::bordered();
+    let outer = Block::bordered().padding(Padding::vertical(3));
+    let layout = Layout::vertical([
+      Constraint::Length(1),
+      Constraint::Fill(1),
+      Constraint::Length(1),
+    ])
+    .spacing(1);
+    let inner = frame.area().inner(Margin {
+      vertical: 1,
+      horizontal: 0,
+    });
+    frame.render_widget(outer, frame.area());
+    let [top, mid, bot] = inner.layout(&layout);
+    let title = Line::from(":TODO: Add this later. Maybe small timer or icons");
+    let bottom_text = Line::from(":Press q to quit: Space to toggle timer : and N to skip :");
+    frame.render_widget(title.centered(), top);
+
+    frame.render_widget(bottom_text.centered(), bot);
+
     let t = render_time(self.timer_state);
     let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
     // TODO: Also show session type and paused play (removed currently to show figlet)
     let text = font.convert(&t).unwrap().to_string();
     Paragraph::new(text)
       .centered()
-      .block(block)
-      .render(frame.area(), frame.buffer_mut());
+      .render(mid, frame.buffer_mut());
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
