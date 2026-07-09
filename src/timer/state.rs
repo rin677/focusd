@@ -1,14 +1,15 @@
+use crate::timer::utils::time_for_session;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-use crate::timer::utils::time_for_session;
-
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub enum SessionType {
   Work,
   ShortBreak,
   LongBreak,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct TimerState {
   pub running: bool,
   pub time_remaining: Duration,

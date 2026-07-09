@@ -1,4 +1,5 @@
 mod config;
+mod daemon;
 mod database;
 mod notification;
 mod stats;
@@ -8,7 +9,11 @@ mod utils;
 use std::{env, io};
 
 use crate::{
-  config::settings::create_config_file, stats::calculate::print_stats, timer::state::TimerState,
+  config::settings::create_config_file,
+  daemon::{ensure_daemon_active, run_daemon, send_command},
+  stats::calculate::print_stats,
+  timer::state::TimerState,
+  utils::ignore::Ignore,
 };
 
 fn main() -> io::Result<()> {
@@ -17,10 +22,12 @@ fn main() -> io::Result<()> {
 
   let args: Vec<String> = env::args().collect();
 
+  // TODO: Daemon flag should start
   if args.iter().any(|a| a == "--daemon") {
-    // TODO: Daemon flag should start
+    run_daemon();
     return Ok(());
   }
+  ensure_daemon_active(true).ignore();
 
   if args.len() > 1 {
     match args[1].as_str() {
