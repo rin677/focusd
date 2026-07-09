@@ -1,5 +1,2 @@
 pub mod app;
-pub mod history;
-pub mod settings;
-pub mod stats;
-pub mod timer;
+pub mod pages;

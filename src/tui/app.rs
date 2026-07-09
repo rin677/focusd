@@ -10,7 +10,9 @@ use crate::{
     state::TimerState,
     utils::name_for_session,
   },
-  tui::{history::show_history, settings::show_settings, stats::show_stats, timer::show_timer},
+  tui::pages::{
+    history::show_history, settings::show_settings, stats::show_stats, timer::show_timer,
+  },
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
