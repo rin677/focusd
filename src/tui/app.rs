@@ -6,8 +6,9 @@ use std::{
 use crate::{
   database::history::add_session_to_db,
   timer::{
-    engine::{decrease_sec, next_session, toggle_session},
+    engine::{decrease_sec, next_session, render_time, toggle_session},
     state::TimerState,
+    utils::name_for_session,
   },
   tui::{history::show_history, settings::show_settings, stats::show_stats, timer::show_timer},
 };
@@ -16,7 +17,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
   layout::{Constraint, Layout, Margin},
-  text::Line,
+  text::{Line, Text},
   widgets::Block,
 };
 
@@ -104,9 +105,26 @@ impl<'a> App<'a> {
 
     let [top, sep1, mid, sep2, bot] = inner.layout(&layout);
 
-    let title = Line::from(":TODO: Add this later. Maybe small timer or icons");
+    let icon = if self.timer_state.running {
+      ""
+    } else {
+      ""
+    };
+    let right_header_text = format!(
+      "Current session: {} - {icon} {}",
+      name_for_session(self.timer_state.session_type),
+      render_time(self.timer_state)
+    );
+    let top_layout = Layout::horizontal([
+      Constraint::Fill(0),
+      Constraint::Length(right_header_text.len() as u16),
+    ])
+    .spacing(2);
+
     let bottom_text = Line::from(":Press q to quit: Space to toggle timer : and N to skip :");
-    frame.render_widget(title.centered(), top);
+    let [left_space, right_space] = top.layout(&top_layout);
+    frame.render_widget(Text::from("│  Focusd"), left_space);
+    frame.render_widget(Text::from(right_header_text), right_space);
 
     frame.render_widget(bottom_text.centered(), bot);
     let width = sep1.width.saturating_sub(2) as usize;
