@@ -1,4 +1,3 @@
-use figlet_rs::FIGlet;
 use std::{
   io,
   time::{Duration, Instant},
@@ -7,18 +6,18 @@ use std::{
 use crate::{
   database::history::add_session_to_db,
   timer::{
-    engine::{decrease_sec, next_session, render_time, toggle_session},
+    engine::{decrease_sec, next_session, toggle_session},
     state::TimerState,
   },
+  tui::timer::show_timer,
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  layout::{Constraint, Layout, Margin, Rect},
-  symbols::line::TOP_LEFT,
+  layout::{Constraint, Layout, Margin},
   text::Line,
-  widgets::{Block, Borders, Padding, Paragraph, Widget},
+  widgets::Block,
 };
 
 pub enum Pages {
@@ -112,13 +111,7 @@ impl<'a> App<'a> {
     frame.render_widget(Line::from(divider.clone()), sep1);
     frame.render_widget(Line::from(divider), sep2);
 
-    let t = render_time(self.timer_state);
-    let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
-    // TODO: Also show session type and paused play (removed currently to show figlet)
-    let text = font.convert(&t).unwrap().to_string();
-    Paragraph::new(text)
-      .centered()
-      .render(mid, frame.buffer_mut());
+    show_timer(self.timer_state, mid, frame.buffer_mut());
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
