@@ -1,12 +1,12 @@
 use notify_rust::Notification;
 
 use crate::{
-  Ignore,
   config::settings::get_config,
   timer::{
     state::TimerState,
     utils::{name_for_session, next_session as next_session_name, time_for_session},
   },
+  utils::ignore::Ignore,
 };
 
 pub fn show_complete_notification(state: &TimerState) {
