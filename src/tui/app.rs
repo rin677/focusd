@@ -83,24 +83,34 @@ impl<'a> App<'a> {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    let outer = Block::bordered().padding(Padding::vertical(3));
-    let layout = Layout::vertical([
-      Constraint::Length(1),
-      Constraint::Fill(1),
-      Constraint::Length(1),
-    ])
-    .spacing(1);
+    let outer = Block::bordered();
     let inner = frame.area().inner(Margin {
       vertical: 1,
       horizontal: 0,
     });
+
     frame.render_widget(outer, frame.area());
-    let [top, mid, bot] = inner.layout(&layout);
+
+    let layout = Layout::vertical([
+      Constraint::Length(1), // Header
+      Constraint::Length(1), // Seperator
+      Constraint::Fill(1),   // Main content
+      Constraint::Length(1), // Another seperator
+      Constraint::Length(1), // Bottom hints
+    ])
+    .spacing(0);
+
+    let [top, sep1, mid, sep2, bot] = inner.layout(&layout);
+
     let title = Line::from(":TODO: Add this later. Maybe small timer or icons");
     let bottom_text = Line::from(":Press q to quit: Space to toggle timer : and N to skip :");
     frame.render_widget(title.centered(), top);
 
     frame.render_widget(bottom_text.centered(), bot);
+    let width = sep1.width.saturating_sub(2) as usize;
+    let divider = format!("├{}┤", "─".repeat(width));
+    frame.render_widget(Line::from(divider.clone()), sep1);
+    frame.render_widget(Line::from(divider), sep2);
 
     let t = render_time(self.timer_state);
     let font = FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap();
