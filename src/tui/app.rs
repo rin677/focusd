@@ -116,7 +116,7 @@ impl App {
     frame.render_widget(Text::from(right_header_text), right_space);
 
     let main_block = Block::bordered().title_bottom(
-      Line::from(":Press q to quit: Space to toggle timer : and N to skip :").centered(),
+      Line::from(":Press q to quit: Space to toggle timer : N to skip : R to reset").centered(),
     );
     frame.render_widget(&main_block, main_area);
 
@@ -144,6 +144,7 @@ impl App {
       KeyCode::Char('q') => self.quit(),
       KeyCode::Char(' ') => send_command(Message::ToggleSession).ignore(),
       KeyCode::Char('n') => send_command(Message::NextSession).ignore(),
+      KeyCode::Char('r') => send_command(Message::ResetSession).ignore(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       _ => {}

@@ -48,6 +48,11 @@ pub fn toggle_session(state: &mut TimerState) {
   state.running = !state.running
 }
 
+pub fn reset_session(state: &mut TimerState) {
+  state.running = false;
+  state.time_remaining = time_for_session(state.session_type);
+}
+
 pub fn next_session(state: &mut TimerState) {
   add_session_to_db();
   show_complete_notification(state);

@@ -1,7 +1,9 @@
 use crate::{
   daemon::SOCKET_PATH,
   timer::{
-    engine::{next_session, pause_session, resume_session, start_session, toggle_session},
+    engine::{
+      next_session, pause_session, reset_session, resume_session, start_session, toggle_session,
+    },
     state::{TimerSnapShot, TimerState},
   },
 };
@@ -19,6 +21,7 @@ pub enum Message {
   ToggleSession,
   NextSession,
   GetSession,
+  ResetSession,
 
   // Test
   Running,
@@ -32,6 +35,7 @@ pub fn parse_message(message: Message) -> String {
     Message::ToggleSession => String::from("ToggleSession"),
     Message::NextSession => String::from("NextSession"),
     Message::GetSession => String::from("GetSession"),
+    Message::ResetSession => String::from("ResetSession"),
     Message::Running => String::from("RUNNING"),
   }
 }
@@ -63,6 +67,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
     "OK".to_string()
   } else if l == parse_message(Message::NextSession) {
     next_session(&mut s);
+    "OK".to_string()
+  } else if l == parse_message(Message::ResetSession) {
+    reset_session(&mut s);
     "OK".to_string()
   } else {
     "Command not found".to_string()

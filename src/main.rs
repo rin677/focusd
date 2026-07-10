@@ -49,6 +49,9 @@ fn main() -> io::Result<()> {
       "pause" | "pause-session" => send_command(Message::PauseSession).map(|m| println!("{m}")),
       "resume" | "resume-session" => send_command(Message::ResumeSession).map(|m| println!("{m}")),
       "toggle" | "toggle-session" => send_command(Message::ToggleSession).map(|m| println!("{m}")),
+      "reset" | "stop" | "reset-session" | "stop-session" => {
+        send_command(Message::ResetSession).map(|m| println!("{m}"))
+      }
       "next" | "next-session" | "skip" | "skip-session" => {
         send_command(Message::NextSession).map(|m| println!("{m}"))
       }
