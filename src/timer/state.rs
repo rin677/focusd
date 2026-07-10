@@ -32,6 +32,16 @@ impl From<&TimerState> for TimerSnapShot {
   }
 }
 
+impl From<&TimerSnapShot> for TimerState {
+  fn from(t: &TimerSnapShot) -> Self {
+    Self {
+      running: t.running,
+      time_remaining: t.time_remaining,
+      session_type: t.session_type,
+    }
+  }
+}
+
 impl Default for TimerState {
   fn default() -> Self {
     TimerState {

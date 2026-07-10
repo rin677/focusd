@@ -1,6 +1,9 @@
 use crate::{
   daemon::SOCKET_PATH,
-  timer::state::{TimerSnapShot, TimerState},
+  timer::{
+    engine::{next_session, pause_session, resume_session, start_session, toggle_session},
+    state::{TimerSnapShot, TimerState},
+  },
 };
 use std::{
   io::{BufRead, BufReader, Result, Write},
@@ -38,12 +41,28 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   let mut line = String::new();
   reader.read_line(&mut line)?;
 
-  let s = state.lock().unwrap();
-  let response = if line.trim() == parse_message(Message::GetSession) {
+  let mut s = state.lock().unwrap();
+  let l = line.trim().to_string();
+  let response = if l == parse_message(Message::GetSession) {
     "YES".to_string()
-  } else if line.trim() == parse_message(Message::Running) {
+  } else if l == parse_message(Message::Running) {
     let snapshot = TimerSnapShot::from(&*s);
     serde_json::to_string(&snapshot).unwrap()
+  } else if l == parse_message(Message::StartSession) {
+    start_session(&mut s);
+    "OK".to_string()
+  } else if l == parse_message(Message::PauseSession) {
+    pause_session(&mut s);
+    "OK".to_string()
+  } else if l == parse_message(Message::ResumeSession) {
+    resume_session(&mut s);
+    "OK".to_string()
+  } else if l == parse_message(Message::ToggleSession) {
+    toggle_session(&mut s);
+    "OK".to_string()
+  } else if l == parse_message(Message::NextSession) {
+    next_session(&mut s);
+    "OK".to_string()
   } else {
     "Command not found".to_string()
   };
@@ -51,7 +70,6 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   Ok(())
 }
 
-// TODO: Send command to the daemon
 pub fn send_command(message: Message) -> Result<String> {
   let cmd = parse_message(message);
   let mut stream = UnixStream::connect(SOCKET_PATH)?;
@@ -63,7 +81,8 @@ pub fn send_command(message: Message) -> Result<String> {
   Ok(line)
 }
 
-pub fn get_timer_status() -> Result<()> {
-  // TODO: Get timer status from the daemon
-  Ok(())
+pub fn get_timer_state() -> Result<TimerState> {
+  let m = send_command(Message::GetSession)?;
+  let state: TimerSnapShot = serde_json::from_str(&m)?;
+  Ok(TimerState::from(&state))
 }

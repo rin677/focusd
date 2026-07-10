@@ -12,12 +12,10 @@ use crate::{
   config::settings::create_config_file,
   daemon::run::{ensure_daemon_active, run_daemon},
   stats::calculate::print_stats,
-  timer::state::TimerState,
   utils::ignore::Ignore,
 };
 
 fn main() -> io::Result<()> {
-  let mut state = TimerState::default();
   create_config_file();
 
   let args: Vec<String> = env::args().collect();
@@ -35,12 +33,12 @@ fn main() -> io::Result<()> {
         print_stats();
         Ok(())
       }
-      "tui" => tui::app::main(&mut state),
+      "tui" => tui::app::main(),
       // TODO: Other commands like pause/play/resume to control when playing from daemon
       // TODO: Commands to directly go to specifig tab like history/settings
-      _ => tui::app::main(&mut state),
+      _ => tui::app::main(),
     }
   } else {
-    tui::app::main(&mut state)
+    tui::app::main()
   }
 }

@@ -1,4 +1,5 @@
 use crate::{
+  daemon::commands::get_timer_state,
   throw,
   timer::utils::{name_for_session, time_for_session},
 };
@@ -9,8 +10,6 @@ use std::{
   fs, io,
   path::PathBuf,
 };
-
-use crate::timer::state::TimerState;
 
 #[derive(Debug)]
 pub struct HistoryEntry {
@@ -69,7 +68,8 @@ pub fn get_db() -> io::Result<Connection> {
   Ok(cnn)
 }
 
-fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
+fn add_session_to_db_inner() -> Result<(), Box<dyn std::error::Error>> {
+  let state = get_timer_state()?;
   let completed_duration =
     (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
   if completed_duration < 20 {
@@ -83,13 +83,18 @@ fn add_session_to_db_inner(state: &TimerState) -> Result<(), Box<dyn std::error:
   cnn.execute(
     "INSERT INTO history 
     (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
-    (end_time, planned_duration, completed_duration, sessioin_type),
+    (
+      end_time,
+      planned_duration,
+      completed_duration,
+      sessioin_type,
+    ),
   )?;
   Ok(())
 }
 
-pub fn add_session_to_db(state: &TimerState) {
-  if let Err(e) = add_session_to_db_inner(state) {
+pub fn add_session_to_db() {
+  if let Err(e) = add_session_to_db_inner() {
     println!("{e}")
   }
 }

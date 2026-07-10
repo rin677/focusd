@@ -49,7 +49,7 @@ pub fn toggle_session(state: &mut TimerState) {
 }
 
 pub fn next_session(state: &mut TimerState) {
-  add_session_to_db(state);
+  add_session_to_db();
   show_complete_notification(state);
   state.session_type = next_session_name(state.session_type);
   state.time_remaining = time_for_session(state.session_type);

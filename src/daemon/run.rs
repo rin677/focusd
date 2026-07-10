@@ -4,7 +4,7 @@ use crate::{
     commands::{Message, handle_stream, parse_message},
   },
   throw,
-  timer::state::TimerState,
+  timer::{engine::decrease_sec, state::TimerState},
   utils::ignore::Ignore,
 };
 use std::{
@@ -15,7 +15,7 @@ use std::{
   process::{Command, Stdio},
   sync::{Arc, Mutex},
   thread,
-  time::Duration,
+  time::{Duration, Instant},
 };
 
 pub fn daemon_active() -> bool {
@@ -64,6 +64,25 @@ pub fn run_daemon() {
 
   let listener = UnixListener::bind(SOCKET_PATH).unwrap();
   let timer_state = Arc::new(Mutex::new(TimerState::default()));
+
+  let s = Arc::clone(&timer_state);
+  thread::spawn(move || {
+    let mut state = s.lock().unwrap();
+    let tick_rate = Duration::from_secs(1);
+    let mut last_tick = Instant::now();
+    loop {
+      // let timeout = tick_rate
+      //   .checked_sub(last_tick.elapsed())
+      //   .unwrap_or(Duration::from_secs(0));
+
+      if last_tick.elapsed() >= tick_rate {
+        if state.running {
+          decrease_sec(&mut state);
+        }
+        last_tick = Instant::now();
+      }
+    }
+  });
 
   // Execute every command in different thread so that multiple operations could be done
   for stream in listener.incoming() {
