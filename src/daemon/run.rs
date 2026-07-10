@@ -57,8 +57,10 @@ pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
 }
 
 pub fn run_daemon() {
+  println!("Starting Daemon");
   // Delete the socket path if already exists
   if Path::new(SOCKET_PATH).exists() {
+    println!("Socket already available removing it");
     let _ = fs::remove_file(SOCKET_PATH);
   }
 
@@ -73,6 +75,7 @@ pub fn run_daemon() {
       {
         let mut state = s.lock().unwrap();
         if state.running {
+          println!("Clock is ticking");
           decrease_sec(&mut state);
         }
       }

@@ -43,6 +43,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
   let mut s = state.lock().unwrap();
   let l = line.trim().to_string();
+  println!("Got message {l}");
   let response = if l == parse_message(Message::Running) {
     "YES".to_string()
   } else if l == parse_message(Message::GetSession) {
