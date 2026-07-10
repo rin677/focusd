@@ -20,7 +20,14 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   let percent = (timer_state.time_remaining.as_secs()) as f64
     / (time_for_session(timer_state.session_type).as_secs()) as f64;
   let t = render_time(timer_state);
-  let output = std::fs::read_to_string("resources/coffee/1.txt").unwrap();
+  let frame_index = (std::time::SystemTime::now()
+    .duration_since(std::time::UNIX_EPOCH)
+    .unwrap()
+    .as_millis()
+    / 500)
+    % 5;
+  let coffee_frame = format!("resources/coffee/{}.txt", frame_index + 1);
+  let output = std::fs::read_to_string(&coffee_frame).unwrap();
   frame.render_widget(Paragraph::new(output), art);
 
   let text = big_text(&t);
