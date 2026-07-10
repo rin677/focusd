@@ -1,7 +1,7 @@
 use crate::{
   daemon::{
     SOCKET_PATH,
-    commands::{Message, handle_stream, parse_message},
+    commands::{Message, handle_stream, parse_message, send_command},
   },
   throw,
   timer::{
@@ -16,7 +16,7 @@ use std::{
   io::{BufRead, BufReader, Result, Write},
   os::unix::net::{UnixListener, UnixStream},
   path::Path,
-  process::{Command, Stdio},
+  process::{self, Command, Stdio},
   sync::{Arc, Mutex},
   thread,
   time::Duration,
@@ -60,12 +60,24 @@ pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
   throw!("Daemon not active")
 }
 
+pub fn stop_daemon() {
+  println!("Stopping the daemon");
+  if Path::new(SOCKET_PATH).exists() {
+    fs::remove_file(SOCKET_PATH).ignore();
+  }
+  process::exit(0);
+}
+
 pub fn run_daemon() {
   println!("Starting Daemon");
+  if daemon_active() {
+    println!("Daemon already running stopping it");
+    send_command(Message::StopDaemon).ignore();
+  }
   // Delete the socket path if already exists
   if Path::new(SOCKET_PATH).exists() {
     println!("Socket already available removing it");
-    let _ = fs::remove_file(SOCKET_PATH);
+    fs::remove_file(SOCKET_PATH).ignore();
   }
 
   let listener = UnixListener::bind(SOCKET_PATH).unwrap();

@@ -1,5 +1,5 @@
 use crate::{
-  daemon::SOCKET_PATH,
+  daemon::{SOCKET_PATH, run::stop_daemon},
   timer::{
     engine::{next_session, render_time, reset_session, start_session},
     state::{TimerSnapShot, TimerState},
@@ -24,6 +24,9 @@ pub enum Message {
 
   // Test
   Running,
+
+  //Other
+  StopDaemon,
 }
 
 pub fn parse_message(message: Message) -> String {
@@ -35,6 +38,7 @@ pub fn parse_message(message: Message) -> String {
     Message::NextSession => String::from("NextSession"),
     Message::GetSession => String::from("GetSession"),
     Message::ResetSession => String::from("ResetSession"),
+    Message::StopDaemon => String::from("StopDaemon"),
     Message::Running => String::from("RUNNING"),
   }
 }
@@ -78,6 +82,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   } else if l == parse_message(Message::NextSession) {
     next_session(&mut s);
     format!("{} Session started", name_for_session(s.session_type))
+  } else if l == parse_message(Message::StopDaemon) {
+    stop_daemon();
+    "OK".to_string()
   } else if l == parse_message(Message::ResetSession) {
     reset_session(&mut s);
     format!("{} Session restarted", name_for_session(s.session_type))

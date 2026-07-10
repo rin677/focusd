@@ -28,6 +28,13 @@ fn main() -> io::Result<()> {
     run_daemon();
     return Ok(());
   }
+  if args.iter().any(|a| a == "stop-daemon") {
+    send_command(Message::StopDaemon)
+      .map(|m| println!("{m}"))
+      .ignore();
+    return Ok(());
+  }
+
   ensure_daemon_active(true).ignore();
 
   let lunch_tui = |page| tui::app::main(page);
@@ -57,7 +64,6 @@ fn main() -> io::Result<()> {
         send_command(Message::NextSession).map(|m| println!("{m}"))
       }
       "start" | "start-session" => send_command(Message::StartSession).map(|m| println!("{m}")),
-
       _ => lunch_tui(Pages::Timer),
     }
   } else {
