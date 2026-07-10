@@ -10,7 +10,7 @@ use std::{env, io};
 
 use crate::{
   config::settings::create_config_file,
-  daemon::{ensure_daemon_active, run_daemon},
+  daemon::run::{ensure_daemon_active, run_daemon},
   stats::calculate::print_stats,
   timer::state::TimerState,
   utils::ignore::Ignore,
