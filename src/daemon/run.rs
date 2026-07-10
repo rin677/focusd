@@ -1,5 +1,8 @@
 use crate::{
-  daemon::{SOCKET_PATH, commands::handle_stream},
+  daemon::{
+    SOCKET_PATH,
+    commands::{Message, handle_stream, parse_message},
+  },
   throw,
   timer::state::TimerState,
   utils::ignore::Ignore,
@@ -18,7 +21,8 @@ use std::{
 pub fn daemon_active() -> bool {
   match UnixStream::connect(SOCKET_PATH) {
     Ok(mut stream) => {
-      stream.write_all(b"RUNNING\n").ignore();
+      let cmd = parse_message(Message::GetSession);
+      stream.write_all(format!("{cmd}\n").as_bytes()).ignore();
       let mut reader = BufReader::new(stream);
       let mut line = String::new();
       reader.read_line(&mut line).is_ok() && line.starts_with("YES")
