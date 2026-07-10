@@ -1,7 +1,10 @@
 use crate::{
   daemon::commands::get_timer_state,
   throw,
-  timer::utils::{name_for_session, time_for_session},
+  timer::{
+    state::TimerState,
+    utils::{name_for_session, time_for_session},
+  },
 };
 use chrono::Local;
 use rusqlite::Connection;
@@ -68,8 +71,7 @@ pub fn get_db() -> io::Result<Connection> {
   Ok(cnn)
 }
 
-fn add_session_to_db_inner() -> Result<(), Box<dyn std::error::Error>> {
-  let state = get_timer_state()?;
+pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
   let completed_duration =
     (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
   if completed_duration < 20 {
@@ -91,10 +93,4 @@ fn add_session_to_db_inner() -> Result<(), Box<dyn std::error::Error>> {
     ),
   )?;
   Ok(())
-}
-
-pub fn add_session_to_db() {
-  if let Err(e) = add_session_to_db_inner() {
-    println!("{e}")
-  }
 }

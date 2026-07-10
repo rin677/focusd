@@ -5,6 +5,7 @@ use crate::{
     state::TimerState,
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
+  utils::ignore::Ignore,
 };
 use std::time::Duration;
 
@@ -54,7 +55,7 @@ pub fn reset_session(state: &mut TimerState) {
 }
 
 pub fn next_session(state: &mut TimerState) {
-  add_session_to_db();
+  add_session_to_db(state).ignore();
   show_complete_notification(state);
   state.session_type = next_session_name(state.session_type);
   state.time_remaining = time_for_session(state.session_type);
