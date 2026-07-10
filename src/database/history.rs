@@ -75,6 +75,7 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   let completed_duration =
     (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
   if completed_duration < 20 {
+    println!("Not adding session shorter than 20 seconds to database");
     return Ok(());
   };
   let cnn = get_db()?;
@@ -92,5 +93,6 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
       sessioin_type,
     ),
   )?;
+  println!("Session added to database");
   Ok(())
 }

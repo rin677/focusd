@@ -34,19 +34,8 @@ pub fn render_time(state: &TimerState) -> String {
 }
 
 pub fn start_session(state: &mut TimerState) {
+  state.time_remaining = time_for_session(state.session_type);
   state.running = true
-}
-
-pub fn pause_session(state: &mut TimerState) {
-  state.running = false
-}
-
-pub fn resume_session(state: &mut TimerState) {
-  state.running = true
-}
-
-pub fn toggle_session(state: &mut TimerState) {
-  state.running = !state.running
 }
 
 pub fn reset_session(state: &mut TimerState) {

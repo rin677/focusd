@@ -4,7 +4,11 @@ use crate::{
     commands::{Message, handle_stream, parse_message},
   },
   throw,
-  timer::{engine::decrease_sec, state::TimerState},
+  timer::{
+    engine::{decrease_sec, render_time},
+    state::TimerState,
+    utils::name_for_session,
+  },
   utils::ignore::Ignore,
 };
 use std::{
@@ -75,8 +79,12 @@ pub fn run_daemon() {
       {
         let mut state = s.lock().unwrap();
         if state.running {
-          println!("Clock is ticking");
           decrease_sec(&mut state);
+          println!(
+            "Clock is ticking, {} remain in {}",
+            render_time(&state),
+            name_for_session(state.session_type)
+          );
         }
       }
     }
@@ -89,10 +97,10 @@ pub fn run_daemon() {
         let state = Arc::clone(&timer_state);
         thread::spawn(move || match handle_stream(stream, state) {
           Ok(_) => {}
-          Err(e) => eprintln!("Error occurred {e}"),
+          Err(e) => eprintln!("Error occurred in thread {e}"),
         });
       }
-      Err(e) => eprintln!("Error occurred {e}"),
+      Err(e) => eprintln!("Error occurred in stream {e}"),
     }
   }
 }

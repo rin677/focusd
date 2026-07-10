@@ -1,10 +1,9 @@
 use crate::{
   daemon::SOCKET_PATH,
   timer::{
-    engine::{
-      next_session, pause_session, reset_session, resume_session, start_session, toggle_session,
-    },
+    engine::{next_session, render_time, reset_session, start_session},
     state::{TimerSnapShot, TimerState},
+    utils::name_for_session,
   },
 };
 use std::{
@@ -55,22 +54,33 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
     serde_json::to_string(&snapshot).unwrap()
   } else if l == parse_message(Message::StartSession) {
     start_session(&mut s);
-    "OK".to_string()
-  } else if l == parse_message(Message::PauseSession) {
-    pause_session(&mut s);
-    "OK".to_string()
-  } else if l == parse_message(Message::ResumeSession) {
-    resume_session(&mut s);
-    "OK".to_string()
-  } else if l == parse_message(Message::ToggleSession) {
-    toggle_session(&mut s);
-    "OK".to_string()
+    format!("{} Session started", name_for_session(s.session_type))
+  } else if l == parse_message(Message::PauseSession)
+    || l == parse_message(Message::ResumeSession)
+    || l == parse_message(Message::ToggleSession)
+  {
+    let new_running = if l == parse_message(Message::ResumeSession) {
+      true
+    } else if l == parse_message(Message::ToggleSession) {
+      !s.running
+    } else {
+      false
+    };
+    s.running = new_running;
+
+    let status = if new_running { "resumed" } else { "paused" };
+    format!(
+      "{} {} time remaining: {}",
+      name_for_session(s.session_type),
+      status,
+      render_time(&s)
+    )
   } else if l == parse_message(Message::NextSession) {
     next_session(&mut s);
-    "OK".to_string()
+    format!("{} Session started", name_for_session(s.session_type))
   } else if l == parse_message(Message::ResetSession) {
     reset_session(&mut s);
-    "OK".to_string()
+    format!("{} Session restarted", name_for_session(s.session_type))
   } else {
     "Command not found".to_string()
   };
