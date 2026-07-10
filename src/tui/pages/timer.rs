@@ -10,12 +10,19 @@ use ratatui::{
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
-  let centered = area.centered(Constraint::Max(50), Constraint::Max(7));
-  let layout = Layout::vertical([Constraint::Length(6), Constraint::Max(1)]);
-  let [first, second] = centered.layout(&layout);
+  let centered = area.centered(Constraint::Max(32), Constraint::Max(28));
+  let layout = Layout::vertical([
+    Constraint::Length(20),
+    Constraint::Length(6),
+    Constraint::Max(1),
+  ]);
+  let [art, first, second] = centered.layout(&layout);
   let percent = (timer_state.time_remaining.as_secs()) as f64
     / (time_for_session(timer_state.session_type).as_secs()) as f64;
   let t = render_time(timer_state);
+  let output = std::fs::read_to_string("resources/coffee/1.txt").unwrap();
+  frame.render_widget(Paragraph::new(output), art);
+
   let text = big_text(&t);
   frame.render_widget(Paragraph::new(text).centered(), first);
   let progress = LineGauge::default()
