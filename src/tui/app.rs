@@ -47,10 +47,14 @@ struct App {
   all_pages: Vec<Pages>,
 }
 
-pub fn main() -> io::Result<()> {
+pub fn main(page: Pages) -> io::Result<()> {
   let state = get_timer_state()?;
+  let app_state = AppState {
+    current_page: page,
+    exit: false,
+  };
   let mut app = App {
-    app_state: AppState::default(),
+    app_state,
     timer_state: state,
     all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
   };

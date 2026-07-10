@@ -12,6 +12,7 @@ use crate::{
   config::settings::create_config_file,
   daemon::run::{ensure_daemon_active, run_daemon},
   stats::calculate::print_stats,
+  tui::app::Pages,
   utils::ignore::Ignore,
 };
 
@@ -26,19 +27,21 @@ fn main() -> io::Result<()> {
   }
   ensure_daemon_active(true).ignore();
 
+  let lunch_tui = |page| tui::app::main(page);
   if args.len() > 1 {
     match args[1].as_str() {
-      // FIX: Stats should open stats page not just print the stats
-      "stats" | "stat" => {
+      "print-stats" => {
         print_stats();
         Ok(())
       }
-      "tui" => tui::app::main(),
+      "tui" | "timer" | "home" => lunch_tui(Pages::Timer),
+      "stats" | "stat" => lunch_tui(Pages::Stats),
+      "history" => lunch_tui(Pages::History),
+      "settings" | "config" => lunch_tui(Pages::Settings),
       // TODO: Other commands like pause/play/resume to control when playing from daemon
-      // TODO: Commands to directly go to specifig tab like history/settings
-      _ => tui::app::main(),
+      _ => lunch_tui(Pages::Timer),
     }
   } else {
-    tui::app::main()
+    lunch_tui(Pages::Timer)
   }
 }
