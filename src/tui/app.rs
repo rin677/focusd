@@ -1,12 +1,15 @@
 use crate::{
   daemon::commands::{Message, get_timer_state, send_command},
-  timer::{engine::render_time, utils::name_for_session},
+  timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::pages::{
     history::show_history, settings::show_settings, stats::show_stats, timer::show_timer,
   },
   utils::ignore::Ignore,
 };
-use std::io;
+use std::{
+  io,
+  time::{Duration, Instant},
+};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
@@ -40,12 +43,15 @@ impl Default for AppState {
 
 struct App {
   app_state: AppState,
+  timer_state: TimerState,
   all_pages: Vec<Pages>,
 }
 
 pub fn main() -> io::Result<()> {
+  let state = get_timer_state()?;
   let mut app = App {
     app_state: AppState::default(),
+    timer_state: state,
     all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
   };
   let mut terminal = ratatui::init();
@@ -56,35 +62,36 @@ pub fn main() -> io::Result<()> {
 
 impl App {
   pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
-    // let tick_rate = Duration::from_secs(1);
-    // let mut last_tick = Instant::now();
+    let tick_rate = Duration::from_millis(250);
+    let mut last_tick = Instant::now();
     while !self.app_state.exit {
-      // let timeout = tick_rate
-      //   .checked_sub(last_tick.elapsed())
-      //   .unwrap_or(Duration::from_secs(0));
+      let timeout = tick_rate
+        .checked_sub(last_tick.elapsed())
+        .unwrap_or(Duration::from_secs(0));
 
-      // if last_tick.elapsed() >= tick_rate {
-      //   if self.timer_state.running {
-      //     decrease_sec(self.timer_state);
-      //   }
-      //   last_tick = Instant::now();
-      // }
+      if last_tick.elapsed() >= tick_rate {
+        self.timer_state = get_timer_state()?;
+        last_tick = Instant::now();
+      }
 
       terminal.draw(|frame| self.draw(frame))?;
-      // if event::poll(timeout)? {
-      self.handle_events()?;
-      // }
+      if event::poll(timeout)? {
+        self.handle_events()?;
+      }
     }
     Ok(())
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    let timer_state = get_timer_state().unwrap();
-    let icon = if timer_state.running { "" } else { "" };
+    let icon = if self.timer_state.running {
+      ""
+    } else {
+      ""
+    };
     let right_header_text = format!(
       "Current session: {} - {icon} {}",
-      name_for_session(timer_state.session_type),
-      render_time(&timer_state)
+      name_for_session(self.timer_state.session_type),
+      render_time(&self.timer_state)
     );
     let top_layout = Layout::horizontal([
       Constraint::Fill(0),
@@ -111,10 +118,10 @@ impl App {
 
     let inner_area = main_block.inner(main_area);
     match self.app_state.current_page {
-      Pages::Timer => show_timer(&timer_state, inner_area, frame),
-      Pages::History => show_history(&timer_state, inner_area, frame.buffer_mut()),
-      Pages::Stats => show_stats(&timer_state, inner_area, frame.buffer_mut()),
-      Pages::Settings => show_settings(&timer_state, inner_area, frame.buffer_mut()),
+      Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
+      Pages::History => show_history(&self.timer_state, inner_area, frame.buffer_mut()),
+      Pages::Stats => show_stats(&self.timer_state, inner_area, frame.buffer_mut()),
+      Pages::Settings => show_settings(&self.timer_state, inner_area, frame.buffer_mut()),
     }
   }
 
@@ -140,7 +147,6 @@ impl App {
   }
 
   fn quit(&mut self) {
-    // add_session_to_db();
     self.app_state.exit = true;
   }
 
