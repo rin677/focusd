@@ -10,9 +10,9 @@ use ratatui::{
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
-  let centered = area.centered(Constraint::Max(32), Constraint::Max(28));
+  let centered = area.centered(Constraint::Max(38), Constraint::Max(30));
   let layout = Layout::vertical([
-    Constraint::Length(20),
+    Constraint::Length(23),
     Constraint::Length(6),
     Constraint::Max(1),
   ]);
@@ -25,8 +25,8 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     .unwrap()
     .as_millis()
     / 500)
-    % 5;
-  let coffee_frame = format!("resources/coffee/{}.txt", frame_index + 1);
+    % 4;
+  let coffee_frame = format!("resources/clock/{}.txt", frame_index + 1);
   let output = std::fs::read_to_string(&coffee_frame).unwrap();
   frame.render_widget(Paragraph::new(output), art);
 
