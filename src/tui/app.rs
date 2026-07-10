@@ -1,23 +1,17 @@
-use std::{
-  io,
-  time::{Duration, Instant},
-};
-
 use crate::{
   daemon::commands::{Message, get_timer_state, send_command},
-  database::history::add_session_to_db,
   timer::{engine::render_time, utils::name_for_session},
   tui::pages::{
     history::show_history, settings::show_settings, stats::show_stats, timer::show_timer,
   },
   utils::ignore::Ignore,
 };
+use std::io;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
   layout::{Constraint, Layout},
-  style::Style,
   text::{Line, Text},
   widgets::Block,
 };

@@ -15,13 +15,13 @@ use std::{
   process::{Command, Stdio},
   sync::{Arc, Mutex},
   thread,
-  time::{Duration, Instant},
+  time::Duration,
 };
 
 pub fn daemon_active() -> bool {
   match UnixStream::connect(SOCKET_PATH) {
     Ok(mut stream) => {
-      let cmd = parse_message(Message::GetSession);
+      let cmd = parse_message(Message::Running);
       stream.write_all(format!("{cmd}\n").as_bytes()).ignore();
       let mut reader = BufReader::new(stream);
       let mut line = String::new();
@@ -67,19 +67,14 @@ pub fn run_daemon() {
 
   let s = Arc::clone(&timer_state);
   thread::spawn(move || {
-    let mut state = s.lock().unwrap();
     let tick_rate = Duration::from_secs(1);
-    let mut last_tick = Instant::now();
     loop {
-      // let timeout = tick_rate
-      //   .checked_sub(last_tick.elapsed())
-      //   .unwrap_or(Duration::from_secs(0));
-
-      if last_tick.elapsed() >= tick_rate {
+      thread::sleep(tick_rate);
+      {
+        let mut state = s.lock().unwrap();
         if state.running {
           decrease_sec(&mut state);
         }
-        last_tick = Instant::now();
       }
     }
   });

@@ -3,7 +3,7 @@ use crate::{
   notification::show_complete_notification,
   timer::{
     state::TimerState,
-    utils::{min_2_digit, name_for_session, next_session as next_session_name, time_for_session},
+    utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
 };
 use std::time::Duration;
