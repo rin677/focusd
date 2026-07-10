@@ -9,11 +9,27 @@ pub enum SessionType {
   LongBreak,
 }
 
-#[derive(Serialize, Deserialize)]
 pub struct TimerState {
   pub running: bool,
   pub time_remaining: Duration,
   pub session_type: SessionType,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TimerSnapShot {
+  pub running: bool,
+  pub time_remaining: Duration,
+  pub session_type: SessionType,
+}
+
+impl From<&TimerState> for TimerSnapShot {
+  fn from(t: &TimerState) -> Self {
+    Self {
+      running: t.running,
+      time_remaining: t.time_remaining,
+      session_type: t.session_type,
+    }
+  }
 }
 
 impl Default for TimerState {

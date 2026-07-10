@@ -10,7 +10,7 @@ use std::{env, io};
 
 use crate::{
   config::settings::create_config_file,
-  daemon::{ensure_daemon_active, run_daemon, send_command},
+  daemon::{ensure_daemon_active, run_daemon},
   stats::calculate::print_stats,
   timer::state::TimerState,
   utils::ignore::Ignore,
@@ -22,7 +22,6 @@ fn main() -> io::Result<()> {
 
   let args: Vec<String> = env::args().collect();
 
-  // TODO: Daemon flag should start
   if args.iter().any(|a| a == "--daemon") {
     run_daemon();
     return Ok(());

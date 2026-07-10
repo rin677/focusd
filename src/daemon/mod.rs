@@ -1,4 +1,8 @@
-use crate::{throw, timer::state::TimerState, utils::ignore::Ignore};
+use crate::{
+  throw,
+  timer::state::{TimerSnapShot, TimerState},
+  utils::ignore::Ignore,
+};
 use std::{
   fs,
   io::{BufRead, BufReader, Result, Write},
@@ -10,7 +14,7 @@ use std::{
   time::Duration,
 };
 
-const SOCKET_PATH: &str = "/tmp/focusd.sock";
+pub const SOCKET_PATH: &str = "/tmp/focusd.sock";
 
 pub fn daemon_active() -> bool {
   match UnixStream::connect(SOCKET_PATH) {
@@ -54,12 +58,15 @@ fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> Resul
   let mut line = String::new();
   reader.read_line(&mut line)?;
 
+  let s = state.lock().unwrap();
   let response = {
     match line.trim() {
-      "hello" => "hi",
-      "what" => "what",
-      "RUNNING" => "YES",
-      _ => "Sorry i don't know what are you saying",
+      "RUNNING" => "YES".to_string(),
+      "GET_STATUS" => {
+        let snapshot = TimerSnapShot::from(&*s);
+        serde_json::to_string(&snapshot).unwrap()
+      }
+      _ => "Command not found".to_string(),
     }
   };
   stream.write_all(format!("{}\n", response).as_bytes())?;
