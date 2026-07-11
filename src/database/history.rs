@@ -1,12 +1,12 @@
 use crate::{
-  daemon::commands::get_timer_state,
   throw,
   timer::{
-    state::TimerState,
-    utils::{name_for_session, time_for_session},
+    state::{SessionType, TimerState},
+    utils::{get_session_type, name_for_session, time_for_session},
   },
+  utils::ignore::Ignore,
 };
-use chrono::Local;
+use chrono::{DateTime, Local};
 use rusqlite::Connection;
 use std::{
   env::{self},
@@ -14,12 +14,11 @@ use std::{
   path::PathBuf,
 };
 
-#[derive(Debug)]
 pub struct HistoryEntry {
-  pub end_time: u64,
-  pub planned_duration: u64,
-  pub completed_duration: u64,
-  pub session_type: u64,
+  pub end_time: DateTime<Local>,
+  pub planned_duration: i64,
+  pub completed_duration: i64,
+  pub session_type: SessionType,
 }
 
 fn history_db_path() -> Option<PathBuf> {
@@ -90,4 +89,49 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   )?;
   println!("Session added to database");
   Ok(())
+}
+
+pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
+  let db = get_db()?;
+  let mut stmt = db
+    .prepare("SELECT end_time, planned_duration, completed_duration, session_type FROM history")
+    .ignore();
+
+  let history_itr = stmt
+    .query_map([], |row| {
+      let s: String = row.get(3)?;
+      Ok(HistoryEntry {
+        end_time: row.get(0)?,
+        planned_duration: row.get(1)?,
+        completed_duration: row.get(2)?,
+        session_type: get_session_type(&s),
+      })
+    })
+    .ignore();
+  let mut history: Vec<HistoryEntry> = Vec::new();
+  for history_item in history_itr {
+    let h = history_item.ignore();
+    history.push(h);
+  }
+
+  Ok(history)
+}
+
+pub fn get_full_history_no_err() -> Vec<HistoryEntry> {
+  match get_full_history() {
+    Ok(h) => h,
+    Err(_) => Vec::new() as Vec<HistoryEntry>,
+  }
+}
+
+pub fn print_history() {
+  let all_history = get_full_history_no_err();
+  for history in all_history {
+    println!(
+      "{}, target: {} mins, completed: {} mins",
+      name_for_session(history.session_type),
+      history.planned_duration / 60,
+      history.completed_duration / 60
+    );
+  }
 }

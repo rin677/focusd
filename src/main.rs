@@ -14,6 +14,7 @@ use crate::{
     commands::{Message, send_command},
     run::{ensure_daemon_active, run_daemon},
   },
+  database::history::print_history,
   stats::calculate::print_stats,
   tui::app::Pages,
   utils::ignore::Ignore,
@@ -43,6 +44,10 @@ fn main() -> io::Result<()> {
       // Commands to print stuff
       "print-stats" => {
         print_stats();
+        Ok(())
+      }
+      "print-history" => {
+        print_history();
         Ok(())
       }
       "state" | "status" => send_command(Message::GetSession).map(|m| println!("{m}")),

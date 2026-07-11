@@ -10,6 +10,14 @@ pub fn name_for_session<'a>(session: SessionType) -> &'a str {
   }
 }
 
+pub fn get_session_type(name: &str) -> SessionType {
+  match name.to_lowercase().as_str() {
+    "work" => SessionType::Work,
+    "short break" => SessionType::ShortBreak,
+    _ => SessionType::LongBreak,
+  }
+}
+
 pub fn time_for_session(session: SessionType) -> Duration {
   let config = get_config();
   match session {
