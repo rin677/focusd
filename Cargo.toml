@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-color-eyre = "0.6.5"
 crossterm = "0.29.0"
 ratatui = "0.30.2"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -17,5 +16,5 @@ serde_json = "1.0"
 
 [features]
 default = ["bundled-sqlite"]
-bundled-sqlite = ["rusqlite/bundled", "rusqlite/chrono"]
-dev-build = ["rusqlite/chrono"]
+bundled-sqlite = ["rusqlite/bundled"]
+dev-build = []
