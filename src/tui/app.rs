@@ -4,7 +4,7 @@ use crate::{
   tui::pages::{
     history::show_history, settings::show_settings, stats::show_stats, timer::show_timer,
   },
-  utils::ignore::Ignore,
+  utils::ignore::IgnoreType,
 };
 use std::{
   io,
@@ -142,9 +142,9 @@ impl App {
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
       KeyCode::Char('q') => self.quit(),
-      KeyCode::Char(' ') => send_command(Message::ToggleSession).ignore(),
-      KeyCode::Char('n') => send_command(Message::NextSession).ignore(),
-      KeyCode::Char('r') => send_command(Message::ResetSession).ignore(),
+      KeyCode::Char(' ') => send_command(Message::ToggleSession).ignore_type(),
+      KeyCode::Char('n') => send_command(Message::NextSession).ignore_type(),
+      KeyCode::Char('r') => send_command(Message::ResetSession).ignore_type(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       _ => {}
