@@ -123,7 +123,7 @@ impl App {
     let inner_area = main_block.inner(main_area);
     match self.app_state.current_page {
       Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
-      Pages::History => show_history(&self.timer_state, inner_area, frame.buffer_mut()),
+      Pages::History => show_history(inner_area, frame),
       Pages::Stats => show_stats(&self.timer_state, inner_area, frame.buffer_mut()),
       Pages::Settings => show_settings(&self.timer_state, inner_area, frame.buffer_mut()),
     }
