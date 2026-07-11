@@ -2,7 +2,10 @@ use crate::{
   daemon::commands::{Message, get_timer_state, send_command},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::pages::{
-    history::show_history, settings::show_settings, stats::show_stats, timer::show_timer,
+    history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
+    settings::show_settings,
+    stats::show_stats,
+    timer::show_timer,
   },
   utils::ignore::IgnoreType,
 };
@@ -27,9 +30,10 @@ pub enum Pages {
   Settings,
 }
 
-struct AppState {
+pub struct AppState {
   exit: bool,
   current_page: Pages,
+  pub max_history_index: usize,
 }
 
 impl Default for AppState {
@@ -37,6 +41,7 @@ impl Default for AppState {
     AppState {
       exit: false,
       current_page: Pages::Timer,
+      max_history_index: 10,
     }
   }
 }
@@ -49,10 +54,8 @@ struct App {
 
 pub fn main(page: Pages) -> io::Result<()> {
   let state = get_timer_state()?;
-  let app_state = AppState {
-    current_page: page,
-    exit: false,
-  };
+  let mut app_state = AppState::default();
+  app_state.current_page = page;
   let mut app = App {
     app_state,
     timer_state: state,
@@ -123,7 +126,7 @@ impl App {
     let inner_area = main_block.inner(main_area);
     match self.app_state.current_page {
       Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
-      Pages::History => show_history(inner_area, frame),
+      Pages::History => show_history(inner_area, frame, &mut self.app_state),
       Pages::Stats => show_stats(&self.timer_state, inner_area, frame.buffer_mut()),
       Pages::Settings => show_settings(&self.timer_state, inner_area, frame.buffer_mut()),
     }
@@ -147,6 +150,8 @@ impl App {
       KeyCode::Char('r') => send_command(Message::ResetSession).ignore_type(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
+      KeyCode::Char('j') => self.history_down(),
+      KeyCode::Char('k') => self.history_up(),
       _ => {}
     }
   }
@@ -166,6 +171,19 @@ impl App {
       let m = new_index % total_pages as isize;
       let abs_new_index: usize = (total_pages as isize + m) as usize % total_pages;
       self.app_state.current_page = self.all_pages[abs_new_index]
+    }
+  }
+
+  fn history_up(&self) {
+    if self.app_state.current_page == Pages::History && get_history_index() > 0 {
+      scroll_history_up();
+    }
+  }
+  fn history_down(&self) {
+    if self.app_state.current_page == Pages::History
+      && get_history_index() < self.app_state.max_history_index
+    {
+      scroll_history_down();
     }
   }
 }
