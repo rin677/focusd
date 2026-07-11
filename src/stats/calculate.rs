@@ -10,6 +10,7 @@
 
 use crate::database::history::get_db;
 
+#[derive(PartialEq)]
 pub enum DurType {
   Today,
   Week,
@@ -17,9 +18,11 @@ pub enum DurType {
   All,
 }
 
-// FIX: Only calculate work sessions here
-fn get_sql_condition<'a>(dur: DurType) -> &'a str {
-  match dur {
+fn get_sql_condition(dur: DurType, work: bool) -> String {
+  if work && dur == DurType::All {
+    return "WHERE session_type='Work'".to_string();
+  }
+  let conditional = match dur {
     DurType::Today => "WHERE date(end_time) = date('now')",
     DurType::Week => {
       "WHERE date(end_time) >= date('now', 'weekday 1', '-7 days')
@@ -27,6 +30,12 @@ fn get_sql_condition<'a>(dur: DurType) -> &'a str {
     }
     DurType::Month => "WHERE strftime('%Y-%m', end_time) = strftime('%Y-%m', 'now')",
     DurType::All => "",
+  };
+
+  if work {
+    format!("{conditional} AND session_type='Work'")
+  } else {
+    conditional.to_string()
   }
 }
 
@@ -35,7 +44,7 @@ fn get_total_time(dur: DurType) -> isize {
     Ok(db) => db,
     Err(_) => return 0,
   };
-  let r#where = get_sql_condition(dur);
+  let r#where = get_sql_condition(dur, true);
   let sql = format!("SELECT SUM(completed_duration) FROM history {where}");
   db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0) / 60
 }
