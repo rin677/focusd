@@ -24,12 +24,12 @@ fn get_sql_condition(dur: DurType, work: bool) -> String {
     return "WHERE session_type='Work'".to_string();
   }
   let conditional = match dur {
-    DurType::Today => "WHERE date(end_time) = date('now')",
+    DurType::Today => "WHERE date(end_time) = date('now', 'localtime')",
     DurType::Week => {
-      "WHERE date(end_time) >= date('now', 'weekday 1', '-7 days')
-       AND date(end_time) <  date('now', 'weekday 1')"
+      "WHERE date(end_time) >= date('now', 'localtime', 'weekday 1', '-7 days')
+       AND date(end_time) <  date('now', 'localtime', 'weekday 1')"
     }
-    DurType::Month => "WHERE strftime('%Y-%m', end_time) = strftime('%Y-%m', 'now')",
+    DurType::Month => "WHERE strftime('%Y-%m', end_time) = strftime('%Y-%m', 'now', 'localtime')",
     DurType::All => "",
   };
 
