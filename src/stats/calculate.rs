@@ -3,8 +3,8 @@
 // - [x] Calculate focus time this week
 // - [x] Calculate focus time this month
 // - [x] Calculate total focus time
-// - [ ] Calculate completed sessions
-// - [ ] Calculate completion rate
+// - [x] Calculate completed sessions
+// - [x] Calculate completion rate
 // - [ ] Calculate current streak
 // - [ ] Calculate longest streak
 
@@ -49,6 +49,24 @@ fn get_total_time(dur: DurType) -> isize {
   db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0) / 60
 }
 
+fn get_completed_sessions() -> i32 {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return 0,
+  };
+
+  db.query_row("SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration", [], |row| row.get(0)).unwrap_or(0)
+}
+
+fn get_completion_rate() -> f32 {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return 0_f32,
+  };
+
+  db.query_row("SELECT 100.0 * (SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration) / (SELECT COUNT(*) FROM history WHERE session_type='Work')", [], |row| row.get(0)).unwrap_or(0_f32)
+}
+
 pub fn print_stats() {
   println!("Total focused {} mins", get_total_time(DurType::All));
   println!(
@@ -63,4 +81,6 @@ pub fn print_stats() {
     "Total focused (today) {} mins",
     get_total_time(DurType::Today)
   );
+  println!("Completted sessions {}", get_completed_sessions());
+  println!("Completion rate {}%", get_completion_rate());
 }
