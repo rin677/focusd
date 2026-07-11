@@ -82,16 +82,11 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   let now = Local::now();
   let end_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
   let planned_duration = time_for_session(state.session_type).as_secs() as i64;
-  let sessioin_type = name_for_session(state.session_type);
+  let session_type = name_for_session(state.session_type);
   cnn.execute(
     "INSERT INTO history 
     (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
-    (
-      end_time,
-      planned_duration,
-      completed_duration,
-      sessioin_type,
-    ),
+    (end_time, planned_duration, completed_duration, session_type),
   )?;
   println!("Session added to database");
   Ok(())
