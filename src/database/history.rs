@@ -50,6 +50,8 @@ pub fn get_db() -> io::Result<Connection> {
     Err(_) => throw!("Database could not be loaded"),
   };
 
+  cnn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;").ignore();
+
   // TODO: Session tags
   let s = cnn.execute(
     "CREATE TABLE IF NOT EXISTS history(
