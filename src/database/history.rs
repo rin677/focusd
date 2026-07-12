@@ -4,7 +4,10 @@ use crate::{
     state::{SessionType, TimerState},
     utils::{get_session_type, name_for_session, time_for_session},
   },
-  utils::{ignore::Ignore, times_ago::times_ago},
+  utils::{
+    ignore::Ignore,
+    times_ago::{render_duration, times_ago},
+  },
 };
 use chrono::{DateTime, Local, NaiveDateTime};
 use rusqlite::Connection;
@@ -132,8 +135,8 @@ pub fn print_history() {
     println!(
       "{} - target: {} mins, completed: {} mins, {}.",
       name_for_session(history.session_type),
-      history.planned_duration / 60,
-      history.completed_duration / 60,
+      render_duration(history.planned_duration),
+      render_duration(history.completed_duration),
       times_ago(&history.end_time)
     );
   }

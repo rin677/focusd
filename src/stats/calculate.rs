@@ -8,7 +8,10 @@
 // - [x] Calculate current streak
 // - [ ] Calculate longest streak
 
-use crate::database::history::{HistoryEntry, get_db, get_full_history_no_err};
+use crate::{
+  database::history::{HistoryEntry, get_db, get_full_history_no_err},
+  utils::times_ago::render_duration,
+};
 use chrono::{Duration, Local};
 
 #[derive(PartialEq)]
@@ -47,7 +50,7 @@ fn get_total_time(dur: DurType) -> isize {
   };
   let r#where = get_sql_condition(dur, true);
   let sql = format!("SELECT SUM(completed_duration) FROM history {where}");
-  db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0) / 60
+  db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0)
 }
 
 fn get_completed_sessions() -> i32 {
@@ -88,18 +91,21 @@ fn get_current_streak(all_history: Vec<HistoryEntry>) -> i32 {
 }
 
 pub fn print_stats() {
-  println!("Total focused {} mins", get_total_time(DurType::All));
   println!(
-    "Total focused (this month) {} mins",
-    get_total_time(DurType::Month)
+    "Total focused {}",
+    render_duration(get_total_time(DurType::All))
   );
   println!(
-    "Total focused (this week) {} mins",
-    get_total_time(DurType::Week)
+    "Total focused (this month) {}",
+    render_duration(get_total_time(DurType::Month))
   );
   println!(
-    "Total focused (today) {} mins",
-    get_total_time(DurType::Today)
+    "Total focused (this week) {}",
+    render_duration(get_total_time(DurType::Week))
+  );
+  println!(
+    "Total focused (today) {}",
+    render_duration(get_total_time(DurType::Today))
   );
   println!("Completted sessions {}", get_completed_sessions());
   println!("Completion rate {}%", get_completion_rate());
