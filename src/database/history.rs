@@ -29,7 +29,7 @@ fn history_db_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
 
   //FIX: before release should be changed into history.db
-  let path = ".local/share/focusd/db/history-dev.db";
+  let path = ".local/share/focusd/db/history-test.db";
   Some(PathBuf::from(home).join(path))
 }
 
