@@ -127,8 +127,8 @@ impl App {
     match self.app_state.current_page {
       Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
       Pages::History => show_history(inner_area, frame, &mut self.app_state),
-      Pages::Stats => show_stats(inner_area, frame.buffer_mut()),
-      Pages::Settings => show_settings(inner_area, frame.buffer_mut()),
+      Pages::Stats => show_stats(inner_area, frame),
+      Pages::Settings => show_settings(inner_area, frame),
     }
   }
 
