@@ -2,7 +2,8 @@ use crate::{
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
-    get_daily_work_durations_7_days, get_daily_work_durations_n_days, get_total_time,
+    get_daily_work_durations_7_days, get_daily_work_durations_n_days,
+    get_session_type_distribution, get_total_time,
   },
   utils::times_ago::render_duration,
 };
@@ -16,23 +17,33 @@ use ratatui::{
 
 pub fn show_stats(area: Rect, frame: &mut Frame) {
   let layout = Layout::vertical([
-    Constraint::Max(2), // Total ...
-    Constraint::Max(3), // streek and completion rate
-    Constraint::Fill(1), // Heatmap
+    Constraint::Max(4),  // Total (block border + 2 content)
+    Constraint::Max(5),  // Streak (block border + 3 content)
+    Constraint::Fill(1), // Heatmap | Pie chart
     Constraint::Fill(1), // Bar chart
   ])
   .spacing(1);
 
-  let [first, second, heatmap_area, chart_area] = area.layout(&layout);
+  let [first, second, mid, chart_area] = area.layout(&layout);
   redner_total_row(first, frame);
   render_second_row(second, frame);
+
+  let mid_split =
+    Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).spacing(1);
+  let [heatmap_area, pie_area] = mid.layout(&mid_split);
   render_heatmap(heatmap_area, frame);
+  render_pie_chart(pie_area, frame);
+
   render_bar_chart(chart_area, frame);
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
+  let block = Block::bordered().title("Streak & Completion");
+  let inner = block.inner(area);
+  frame.render_widget(block, area);
+
   let layout = Layout::vertical([Constraint::Max(1), Constraint::Max(1)]);
-  let [streek, completion] = area.layout(&layout);
+  let [streek, completion] = inner.layout(&layout);
   let streek_layout = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
   let completion_layout =
     Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
@@ -40,13 +51,11 @@ fn render_second_row(area: Rect, frame: &mut Frame) {
   let [streek_left, streek_right] = streek.layout(&streek_layout);
   let [completion_left, completion_right] = completion.layout(&completion_layout);
 
-  // let curretn_streak = get_current_streak(all_history)
   let h = get_full_history_no_err();
   let current_streak = Paragraph::new(format!("Streak: {}", get_current_streak(h)));
-  let completion_rate = Paragraph::new(format!("Completion rate: {}", get_completion_rate()));
-  let completed_sessions =
-    Paragraph::new(format!("Completed sessions: {}", get_completed_sessions()));
-  let longest_streak = Paragraph::new(format!("Longest streak: {}", "TODO"));
+  let completion_rate = Paragraph::new(format!("Completion: {:.0}%", get_completion_rate()));
+  let completed_sessions = Paragraph::new(format!("Sessions: {}", get_completed_sessions()));
+  let longest_streak = Paragraph::new(format!("Longest: {}", "TODO"));
 
   frame.render_widget(current_streak, streek_left);
   frame.render_widget(completion_rate, completion_left);
@@ -55,19 +64,42 @@ fn render_second_row(area: Rect, frame: &mut Frame) {
 }
 
 fn render_bar_chart(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Daily Focus (7 days)");
+  let bar_width: u16 = 3;
+  let bar_gap: u16 = 1;
+  let cols_per_bar = (bar_width + bar_gap) as usize;
+
+  let block = Block::bordered().title("Daily Focus");
   let inner = block.inner(area);
   frame.render_widget(block, area);
 
-  let data = get_daily_work_durations_7_days();
-  let max_value = data.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
+  let days = ((inner.width as usize) / cols_per_bar).max(7).min(90);
+
+  let (data, max_value) = if days == 7 {
+    let d = get_daily_work_durations_7_days();
+    let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
+    (d.into_iter().map(|(l, v)| (l, v)).collect::<Vec<_>>(), max)
+  } else {
+    let d = get_daily_work_durations_n_days(days);
+    let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
+    (
+      d.into_iter()
+        .map(|(date_str, v)| {
+          let label = date_str[8..10].trim_start_matches('0').to_string();
+          (label, v)
+        })
+        .collect::<Vec<_>>(),
+      max,
+    )
+  };
+
   let bars: Vec<Bar> = data
     .into_iter()
-    .map(|(label, value)| {
-      Bar::with_label(label, value).text_value(fmt_duration_short(value))
-    })
+    .map(|(label, value)| Bar::with_label(label, value).text_value(fmt_duration_short(value)))
     .collect();
-  let chart = BarChart::new(bars).max(max_value).bar_width(5).bar_gap(1);
+  let chart = BarChart::new(bars)
+    .max(max_value)
+    .bar_width(bar_width)
+    .bar_gap(bar_gap);
   frame.render_widget(chart, inner);
 }
 
@@ -121,6 +153,36 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
   frame.render_widget(p, inner);
 }
 
+fn render_pie_chart(area: Rect, frame: &mut Frame) {
+  let block = Block::bordered().title("Session Types");
+  let inner = block.inner(area);
+  frame.render_widget(block, area);
+
+  let dist = get_session_type_distribution();
+  if dist.is_empty() {
+    return;
+  }
+
+  let colors = [
+    Color::Cyan,
+    Color::Yellow,
+    Color::Magenta,
+    Color::Green,
+    Color::Red,
+  ];
+  let mut lines = Vec::new();
+
+  for (i, (name, pct)) in dist.iter().enumerate() {
+    let color = colors[i % colors.len()];
+    let dot = Span::styled("●", Style::new().fg(color));
+    let text = Span::raw(format!(" {}: {:.0}%", name, pct));
+    lines.push(Line::from(vec![dot, text]));
+  }
+
+  let p = Paragraph::new(Text::from(lines));
+  frame.render_widget(p, inner);
+}
+
 fn heat_color(intensity: usize) -> Color {
   match intensity {
     0 => Color::Reset,
@@ -148,6 +210,10 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
+  let block = Block::bordered().title("Time Summary");
+  let inner = block.inner(area);
+  frame.render_widget(block, area);
+
   let total_layout = Layout::horizontal([
     Constraint::Percentage(25),
     Constraint::Percentage(25),
@@ -160,7 +226,7 @@ fn redner_total_row(area: Rect, frame: &mut Frame) {
     total_this_week_area,
     total_this_month_area,
     total_all_time_area,
-  ] = area.layout(&total_layout);
+  ] = inner.layout(&total_layout);
   let total_today = Paragraph::new(format!(
     "Today\n{}",
     render_duration(get_total_time(DurType::Today))

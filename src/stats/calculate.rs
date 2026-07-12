@@ -137,6 +137,44 @@ pub fn get_daily_work_durations_7_days() -> Vec<(String, u64)> {
     .collect()
 }
 
+pub fn get_session_type_distribution() -> Vec<(String, f64)> {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return vec![],
+  };
+
+  let total: f64 = db
+    .query_row("SELECT COUNT(*) FROM history", [], |row| row.get(0))
+    .unwrap_or(0) as f64;
+
+  if total == 0.0 {
+    return vec![];
+  }
+
+  let mut stmt = match db.prepare("SELECT session_type, COUNT(*) FROM history GROUP BY session_type ORDER BY session_type") {
+    Ok(stmt) => stmt,
+    Err(_) => return vec![],
+  };
+
+  let mut result = Vec::new();
+  if let Ok(iter) = stmt.query_map([], |row| {
+    Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+  }) {
+    for row in iter.flatten() {
+      let pct = (row.1 as f64 / total) * 100.0;
+      let name = match row.0.as_str() {
+        "Work" => "Work".to_string(),
+        "ShortBreak" => "Short Break".to_string(),
+        "LongBreak" => "Long Break".to_string(),
+        s => s.to_string(),
+      };
+      result.push((name, pct));
+    }
+  }
+
+  result
+}
+
 pub fn get_longest_session() {
   // TODO:: Implement this
 }
