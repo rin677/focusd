@@ -28,12 +28,8 @@ pub struct HistoryEntry {
 fn history_db_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
 
-  #[cfg(feature = "dev-build")]
+  //FIX: before release should be changed into history.db
   let path = ".local/share/focusd/db/history-dev.db";
-
-  #[cfg(not(feature = "dev-build"))]
-  let path = ".local/share/focusd/db/history.db";
-
   Some(PathBuf::from(home).join(path))
 }
 

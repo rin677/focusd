@@ -47,6 +47,10 @@ fn render_second_row(area: Rect, frame: &mut Frame) {
   frame.render_widget(longest_streak, streek_right);
 }
 
+fn render_gaph() {
+  // sqlite> SELECT date(end_time) AS day, SUM(completed_duration) AS completed FROM history WHERE end_time >= datetime('now', '-7 days') GROUP BY date(end_time) ORDER BY day;
+}
+
 fn redner_total_row(area: Rect, frame: &mut Frame) {
   let total_layout = Layout::horizontal([
     Constraint::Percentage(25),
