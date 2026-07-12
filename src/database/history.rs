@@ -133,7 +133,7 @@ pub fn print_history() {
   let all_history = get_full_history_no_err();
   for history in all_history {
     println!(
-      "{} - target: {} mins, completed: {} mins, {}.",
+      "{} - target: {}, completed: {}, {}.",
       name_for_session(history.session_type),
       render_duration(history.planned_duration),
       render_duration(history.completed_duration),

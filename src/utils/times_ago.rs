@@ -28,10 +28,16 @@ where
   } else if s < 60 * 60 {
     let m = s / 60;
     let sec = s % 60;
-    format!("{} m, {} s", m, sec,)
+    if sec == 0 {
+      return format!("{m} m");
+    }
+    format!("{} m, {} s", m, sec)
   } else {
     let h = s / 3600;
     let m = (s % 3600) / 60;
+    if m == 0 {
+      return format!("{h} h");
+    }
     format!("{} h, {} m", h, m,)
   }
 }
