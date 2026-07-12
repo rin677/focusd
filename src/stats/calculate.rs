@@ -1,18 +1,8 @@
-// :TODO:
-// - [x] Calculate focus time today
-// - [x] Calculate focus time this week
-// - [x] Calculate focus time this month
-// - [x] Calculate total focus time
-// - [x] Calculate completed sessions
-// - [x] Calculate completion rate
-// - [x] Calculate current streak
-// - [ ] Calculate longest streak
-
 use crate::{
   database::history::{HistoryEntry, get_db, get_full_history_no_err},
   utils::times_ago::render_duration,
 };
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, NaiveDate};
 
 #[derive(PartialEq)]
 pub enum DurType {
@@ -88,6 +78,67 @@ pub fn get_current_streak(all_history: Vec<HistoryEntry>) -> i32 {
   }
 
   streak
+}
+
+pub fn get_daily_work_durations_n_days(n: usize) -> Vec<(String, u64)> {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return vec![],
+  };
+
+  let days_ago = n - 1;
+  let sql = format!(
+    "SELECT date(end_time) AS day, SUM(completed_duration)
+     FROM history
+     WHERE session_type='Work'
+       AND date(end_time) >= date('now', '-{days_ago} days', 'localtime')
+       AND date(end_time) <= date('now', 'localtime')
+     GROUP BY date(end_time)
+     ORDER BY day"
+  );
+
+  let mut stmt = match db.prepare(&sql) {
+    Ok(stmt) => stmt,
+    Err(_) => return vec![],
+  };
+
+  let mut rows: Vec<(String, i64)> = Vec::new();
+  if let Ok(iter) = stmt.query_map([], |row| {
+    Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+  }) {
+    for row in iter.flatten() {
+      rows.push(row);
+    }
+  }
+
+  let today = Local::now().date_naive();
+  let mut result = Vec::new();
+  for i in (0..n).rev() {
+    let day = today - Duration::days(i as i64);
+    let day_str = day.format("%Y-%m-%d").to_string();
+    let value = rows
+      .iter()
+      .find(|(d, _)| *d == day_str)
+      .map(|(_, v)| *v as u64)
+      .unwrap_or(0);
+    result.push((day_str, value));
+  }
+
+  result
+}
+
+pub fn get_daily_work_durations_7_days() -> Vec<(String, u64)> {
+  get_daily_work_durations_n_days(7)
+    .into_iter()
+    .map(|(d, v)| {
+      let date = NaiveDate::parse_from_str(&d, "%Y-%m-%d").unwrap_or(Local::now().date_naive());
+      (date.format("%a").to_string(), v)
+    })
+    .collect()
+}
+
+pub fn get_longest_session() {
+  // TODO:: Implement this
 }
 
 pub fn print_stats() {
