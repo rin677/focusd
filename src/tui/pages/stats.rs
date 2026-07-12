@@ -12,7 +12,7 @@ use ratatui::{
   layout::{Constraint, Layout, Rect},
   style::{Color, Style},
   text::{Line, Span, Text},
-  widgets::{Bar, BarChart, Block, Paragraph},
+  widgets::{Bar, BarChart, Block, Padding, Paragraph},
 };
 use tui_piechart::{PieChart, PieSlice, symbols};
 
@@ -39,7 +39,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Streak & Completion");
+  let block = Block::bordered().title("Streak & Completion").padding(Padding::horizontal(1));
   let inner = block.inner(area);
   frame.render_widget(block, area);
 
@@ -110,22 +110,26 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
   let inner = block.inner(area);
   frame.render_widget(block, area);
 
+  if inner.height < 6 {
+    return;
+  }
+
   let data = get_daily_work_durations_n_days(28);
   if data.is_empty() {
     return;
   }
 
   let max_val = data.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
-  let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  let days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
-  let header: Line = Line::from(
-    std::iter::once("     ".to_string())
-      .chain(days.iter().map(|d| format!(" {:>3}", d)))
-      .collect::<Vec<_>>()
-      .join(""),
-  );
-
-  let mut lines = vec![header];
+  let mut header = vec![Span::raw(format!("{:>5} ", ""))];
+  for (i, d) in days.iter().enumerate() {
+    header.push(Span::raw(format!("{:>2}", d)));
+    if i < days.len() - 1 {
+      header.push(Span::raw(" "));
+    }
+  }
+  let mut lines = vec![Line::from(header)];
 
   for week in (0..4).rev() {
     let week_label = if week == 0 {
@@ -134,7 +138,7 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
       format!("W-{}", week)
     };
     let mut spans = vec![Span::raw(format!("{:>5} ", week_label))];
-    for (di, _day_name) in days.iter().enumerate() {
+    for (di, _) in days.iter().enumerate() {
       let idx = (3 - week) * 7 + di;
       if idx < data.len() {
         let (_, val) = &data[idx];
@@ -145,11 +149,15 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
         };
         let bg = heat_color(intensity);
         spans.push(Span::styled("  ", Style::new().bg(bg)));
-        spans.push(Span::raw(" "));
+        if di < days.len() - 1 {
+          spans.push(Span::raw(" "));
+        }
       }
     }
     lines.push(Line::from(spans));
   }
+
+  lines.push(Line::from(""));
 
   let mut indicator = vec![Span::raw("Less ")];
   for i in 0..=4 {
@@ -165,7 +173,7 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
 
 fn render_pie_chart(area: Rect, frame: &mut Frame) {
   let dist = get_session_type_distribution();
-  if dist.is_empty() {
+  if dist.is_empty() || area.height < 5 {
     return;
   }
 
@@ -202,13 +210,7 @@ fn heat_color(intensity: usize) -> Color {
 
 fn fmt_duration_short(seconds: u64) -> String {
   if seconds >= 3600 {
-    let h = seconds / 3600;
-    let m = (seconds % 3600) / 60;
-    if m > 0 {
-      format!("{}h {:02}m", h, m)
-    } else {
-      format!("{}h", h)
-    }
+    format!("{}h", (seconds as f64 / 3600.0).round() as u64)
   } else if seconds >= 60 {
     format!("{}m", seconds / 60)
   } else {
