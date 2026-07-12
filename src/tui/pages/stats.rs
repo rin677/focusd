@@ -53,10 +53,11 @@ fn render_second_row(area: Rect, frame: &mut Frame) {
   let [completion_left, completion_right] = completion.layout(&completion_layout);
 
   let h = get_full_history_no_err();
-  let current_streak = Paragraph::new(format!("Streak: {}", get_current_streak(h)));
-  let completion_rate = Paragraph::new(format!("Completion: {:.0}%", get_completion_rate()));
-  let completed_sessions = Paragraph::new(format!("Sessions: {}", get_completed_sessions()));
-  let longest_streak = Paragraph::new(format!("Longest: {}", "TODO"));
+  let current_streak = Paragraph::new(format!("Current Streak: {}", get_current_streak(h)));
+  let completion_rate = Paragraph::new(format!("Completion rate: {:.0}%", get_completion_rate()));
+  let completed_sessions =
+    Paragraph::new(format!("Completed sessions: {}", get_completed_sessions()));
+  let longest_streak = Paragraph::new(format!("Longest streak: {}", "TODO"));
 
   frame.render_widget(current_streak, streek_left);
   frame.render_widget(completion_rate, completion_left);
@@ -149,6 +150,14 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
     }
     lines.push(Line::from(spans));
   }
+
+  let mut indicator = vec![Span::raw("Less ")];
+  for i in 0..=4 {
+    indicator.push(Span::styled("  ", Style::new().bg(heat_color(i))));
+    indicator.push(Span::raw(" "));
+  }
+  indicator.push(Span::raw(" More"));
+  lines.push(Line::from(indicator));
 
   let p = Paragraph::new(Text::from(lines));
   frame.render_widget(p, inner);
