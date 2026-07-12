@@ -1,5 +1,8 @@
 use crate::{
-  stats::calculate::{DurType, get_total_time},
+  database::history::get_full_history_no_err,
+  stats::calculate::{
+    DurType, get_completed_sessions, get_completion_rate, get_current_streak, get_total_time,
+  },
   utils::times_ago::render_duration,
 };
 use ratatui::{
@@ -12,10 +15,36 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
   let layout = Layout::vertical([
     Constraint::Max(2), // Total ...
     Constraint::Max(3), // streek and completion rate
-  ]);
+  ])
+  .spacing(2);
 
   let [first, second] = area.layout(&layout);
   redner_total_row(first, frame);
+  render_second_row(second, frame);
+}
+
+fn render_second_row(area: Rect, frame: &mut Frame) {
+  let layout = Layout::vertical([Constraint::Max(1), Constraint::Max(1)]);
+  let [streek, completion] = area.layout(&layout);
+  let streek_layout = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
+  let completion_layout =
+    Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
+
+  let [streek_left, streek_right] = streek.layout(&streek_layout);
+  let [completion_left, completion_right] = completion.layout(&completion_layout);
+
+  // let curretn_streak = get_current_streak(all_history)
+  let h = get_full_history_no_err();
+  let current_streak = Paragraph::new(format!("Streak: {}", get_current_streak(h)));
+  let completion_rate = Paragraph::new(format!("Completion rate: {}", get_completion_rate()));
+  let completed_sessions =
+    Paragraph::new(format!("Completed sessions: {}", get_completed_sessions()));
+  let longest_streak = Paragraph::new(format!("Longest streak: {}", "TODO"));
+
+  frame.render_widget(current_streak, streek_left);
+  frame.render_widget(completion_rate, completion_left);
+  frame.render_widget(completed_sessions, completion_right);
+  frame.render_widget(longest_streak, streek_right);
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
