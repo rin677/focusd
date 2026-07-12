@@ -24,20 +24,20 @@ where
   let s: u64 = seconds.try_into().unwrap();
 
   if s < 60 {
-    format!("{s} s")
+    format!("{s}s")
   } else if s < 60 * 60 {
     let m = s / 60;
     let sec = s % 60;
     if sec == 0 {
-      return format!("{m} m");
+      return format!("{m}m");
     }
-    format!("{} m, {} s", m, sec)
+    format!("{}m, {}s", m, sec)
   } else {
     let h = s / 3600;
     let m = (s % 3600) / 60;
     if m == 0 {
       return format!("{h} h");
     }
-    format!("{} h, {} m", h, m,)
+    format!("{}h, {}m", h, m,)
   }
 }
