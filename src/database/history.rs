@@ -50,8 +50,6 @@ pub fn get_db() -> io::Result<Connection> {
     Err(_) => throw!("Database could not be loaded"),
   };
 
-  cnn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;").ignore();
-
   // TODO: Session tags
   let s = cnn.execute(
     "CREATE TABLE IF NOT EXISTS history(
@@ -100,27 +98,22 @@ pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
     .prepare("SELECT end_time, planned_duration, completed_duration, session_type FROM history ORDER BY datetime(end_time) DESC")
     .ignore();
 
-  let history_itr = stmt
-    .query_map([], |row| {
-      let s: String = row.get(3)?;
-      let e: String = row.get(0)?;
-      let time = NaiveDateTime::parse_from_str(&e, TIME_PATTERN)
-        .unwrap()
-        .and_local_timezone(Local)
-        .single()
-        .unwrap();
-      Ok(HistoryEntry {
-        end_time: time,
-        planned_duration: row.get(1)?,
-        completed_duration: row.get(2)?,
-        session_type: get_session_type(&s),
-      })
-    })
-    .ignore();
   let mut history: Vec<HistoryEntry> = Vec::new();
-  for history_item in history_itr {
-    let h = history_item.ignore();
-    history.push(h);
+  let mut rows = stmt.query([]).ignore();
+  while let Some(row) = rows.next().ignore() {
+    let s: String = row.get(3).ignore();
+    let e: String = row.get(0).ignore();
+    let time = NaiveDateTime::parse_from_str(&e, TIME_PATTERN)
+      .unwrap()
+      .and_local_timezone(Local)
+      .single()
+      .unwrap();
+    history.push(HistoryEntry {
+      end_time: time,
+      planned_duration: row.get(1).ignore(),
+      completed_duration: row.get(2).ignore(),
+      session_type: get_session_type(&s),
+    });
   }
 
   Ok(history)
