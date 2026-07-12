@@ -14,6 +14,7 @@ use ratatui::{
   text::{Line, Span, Text},
   widgets::{Bar, BarChart, Block, Paragraph},
 };
+use tui_piechart::{PieChart, PieSlice, symbols};
 
 pub fn show_stats(area: Rect, frame: &mut Frame) {
   let layout = Layout::vertical([
@@ -154,10 +155,6 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
 }
 
 fn render_pie_chart(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Session Types");
-  let inner = block.inner(area);
-  frame.render_widget(block, area);
-
   let dist = get_session_type_distribution();
   if dist.is_empty() {
     return;
@@ -170,17 +167,18 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     Color::Green,
     Color::Red,
   ];
-  let mut lines = Vec::new();
+  let slices: Vec<PieSlice> = dist
+    .iter()
+    .enumerate()
+    .map(|(i, (name, val))| PieSlice::new(name, *val, colors[i % colors.len()]))
+    .collect();
 
-  for (i, (name, pct)) in dist.iter().enumerate() {
-    let color = colors[i % colors.len()];
-    let dot = Span::styled("●", Style::new().fg(color));
-    let text = Span::raw(format!(" {}: {:.0}%", name, pct));
-    lines.push(Line::from(vec![dot, text]));
-  }
-
-  let p = Paragraph::new(Text::from(lines));
-  frame.render_widget(p, inner);
+  let chart = PieChart::new(slices)
+    .pie_char(symbols::PIE_CHAR_BLOCK)
+    .block(Block::bordered().title("Session Types"))
+    .show_legend(true)
+    .show_percentages(false);
+  frame.render_widget(chart, area);
 }
 
 fn heat_color(intensity: usize) -> Color {

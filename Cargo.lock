@@ -723,6 +723,7 @@ dependencies = [
  "serde",
  "serde_json",
  "toml",
+ "tui-piechart",
 ]
 
 [[package]]
@@ -2114,6 +2115,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "tui-piechart"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "852c46a27659b68ebd4852c20f1e6c723235b0e7f04588527f051a19e866a856"
+dependencies = [
+ "ratatui",
 ]
 
 [[package]]
