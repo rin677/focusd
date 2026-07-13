@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::{config::settings::get_config, timer::state::SessionType};
+use crate::{
+  config::settings::{POMODORO_PRESET, get_config},
+  timer::state::SessionType,
+};
 
 pub fn name_for_session<'a>(session: SessionType) -> &'a str {
   match session {
@@ -20,10 +23,16 @@ pub fn get_session_type(name: &str) -> SessionType {
 
 pub fn time_for_session(session: SessionType) -> Duration {
   let config = get_config();
+  let preset = config
+    .presets
+    .get(&config.active_preset)
+    .copied()
+    .unwrap_or(POMODORO_PRESET);
+
   match session {
-    SessionType::Work => Duration::from_mins(config.work_duration),
-    SessionType::ShortBreak => Duration::from_mins(config.short_break_duration),
-    SessionType::LongBreak => Duration::from_mins(config.long_break_duration),
+    SessionType::Work => Duration::from_mins(preset.work_minutes),
+    SessionType::ShortBreak => Duration::from_mins(preset.short_break_minutes),
+    SessionType::LongBreak => Duration::from_mins(preset.long_breka_minutes),
   }
 }
 

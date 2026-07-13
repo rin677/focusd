@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
+  collections::HashMap,
   env::{self},
   fs, io,
   path::PathBuf,
@@ -7,23 +8,44 @@ use std::{
 
 use crate::throw;
 
-// TODO: allow selecting preset
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+pub struct Preset {
+  pub work_minutes: u64,
+  pub short_break_minutes: u64,
+  pub long_breka_minutes: u64,
+  pub sessions_before_long_break: u64,
+}
+
+pub const POMODORO_PRESET: Preset = Preset {
+  work_minutes: 25,
+  short_break_minutes: 5,
+  long_breka_minutes: 15,
+  sessions_before_long_break: 4,
+};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-  pub num_session: u64,
-  pub short_break_duration: u64,
-  pub long_break_duration: u64,
-  pub work_duration: u64,
+  pub active_preset: String,
+  pub presets: HashMap<String, Preset>,
   pub show_notifications: bool,
 }
 
 impl Default for Config {
   fn default() -> Self {
+    let mut presets: HashMap<String, Preset> = HashMap::new();
+    presets.insert(String::from("pomodoro"), POMODORO_PRESET);
+    presets.insert(
+      String::from("deep_work"),
+      Preset {
+        work_minutes: 50,
+        short_break_minutes: 10,
+        long_breka_minutes: 30,
+        sessions_before_long_break: 4,
+      },
+    );
     Self {
-      num_session: 4,
-      short_break_duration: 5,
-      long_break_duration: 15,
-      work_duration: 25,
+      active_preset: "pomodoro".to_string(),
+      presets,
       show_notifications: true,
     }
   }
