@@ -2,7 +2,7 @@ use crate::timer::utils::time_for_session;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum SessionType {
   Work,
   ShortBreak,
@@ -13,6 +13,7 @@ pub struct TimerState {
   pub running: bool,
   pub time_remaining: Duration,
   pub session_type: SessionType,
+  pub session_number: u64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -20,6 +21,7 @@ pub struct TimerSnapShot {
   pub running: bool,
   pub time_remaining: Duration,
   pub session_type: SessionType,
+  pub session_number: u64,
 }
 
 impl From<&TimerState> for TimerSnapShot {
@@ -28,6 +30,7 @@ impl From<&TimerState> for TimerSnapShot {
       running: t.running,
       time_remaining: t.time_remaining,
       session_type: t.session_type,
+      session_number: t.session_number,
     }
   }
 }
@@ -38,6 +41,7 @@ impl From<&TimerSnapShot> for TimerState {
       running: t.running,
       time_remaining: t.time_remaining,
       session_type: t.session_type,
+      session_number: t.session_number,
     }
   }
 }
@@ -48,6 +52,7 @@ impl Default for TimerState {
       running: false,
       time_remaining: time_for_session(SessionType::Work),
       session_type: SessionType::Work,
+      session_number: 1,
     }
   }
 }

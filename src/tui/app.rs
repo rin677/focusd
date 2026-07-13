@@ -1,4 +1,5 @@
 use crate::{
+  config::settings::get_crr_preset,
   daemon::commands::{Message, get_timer_state, send_command},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::pages::{
@@ -101,10 +102,13 @@ impl App {
     } else {
       ""
     };
+    let preset = get_crr_preset();
     let right_header_text = format!(
-      "Current session: {} - {icon} {}",
+      "{} {}/{}  {icon} {}",
       name_for_session(self.timer_state.session_type),
-      render_time(&self.timer_state)
+      self.timer_state.session_number,
+      preset.sessions_before_long_break,
+      render_time(&self.timer_state),
     );
     let top_layout = Layout::horizontal([
       Constraint::Fill(0),

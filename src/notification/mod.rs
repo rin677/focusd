@@ -18,7 +18,7 @@ pub fn show_complete_notification(state: &TimerState) {
       .body(&format!(
         "Congrulations in completing timer for {} minutes, Now it's time for {}",
         time_for_session(state.session_type).as_secs() / 60,
-        name_for_session(next_session_name(state.session_type))
+        name_for_session(next_session_name(state.session_type, state.session_number))
       ))
       .show()
       .ignore();

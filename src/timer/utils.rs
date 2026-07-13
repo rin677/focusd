@@ -1,9 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-  config::settings::{POMODORO_PRESET, get_config},
-  timer::state::SessionType,
-};
+use crate::{config::settings::get_crr_preset, timer::state::SessionType};
 
 pub fn name_for_session<'a>(session: SessionType) -> &'a str {
   match session {
@@ -22,12 +19,7 @@ pub fn get_session_type(name: &str) -> SessionType {
 }
 
 pub fn time_for_session(session: SessionType) -> Duration {
-  let config = get_config();
-  let preset = config
-    .presets
-    .get(&config.active_preset)
-    .copied()
-    .unwrap_or(POMODORO_PRESET);
+  let preset = get_crr_preset();
 
   match session {
     SessionType::Work => Duration::from_mins(preset.work_minutes),
@@ -36,11 +28,16 @@ pub fn time_for_session(session: SessionType) -> Duration {
   }
 }
 
-pub fn next_session(session: SessionType) -> SessionType {
-  // TODO: handle long break later
-
+pub fn next_session(session: SessionType, prev_session_number: u64) -> SessionType {
   match session {
-    SessionType::Work => SessionType::ShortBreak,
+    SessionType::Work => {
+      let preset = get_crr_preset();
+      if preset.sessions_before_long_break == prev_session_number {
+        SessionType::LongBreak
+      } else {
+        SessionType::ShortBreak
+      }
+    }
     SessionType::ShortBreak => SessionType::Work,
     SessionType::LongBreak => SessionType::Work,
   }

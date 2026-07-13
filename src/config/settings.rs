@@ -84,6 +84,15 @@ pub fn get_config() -> Config {
   Config::default()
 }
 
+pub fn get_crr_preset() -> Preset {
+  let config = get_config();
+  config
+    .presets
+    .get(&config.active_preset)
+    .copied()
+    .unwrap_or(POMODORO_PRESET)
+}
+
 pub fn create_config_file() {
   let Some(path) = config_path() else { return };
   // TODO: create better config with commnet explaining what each key does

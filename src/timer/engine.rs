@@ -1,8 +1,9 @@
 use crate::{
+  config::settings::get_crr_preset,
   database::history::add_session_to_db,
   notification::show_complete_notification,
   timer::{
-    state::TimerState,
+    state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
   utils::ignore::Ignore,
@@ -46,6 +47,15 @@ pub fn reset_session(state: &mut TimerState) {
 pub fn next_session(state: &mut TimerState) {
   add_session_to_db(state).ignore();
   show_complete_notification(state);
-  state.session_type = next_session_name(state.session_type);
+  state.session_type = next_session_name(state.session_type, state.session_number);
+  if state.session_type == SessionType::Work {
+    let preset = get_crr_preset();
+    state.session_number = if preset.sessions_before_long_break == state.session_number {
+      1
+    } else {
+      state.session_number + 1
+    }
+  }
+
   state.time_remaining = time_for_session(state.session_type);
 }
