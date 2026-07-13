@@ -3,7 +3,7 @@ use crate::{
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::pages::{
     history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
-    settings::show_settings,
+    // settings::show_settings,
     stats::show_stats,
     timer::show_timer,
   },
@@ -27,7 +27,8 @@ pub enum Pages {
   Timer,
   Stats,
   History,
-  Settings,
+  // TODO: Settings page
+  // Settings,
 }
 
 pub struct AppState {
@@ -59,7 +60,12 @@ pub fn main(page: Pages) -> io::Result<()> {
   let mut app = App {
     app_state,
     timer_state: state,
-    all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
+    all_pages: vec![
+      Pages::Timer,
+      Pages::Stats,
+      Pages::History,
+      // Pages::Settings,
+    ],
   };
   let mut terminal = ratatui::init();
   let result = app.run(&mut terminal);
@@ -128,7 +134,7 @@ impl App {
       Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
       Pages::History => show_history(inner_area, frame, &mut self.app_state),
       Pages::Stats => show_stats(inner_area, frame),
-      Pages::Settings => show_settings(inner_area, frame),
+      // Pages::Settings => show_settings(inner_area, frame),
     }
   }
 

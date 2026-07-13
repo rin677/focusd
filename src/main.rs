@@ -56,7 +56,7 @@ fn main() -> io::Result<()> {
       "tui" | "timer" | "home" => lunch_tui(Pages::Timer),
       "stats" | "stat" => lunch_tui(Pages::Stats),
       "history" => lunch_tui(Pages::History),
-      "settings" | "config" => lunch_tui(Pages::Settings),
+      // "settings" | "config" => lunch_tui(Pages::Settings),
 
       // Commands to change state of timer
       "pause" | "pause-session" => send_command(Message::PauseSession).map(|m| println!("{m}")),
