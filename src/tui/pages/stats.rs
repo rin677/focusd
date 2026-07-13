@@ -17,29 +17,50 @@ use ratatui::{
 use tui_piechart::{PieChart, PieSlice, symbols};
 
 pub fn show_stats(area: Rect, frame: &mut Frame) {
-  let layout = Layout::vertical([
-    Constraint::Max(4),  // Total (block border + 2 content)
-    Constraint::Max(5),  // Streak (block border + 3 content)
-    Constraint::Fill(1), // Heatmap | Pie chart
-    Constraint::Fill(1), // Bar chart
-  ])
-  .spacing(1);
+  let show_bar_chart = area.height > 15;
+  let show_pie_chart = area.height > 25;
+  let mut constraints: Vec<Constraint> = vec![
+    Constraint::Max(4), // Total
+    Constraint::Max(4), // Streak
+  ];
 
-  let [first, second, mid, chart_area] = area.layout(&layout);
+  if show_bar_chart {
+    constraints.push(Constraint::Fill(1));
+  }
+  if show_pie_chart {
+    constraints.push(Constraint::Fill(1));
+  }
+
+  let layout = Layout::vertical(constraints).spacing(1);
+
+  let l = area.layout_vec(&layout);
+
+  let first = l[0];
+  let second = l[1];
   redner_total_row(first, frame);
   render_second_row(second, frame);
 
-  let mid_split =
-    Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).spacing(1);
-  let [heatmap_area, pie_area] = mid.layout(&mid_split);
-  render_heatmap(heatmap_area, frame);
-  render_pie_chart(pie_area, frame);
+  if show_bar_chart {
+    let mid = l[2];
+    if show_pie_chart {
+      let chart_area = l[3];
 
-  render_bar_chart(chart_area, frame);
+      let mid_split =
+        Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).spacing(1);
+      let [heatmap_area, pie_area] = mid.layout(&mid_split);
+      render_heatmap(heatmap_area, frame);
+      render_pie_chart(pie_area, frame);
+      render_bar_chart(chart_area, frame);
+    } else {
+      render_bar_chart(mid, frame);
+    }
+  }
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Streak & Completion").padding(Padding::horizontal(1));
+  let block = Block::bordered()
+    .title("Streak & Completion")
+    .padding(Padding::horizontal(1));
   let inner = block.inner(area);
   frame.render_widget(block, area);
 
@@ -110,10 +131,6 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
   let inner = block.inner(area);
   frame.render_widget(block, area);
 
-  if inner.height < 6 {
-    return;
-  }
-
   let data = get_daily_work_durations_n_days(28);
   if data.is_empty() {
     return;
@@ -173,7 +190,7 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
 
 fn render_pie_chart(area: Rect, frame: &mut Frame) {
   let dist = get_session_type_distribution();
-  if dist.is_empty() || area.height < 5 {
+  if dist.is_empty() {
     return;
   }
 
