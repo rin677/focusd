@@ -35,6 +35,37 @@ fn main() -> io::Result<()> {
       .ignore();
     return Ok(());
   }
+  // Don't enable daemon if just help tag
+  if args.iter().any(|a| a == "--help") {
+    println!(
+      "Usage: focusd [command]
+
+  Commands:
+    TUI commands
+      tui|timer|home     Lunch TUI in timer page (just running `focusd` also opens this page
+      stats|stat         Lunch TUI in stats page
+      history            Lunch TUI in history page
+
+    Commands to change timer state:
+      pause|pause-session                      Pause timer if running
+      resume|resume-session                    Resume session if paused
+      toggle|toggle-session                    Toggle between running and paused state
+      reset|stop|reset-session|stop-session    Stop session if running
+      next|next-session|skip|skip-session      Skip to next session
+      start|start-session                      Start the session
+    
+
+    Commands to print:
+      print-stats
+      print-history
+      state|status        Show timer status in JSON format
+
+    Daemon commands:
+      --daemon                 Run daemon in background
+      stop-daemon              Stop daemon if running"
+    );
+    return Ok(());
+  }
 
   ensure_daemon_active(true).ignore();
 
