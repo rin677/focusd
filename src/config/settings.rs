@@ -6,7 +6,7 @@ use std::{
   path::PathBuf,
 };
 
-use crate::throw;
+use crate::{throw, utils::profile::Profile};
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Preset {
@@ -54,12 +54,8 @@ impl Default for Config {
 fn config_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
 
-  #[cfg(feature = "dev-build")]
-  let path = ".config/focusd/config-dev.toml";
-
-  #[cfg(not(feature = "dev-build"))]
-  let path = ".config/focusd/config.toml";
-
+  let profile = Profile::current();
+  let path = profile.config_path();
   Some(PathBuf::from(home).join(path))
 }
 

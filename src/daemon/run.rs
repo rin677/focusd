@@ -1,7 +1,7 @@
 use crate::{
   daemon::{
-    SOCKET_PATH,
     commands::{Message, handle_stream, parse_message, send_command},
+    socket_path,
   },
   throw,
   timer::{
@@ -23,7 +23,7 @@ use std::{
 };
 
 pub fn daemon_active() -> bool {
-  match UnixStream::connect(SOCKET_PATH) {
+  match UnixStream::connect(socket_path()) {
     Ok(mut stream) => {
       let cmd = parse_message(Message::Running);
       stream.write_all(format!("{cmd}\n").as_bytes()).ignore();
@@ -62,8 +62,9 @@ pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
 
 pub fn stop_daemon() {
   println!("Stopping the daemon");
-  if Path::new(SOCKET_PATH).exists() {
-    fs::remove_file(SOCKET_PATH).ignore();
+  let sp = socket_path();
+  if Path::new(sp).exists() {
+    fs::remove_file(sp).ignore();
   }
   process::exit(0);
 }
@@ -75,12 +76,13 @@ pub fn run_daemon() {
     send_command(Message::StopDaemon).ignore();
   }
   // Delete the socket path if already exists
-  if Path::new(SOCKET_PATH).exists() {
+  let sp = socket_path();
+  if Path::new(sp).exists() {
     println!("Socket already available removing it");
-    fs::remove_file(SOCKET_PATH).ignore();
+    fs::remove_file(sp).ignore();
   }
 
-  let listener = UnixListener::bind(SOCKET_PATH).unwrap();
+  let listener = UnixListener::bind(sp).unwrap();
   let timer_state = Arc::new(Mutex::new(TimerState::default()));
 
   let s = Arc::clone(&timer_state);

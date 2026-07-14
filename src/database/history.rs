@@ -6,6 +6,7 @@ use crate::{
   },
   utils::{
     ignore::Ignore,
+    profile::Profile,
     times_ago::{render_duration, times_ago},
   },
 };
@@ -28,8 +29,8 @@ pub struct HistoryEntry {
 fn history_db_path() -> Option<PathBuf> {
   let home = env::var_os("HOME")?;
 
-  //FIX: before release should be changed into history.db
-  let path = ".local/share/focusd/db/history-test.db";
+  let profile = Profile::current();
+  let path = profile.db_path();
   Some(PathBuf::from(home).join(path))
 }
 

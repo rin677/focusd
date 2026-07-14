@@ -1,5 +1,5 @@
 use crate::{
-  daemon::{SOCKET_PATH, run::stop_daemon},
+  daemon::{socket_path, run::stop_daemon},
   timer::{
     engine::{next_session, render_time, reset_session, start_session},
     state::{TimerSnapShot, TimerState},
@@ -97,7 +97,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
 pub fn send_command(message: Message) -> Result<String> {
   let cmd = parse_message(message);
-  let mut stream = UnixStream::connect(SOCKET_PATH)?;
+  let mut stream = UnixStream::connect(socket_path())?;
   stream.write_all(format!("{}\n", cmd).as_bytes())?;
 
   let mut reader = BufReader::new(stream);
