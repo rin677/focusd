@@ -6,7 +6,7 @@ A beautiful terminal pomodoro timer with daemon, waybar integration and interact
 
 ## Why Build Another Pomodoro Timer??
 
-I know lots of pomodoro timer exists for terminal and for waybar. But I wanted to build my own just to learn rust. And this project has been made while learning rust.
+I know lots of pomodoro timer exists for terminal and for waybar. But none of them have all those features: waybar integration, nice TUI, history, statistics, streak. I decided to build my one to learn rust.
 
 ## Features
 
@@ -65,6 +65,62 @@ For TUI those are the keymaps:
 - `[` to go to next page.
 - `]` to go to previous page.
 - `j`/`k` to scroll in history page.
+
+### Shell Aliases
+
+You can setup alias for bash/zsh like this to use it quickly.
+
+```bash
+alias pomo='focusd'
+
+```
+
+### Setting Hyprland Keybinds
+
+If you are on hyprland keymap can be setup like this:
+
+```lua
+hl.bind("SUPER + P", hl.dsp.exec_cmd("focusd toggle"), {descriptatio = "Pomodoro toggle"})
+hl.bind("SUPER + N", hl.dsp.exec_cmd("focusd next"), {descriptatio = "Pomodoro next"})
+```
+
+If old `.conf` file
+
+```conf
+bindd = SUPER, P, Pomodoro toggle, exec, focusd next
+```
+
+### Building Custom Menu with Walker
+
+If you are using walker as launcher and menu, I recommend creating a picker menu to quickly execute different commands instead of setting different keybinds.
+
+```bash
+#!/usr/bin/env bash
+
+choice=$(printf '%s\n' \
+  ' Start' \
+  ' Pause' \
+  ' Resume' \
+  ' Toggle' \
+  ' Reset' \
+  '󰒭 Next' \
+  ' Stats' \
+  ' History' \
+  '󰧨 TUI' \
+  | walker --dmenu -p "focusd:")
+
+case "$choice" in
+  ' Start') focusd start ;;
+  ' Pause') focusd pause ;;
+  ' Resume') focusd resume ;;
+  ' Toggle') focusd toggle ;;
+  ' Reset') focusd reset ;;
+  '󰒭 Next') focusd next ;;
+  ' Stats') xdg-terminal-exec focusd stats ;;
+  ' History') xdg-terminal-exec focusd history ;;
+  '󰧨 TUI') xdg-terminal-exec focusd ;;
+esac
+```
 
 ## Configuration
 
@@ -165,7 +221,7 @@ Example:
 }
 ```
 
-## Road Map
+## Roadmap
 
 This project is far from perfect and I will keep improving this. Here are some of the planned features.
 
