@@ -6,6 +6,7 @@ mod stats;
 mod timer;
 mod tui;
 mod utils;
+mod waybar;
 use std::{env, io};
 
 use crate::{
@@ -81,7 +82,10 @@ fn main() -> io::Result<()> {
         print_history();
         Ok(())
       }
-      "state" | "status" => send_command(Message::GetSession).map(|m| println!("{m}")),
+      "state" | "status" => {
+        waybar::status();
+        Ok(())
+      }
 
       // Commands to open TUI in specific pages
       "tui" | "timer" | "home" => lunch_tui(Pages::Timer),
