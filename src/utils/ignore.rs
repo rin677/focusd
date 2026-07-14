@@ -19,7 +19,7 @@ impl<T, E> Ignore for Result<T, E> {
   fn ignore(self) -> T {
     match self {
       Ok(value) => value,
-      Err(_err) => panic!("ignored error"),
+      Err(_) => unreachable!(),
     }
   }
 }
