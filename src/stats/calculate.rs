@@ -151,7 +151,9 @@ pub fn get_session_type_distribution() -> Vec<(String, f64)> {
     return vec![];
   }
 
-  let mut stmt = match db.prepare("SELECT session_type, COUNT(*) FROM history GROUP BY session_type ORDER BY session_type") {
+  let mut stmt = match db.prepare(
+    "SELECT session_type, COUNT(*) FROM history GROUP BY session_type ORDER BY session_type",
+  ) {
     Ok(stmt) => stmt,
     Err(_) => return vec![],
   };
@@ -175,8 +177,36 @@ pub fn get_session_type_distribution() -> Vec<(String, f64)> {
   result
 }
 
-pub fn get_longest_session() {
-  // TODO:: Implement this
+pub fn get_longest_streak() -> i32 {
+  let history = get_full_history_no_err();
+  if history.is_empty() {
+    return 0;
+  }
+
+  let mut days: Vec<NaiveDate> = history
+    .iter()
+    .filter(|h| h.session_type == crate::timer::state::SessionType::Work)
+    .map(|h| h.end_time.date_naive())
+    .collect::<std::collections::HashSet<_>>()
+    .into_iter()
+    .collect();
+
+  days.sort_unstable_by(|a, b| b.cmp(a));
+
+  let mut longest = 0;
+  let mut current = 1;
+
+  for i in 1..days.len() {
+    if days[i - 1] - days[i] == Duration::days(1) {
+      current += 1;
+    } else {
+      longest = longest.max(current);
+      current = 1;
+    }
+  }
+  longest = longest.max(current);
+
+  longest
 }
 
 pub fn print_stats() {
@@ -201,4 +231,5 @@ pub fn print_stats() {
 
   let history = get_full_history_no_err();
   println!("Current streek {}", get_current_streak(history));
+  println!("Longest streek {}", get_longest_streak());
 }

@@ -2,7 +2,7 @@ use crate::{
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
-    get_daily_work_durations_7_days, get_daily_work_durations_n_days,
+    get_daily_work_durations_7_days, get_daily_work_durations_n_days, get_longest_streak,
     get_session_type_distribution, get_total_time,
   },
   utils::times_ago::render_duration,
@@ -78,7 +78,7 @@ fn render_second_row(area: Rect, frame: &mut Frame) {
   let completion_rate = Paragraph::new(format!("Completion rate: {:.0}%", get_completion_rate()));
   let completed_sessions =
     Paragraph::new(format!("Completed sessions: {}", get_completed_sessions()));
-  let longest_streak = Paragraph::new(format!("Longest streak: {}", "TODO"));
+  let longest_streak = Paragraph::new(format!("Longest streak: {}", get_longest_streak()));
 
   frame.render_widget(current_streak, streek_left);
   frame.render_widget(completion_rate, completion_left);
