@@ -14,7 +14,8 @@ I know lots of pomodoro timer exists for terminal and for waybar. But I wanted t
 - Lightning fast (written in rust)
 - Long running daemon so it continues in background even if TUI is closed
 - Configuration and custom presets
-- See history and stats
+- Full history of all sessions
+- Detailed statistics and streak to keep you motivated
 - Notification in timer completion
 - Synced state between different TUIs.
 
@@ -40,8 +41,8 @@ After focusd is installed it can be launched with command `focusd`, which opens 
 
 Those commands can also be seen by running `focusd --help`
 
-- `stats` - Lunch TUI in stats page.
-- `history` - Lunch TUI in history page.
+- `stats` - Launch TUI in stats page.
+- `history` - Launch TUI in history page.
 - `pause` - Pause the timer if running.
 - `toggle` - Toggle the timer.
 - `reset` - Reset current session.

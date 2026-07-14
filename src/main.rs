@@ -43,9 +43,9 @@ fn main() -> io::Result<()> {
 
   Commands:
     TUI commands
-      tui|timer|home     Lunch TUI in timer page (just running `focusd` also opens this page
-      stats|stat         Lunch TUI in stats page
-      history            Lunch TUI in history page
+      tui|timer|home     Launch TUI in timer page (just running `focusd` also opens this page
+      stats|stat         Launch TUI in stats page
+      history            Launch TUI in history page
 
     Commands to change timer state:
       pause|pause-session                      Pause timer if running
@@ -70,7 +70,7 @@ fn main() -> io::Result<()> {
 
   ensure_daemon_active(true).ignore();
 
-  let lunch_tui = |page| tui::app::main(page);
+  let launch_tui = |page| tui::app::main(page);
   if args.len() > 1 {
     match args[1].as_str() {
       // Commands to print stuff
@@ -88,10 +88,10 @@ fn main() -> io::Result<()> {
       }
 
       // Commands to open TUI in specific pages
-      "tui" | "timer" | "home" => lunch_tui(Pages::Timer),
-      "stats" | "stat" => lunch_tui(Pages::Stats),
-      "history" => lunch_tui(Pages::History),
-      // "settings" | "config" => lunch_tui(Pages::Settings),
+      "tui" | "timer" | "home" => launch_tui(Pages::Timer),
+      "stats" | "stat" => launch_tui(Pages::Stats),
+      "history" => launch_tui(Pages::History),
+      // "settings" | "config" => launch_tui(Pages::Settings),
 
       // Commands to change state of timer
       "pause" | "pause-session" => send_command(Message::PauseSession).map(|m| println!("{m}")),
@@ -104,9 +104,9 @@ fn main() -> io::Result<()> {
         send_command(Message::NextSession).map(|m| println!("{m}"))
       }
       "start" | "start-session" => send_command(Message::StartSession).map(|m| println!("{m}")),
-      _ => lunch_tui(Pages::Timer),
+      _ => launch_tui(Pages::Timer),
     }
   } else {
-    lunch_tui(Pages::Timer)
+    launch_tui(Pages::Timer)
   }
 }
