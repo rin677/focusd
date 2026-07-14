@@ -8,7 +8,7 @@ windows:
       layout: main-vertical
       panes:
         -
-        - focusd --daemon
+        - focusd-dev --daemon
         - Build: fd -e rs | entr -r cargo build --no-default-features --features dev-build
   - SQL: sqlite3 ~/.local/share/focusd/db/history-dev.db
   - misc:
