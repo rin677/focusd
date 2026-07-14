@@ -78,13 +78,13 @@ show_notifications = true # Show notification when session ends
 [presets.pomodoro]
 work_minutes = 25
 short_break_minutes = 5
-long_breka_minutes = 15
+long_break_minutes = 15
 sessions_before_long_break = 4
 
 [presets.deep_work]
 work_minutes = 50
 short_break_minutes = 10
-long_breka_minutes = 30
+long_break_minutes = 30
 sessions_before_long_break = 4
 
 # ... More presets can be defined here

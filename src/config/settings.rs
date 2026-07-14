@@ -12,14 +12,14 @@ use crate::{throw, utils::profile::Profile};
 pub struct Preset {
   pub work_minutes: u64,
   pub short_break_minutes: u64,
-  pub long_breka_minutes: u64,
+  pub long_break_minutes: u64,
   pub sessions_before_long_break: u64,
 }
 
 pub const POMODORO_PRESET: Preset = Preset {
   work_minutes: 25,
   short_break_minutes: 5,
-  long_breka_minutes: 15,
+  long_break_minutes: 15,
   sessions_before_long_break: 4,
 };
 
@@ -39,7 +39,7 @@ impl Default for Config {
       Preset {
         work_minutes: 50,
         short_break_minutes: 10,
-        long_breka_minutes: 30,
+        long_break_minutes: 30,
         sessions_before_long_break: 4,
       },
     );

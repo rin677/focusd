@@ -24,7 +24,7 @@ pub fn time_for_session(session: SessionType) -> Duration {
   match session {
     SessionType::Work => Duration::from_mins(preset.work_minutes),
     SessionType::ShortBreak => Duration::from_mins(preset.short_break_minutes),
-    SessionType::LongBreak => Duration::from_mins(preset.long_breka_minutes),
+    SessionType::LongBreak => Duration::from_mins(preset.long_break_minutes),
   }
 }
 
