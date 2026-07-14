@@ -17,7 +17,7 @@ struct WaybarModule {
   text: String,
   alt: String,
   class: Vec<String>,
-  percentage: f64,
+  percentage: usize,
   tooltip: String,
 }
 
@@ -39,8 +39,9 @@ pub fn status() {
   let preset = get_crr_preset();
 
   let total_time = time_for_session(state.session_type);
-  let percentage =
-    100.0 - (100_f64 * state.time_remaining.as_secs() as f64 / total_time.as_secs() as f64);
+  let percentage = (100.0
+    - (100_f64 * state.time_remaining.as_secs() as f64 / total_time.as_secs() as f64))
+    as usize;
 
   let current_session = name_for_session(state.session_type);
   let session_n = state.session_number;
