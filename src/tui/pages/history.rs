@@ -1,6 +1,8 @@
 use crate::{
-  database::history::get_full_history_no_err, timer::utils::name_for_session, tui::app::AppState,
-  utils::times_ago::render_duration,
+  database::history::get_full_history_no_err,
+  timer::utils::name_for_session,
+  tui::app::AppState,
+  utils::{figlet::big_text, times_ago::render_duration},
 };
 use ratatui::{
   Frame,
@@ -30,7 +32,8 @@ pub fn show_history(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
   let all_history = get_full_history_no_err();
 
   if all_history.is_empty() {
-    frame.render_widget(Paragraph::new("No history yet").centered(), area);
+    frame.render_widget(Paragraph::new(big_text("No history yet")).centered(), area);
+    return;
   }
 
   let table_heading = Row::new(["Date", "Type", "Duration", "Status"]).bottom_margin(1);
