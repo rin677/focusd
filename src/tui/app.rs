@@ -125,7 +125,12 @@ impl App {
     let [top, main_area] = frame.area().layout(&outer_layout);
 
     let [left_space, right_space] = top.layout(&top_layout);
-    frame.render_widget(Text::from("Focusd"), left_space);
+    let current_page = match self.app_state.current_page {
+      Pages::Timer => "Timer",
+      Pages::Stats => "Stats",
+      Pages::History => "History",
+    };
+    frame.render_widget(Text::from(format!("Focusd: {current_page}")), left_space);
     frame.render_widget(Text::from(right_header_text), right_space);
 
     let main_block = Block::bordered().title_bottom(
