@@ -33,6 +33,7 @@ fn get_sql_condition(dur: DurType, work: bool) -> String {
   }
 }
 
+/// Returns total time for specifit period of time
 pub fn get_total_time(dur: DurType) -> isize {
   let db = match get_db() {
     Ok(db) => db,
@@ -43,6 +44,9 @@ pub fn get_total_time(dur: DurType) -> isize {
   db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0)
 }
 
+/// Returns total number of completed work session
+///
+/// returns 0 in case of errors
 pub fn get_completed_sessions() -> i32 {
   let db = match get_db() {
     Ok(db) => db,
@@ -52,6 +56,9 @@ pub fn get_completed_sessions() -> i32 {
   db.query_row("SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration", [], |row| row.get(0)).unwrap_or(0)
 }
 
+/// Returns completion percentage of work session
+///
+/// Returns 0 in case of errors
 pub fn get_completion_rate() -> f32 {
   let db = match get_db() {
     Ok(db) => db,
@@ -61,6 +68,8 @@ pub fn get_completion_rate() -> f32 {
   db.query_row("SELECT 100.0 * (SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration) / (SELECT COUNT(*) FROM history WHERE session_type='Work')", [], |row| row.get(0)).unwrap_or(0_f32)
 }
 
+/// Returns current streak
+/// Takes all history as input
 pub fn get_current_streak(all_history: Vec<HistoryEntry>) -> i32 {
   let mut streak = 0;
   let mut expected_day = Local::now().date_naive();

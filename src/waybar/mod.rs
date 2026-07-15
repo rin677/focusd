@@ -2,7 +2,7 @@ use crate::{
   config::settings::get_crr_preset,
   daemon::commands::get_timer_state,
   database::history::get_full_history_no_err,
-  stats::calculate::{DurType, get_completed_sessions, get_current_streak, get_total_time},
+  stats::calculate::{DurType, get_current_streak, get_total_time},
   timer::{
     engine::render_time,
     state::SessionType,
@@ -21,6 +21,7 @@ struct WaybarModule {
   tooltip: String,
 }
 
+/// Gives status in JSON format mainly to be used in waybar
 pub fn status() {
   let state = get_timer_state().ignore();
   let text = render_time(&state);

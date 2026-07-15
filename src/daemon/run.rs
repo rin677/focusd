@@ -22,6 +22,9 @@ use std::{
   time::Duration,
 };
 
+/// Checks if daemon is already running
+///
+/// Sends message to daemon to check if it's running
 pub fn daemon_active() -> bool {
   match UnixStream::connect(socket_path()) {
     Ok(mut stream) => {
@@ -35,6 +38,9 @@ pub fn daemon_active() -> bool {
   }
 }
 
+/// Make sure daemon is running
+///
+/// If daemon is not runnign it starts up a background process launching daemon
 pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
   if daemon_active() {
     return Ok(());
@@ -60,6 +66,9 @@ pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
   throw!("Daemon not active")
 }
 
+/// Stop daemon if running
+///
+/// Sends message in socket to kindly stop the daemon
 pub fn stop_daemon() {
   println!("Stopping the daemon");
   let sp = socket_path();
@@ -69,6 +78,9 @@ pub fn stop_daemon() {
   process::exit(0);
 }
 
+/// Create socket connection and initialize listener
+///
+/// Based on command recieved execute specific action
 pub fn run_daemon() {
   println!("Starting Daemon");
   if daemon_active() {

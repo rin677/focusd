@@ -9,6 +9,7 @@ use crate::{
   utils::ignore::Ignore,
 };
 
+/// Show notification after sessioni is complete
 pub fn show_complete_notification(state: &TimerState) {
   let config = get_config();
   let session_name = name_for_session(state.session_type);

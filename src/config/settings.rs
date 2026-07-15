@@ -8,6 +8,7 @@ use std::{
 
 use crate::{throw, utils::profile::Profile};
 
+/// Preset type for session
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Preset {
   pub work_minutes: u64,
@@ -16,6 +17,7 @@ pub struct Preset {
   pub sessions_before_long_break: u64,
 }
 
+/// Main pomodoro preset
 pub const POMODORO_PRESET: Preset = Preset {
   work_minutes: 25,
   short_break_minutes: 5,
@@ -23,6 +25,7 @@ pub const POMODORO_PRESET: Preset = Preset {
   sessions_before_long_break: 4,
 };
 
+/// Data type of confit (which will be stored in `~/.config/focusd/config.toml`)
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
   pub active_preset: String,
@@ -64,6 +67,10 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
   toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }
 
+/// Returns the configuration
+///
+/// Create config files if it don't exists.
+/// returns default config if config file is not found or in any case of errors.
 pub fn get_config() -> Config {
   if let Some(path) = config_path() {
     if !path.exists() {
@@ -80,6 +87,8 @@ pub fn get_config() -> Config {
   Config::default()
 }
 
+/// Returns active preset which is in use
+/// Fallbacks to default in case of errors
 pub fn get_crr_preset() -> Preset {
   let config = get_config();
   config
@@ -89,6 +98,7 @@ pub fn get_crr_preset() -> Preset {
     .unwrap_or(POMODORO_PRESET)
 }
 
+/// Generates config files with default configuration
 pub fn create_config_file() {
   let Some(path) = config_path() else { return };
   // TODO: create better config with commnet explaining what each key does
@@ -101,6 +111,7 @@ pub fn create_config_file() {
   }
 }
 
+/// Saves config file given the configuration
 pub fn save_config(config: &Config) -> io::Result<()> {
   let Some(path) = config_path() else {
     throw!("file not found");

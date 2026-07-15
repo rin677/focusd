@@ -1,6 +1,7 @@
 use chrono::{DateTime, Local};
 use std::convert::TryInto;
 
+/// Returns string saying `x days/hours ago` given the date time object
 pub fn times_ago(time: &DateTime<Local>) -> String {
   let now = Local::now();
   let diff = now - time;
@@ -16,6 +17,7 @@ pub fn times_ago(time: &DateTime<Local>) -> String {
   format!("{} days ago", diff.num_days())
 }
 
+/// Renders duration in format `2h 5m` given number of seconds
 pub fn render_duration<T>(seconds: T) -> String
 where
   T: TryInto<u64>,

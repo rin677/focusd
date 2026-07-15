@@ -1,3 +1,5 @@
+//! A beautiful terminal pomodoro timer with daemon, waybar integration and interactive TUI.
+
 mod config;
 mod daemon;
 mod database;

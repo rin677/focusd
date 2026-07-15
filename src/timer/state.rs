@@ -9,6 +9,7 @@ pub enum SessionType {
   LongBreak,
 }
 
+/// Main state of the timer
 pub struct TimerState {
   pub running: bool,
   pub time_remaining: Duration,
@@ -16,6 +17,7 @@ pub struct TimerState {
   pub session_number: u64,
 }
 
+/// Duplicate of timer state just to take snapshot to serialize it to communicate between processes
 #[derive(Serialize, Deserialize)]
 pub struct TimerSnapShot {
   pub running: bool,

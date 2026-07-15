@@ -19,6 +19,8 @@ use std::{
 };
 
 const TIME_PATTERN: &str = "%Y-%m-%d %H:%M:%S";
+
+/// An item in database for history
 pub struct HistoryEntry {
   pub end_time: DateTime<Local>,
   pub planned_duration: i64,
@@ -34,6 +36,9 @@ fn history_db_path() -> Option<PathBuf> {
   Some(PathBuf::from(home).join(path))
 }
 
+/// Returns path to database
+///
+/// Gives differnt path based on dev/prod profile
 pub fn get_db() -> io::Result<Connection> {
   let Some(path) = history_db_path() else {
     throw!("Path for database not found");
@@ -71,6 +76,7 @@ pub fn get_db() -> io::Result<Connection> {
   Ok(cnn)
 }
 
+/// Add the given session to history database
 pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
   let completed_duration =
     (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
@@ -92,6 +98,7 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   Ok(())
 }
 
+/// Gives full history from the database
 pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
   let db = get_db()?;
   let mut stmt = db
@@ -119,6 +126,9 @@ pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
   Ok(history)
 }
 
+/// Returns full history
+///
+/// Returns empty vector in case of any errors
 pub fn get_full_history_no_err() -> Vec<HistoryEntry> {
   match get_full_history() {
     Ok(h) => h,
@@ -126,6 +136,7 @@ pub fn get_full_history_no_err() -> Vec<HistoryEntry> {
   }
 }
 
+/// Prints history in friendly and readable format
 pub fn print_history() {
   let all_history = get_full_history_no_err();
   for history in all_history {

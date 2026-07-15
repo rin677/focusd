@@ -1,6 +1,10 @@
 use std::env;
 use std::path::PathBuf;
 
+/// Profiles for app
+///
+/// different profile uses different path for database, config and socket
+/// This is required so that focusd can be used while it's under developement
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Profile {
   Dev,
