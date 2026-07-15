@@ -33,6 +33,7 @@ fn main() -> io::Result<()> {
   }
   if args.iter().any(|a| a == "stop-daemon") {
     send_command(Message::StopDaemon).map(|m| println!("{m}"))?;
+    return Ok(());
   }
   // Don't enable daemon if just help tag
   if args.iter().any(|a| a == "--help") {
