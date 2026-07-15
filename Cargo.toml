@@ -11,6 +11,10 @@ readme = "README.md"
 keywords = ["productivity", "timer", "pomodoro"]
 categories = ["command-line-interface"]
 license = "MIT"
+exclude = [
+    "assets/*",
+    "scripts/*",
+]
 
 [dependencies]
 crossterm = "0.29.0"
