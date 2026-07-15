@@ -17,7 +17,7 @@ conn.execute("""
   )
 """)
 
-random.seed(42)
+random.seed(51)
 conn.execute("DELETE FROM history")
 
 now = datetime.now()
