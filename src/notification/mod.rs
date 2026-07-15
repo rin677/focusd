@@ -6,7 +6,6 @@ use crate::{
     state::TimerState,
     utils::{name_for_session, next_session as next_session_name, time_for_session},
   },
-  utils::ignore::Ignore,
 };
 
 /// Show notification after sessioni is complete
@@ -22,6 +21,6 @@ pub fn show_complete_notification(state: &TimerState) {
         name_for_session(next_session_name(state.session_type, state.session_number))
       ))
       .show()
-      .ignore();
+      .ok();
   }
 }

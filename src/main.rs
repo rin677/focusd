@@ -20,7 +20,6 @@ use crate::{
   database::history::print_history,
   stats::calculate::print_stats,
   tui::app::Pages,
-  utils::ignore::Ignore,
 };
 
 fn main() -> io::Result<()> {
@@ -33,10 +32,7 @@ fn main() -> io::Result<()> {
     return Ok(());
   }
   if args.iter().any(|a| a == "stop-daemon") {
-    send_command(Message::StopDaemon)
-      .map(|m| println!("{m}"))
-      .ignore();
-    return Ok(());
+    send_command(Message::StopDaemon).map(|m| println!("{m}"))?;
   }
   // Don't enable daemon if just help tag
   if args.iter().any(|a| a == "--help") {
@@ -70,7 +66,7 @@ fn main() -> io::Result<()> {
     return Ok(());
   }
 
-  ensure_daemon_active(true).ignore();
+  ensure_daemon_active(true)?;
 
   let launch_tui = |page| tui::app::main(page);
   if args.len() > 1 {

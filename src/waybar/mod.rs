@@ -8,7 +8,7 @@ use crate::{
     state::SessionType,
     utils::{name_for_session, next_session, time_for_session},
   },
-  utils::{ignore::Ignore, times_ago::render_duration},
+  utils::times_ago::render_duration,
 };
 use serde::{Deserialize, Serialize};
 
@@ -23,7 +23,7 @@ struct WaybarModule {
 
 /// Gives status in JSON format mainly to be used in waybar
 pub fn status() {
-  let state = get_timer_state().ignore();
+  let state = get_timer_state().unwrap();
   let text = render_time(&state);
 
   let mut class: Vec<String> = Vec::new();

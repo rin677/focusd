@@ -5,7 +5,6 @@ use crate::{
     utils::{get_session_type, name_for_session, time_for_session},
   },
   utils::{
-    ignore::Ignore,
     profile::Profile,
     times_ago::{render_duration, times_ago},
   },
@@ -99,17 +98,17 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
 }
 
 /// Gives full history from the database
-pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
+pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error>> {
   let db = get_db()?;
   let mut stmt = db
     .prepare("SELECT end_time, planned_duration, completed_duration, session_type FROM history ORDER BY datetime(end_time) DESC")
-    .ignore();
+    ?;
 
   let mut history: Vec<HistoryEntry> = Vec::new();
-  let mut rows = stmt.query([]).ignore();
-  while let Some(row) = rows.next().ignore() {
-    let s: String = row.get(3).ignore();
-    let e: String = row.get(0).ignore();
+  let mut rows = stmt.query([])?;
+  while let Some(row) = rows.next()? {
+    let s: String = row.get(3)?;
+    let e: String = row.get(0)?;
     let time = NaiveDateTime::parse_from_str(&e, TIME_PATTERN)
       .unwrap()
       .and_local_timezone(Local)
@@ -117,8 +116,8 @@ pub fn get_full_history() -> io::Result<Vec<HistoryEntry>> {
       .unwrap();
     history.push(HistoryEntry {
       end_time: time,
-      planned_duration: row.get(1).ignore(),
-      completed_duration: row.get(2).ignore(),
+      planned_duration: row.get(1)?,
+      completed_duration: row.get(2)?,
       session_type: get_session_type(&s),
     });
   }

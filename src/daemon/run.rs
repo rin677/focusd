@@ -9,7 +9,6 @@ use crate::{
     state::TimerState,
     utils::name_for_session,
   },
-  utils::ignore::Ignore,
 };
 use std::{
   fs,
@@ -29,7 +28,7 @@ pub fn daemon_active() -> bool {
   match UnixStream::connect(socket_path()) {
     Ok(mut stream) => {
       let cmd = parse_message(Message::Running);
-      stream.write_all(format!("{cmd}\n").as_bytes()).ignore();
+      stream.write_all(format!("{cmd}\n").as_bytes()).ok();
       let mut reader = BufReader::new(stream);
       let mut line = String::new();
       reader.read_line(&mut line).is_ok() && line.starts_with("YES")
@@ -59,7 +58,7 @@ pub fn ensure_daemon_active(first_try: bool) -> Result<()> {
         return Ok(());
       } else {
         thread::sleep(Duration::from_millis(50));
-        ensure_daemon_active(false).ignore();
+        ensure_daemon_active(false).ok();
       }
     }
   }
@@ -73,7 +72,7 @@ pub fn stop_daemon() {
   println!("Stopping the daemon");
   let sp = socket_path();
   if Path::new(sp).exists() {
-    fs::remove_file(sp).ignore();
+    let _ = fs::remove_file(sp);
   }
   process::exit(0);
 }
@@ -85,13 +84,13 @@ pub fn run_daemon() {
   println!("Starting Daemon");
   if daemon_active() {
     println!("Daemon already running stopping it");
-    send_command(Message::StopDaemon).ignore();
+    let _ = send_command(Message::StopDaemon);
   }
   // Delete the socket path if already exists
   let sp = socket_path();
   if Path::new(sp).exists() {
     println!("Socket already available removing it");
-    fs::remove_file(sp).ignore();
+    let _ = fs::remove_file(sp);
   }
 
   let listener = UnixListener::bind(sp).unwrap();

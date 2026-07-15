@@ -7,19 +7,3 @@ impl<T, E> IgnoreType for Result<T, E> {
     let _ = self;
   }
 }
-
-pub trait Ignore {
-  type Ok;
-  fn ignore(self) -> Self::Ok;
-}
-
-impl<T, E> Ignore for Result<T, E> {
-  type Ok = T;
-
-  fn ignore(self) -> T {
-    match self {
-      Ok(value) => value,
-      Err(_) => unreachable!(),
-    }
-  }
-}
