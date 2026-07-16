@@ -24,6 +24,7 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 ### Timer Page
 
 <img width="640" height="656" alt="Image" src="https://github.com/user-attachments/assets/bcdf5f8d-bc9d-4934-ad22-055b4bf09b98" />
+
 ### History Page
 
 <img width="882" height="890" alt="Image" src="https://github.com/user-attachments/assets/98a80a17-f7b2-449e-a465-21e8b6612b2b" />
