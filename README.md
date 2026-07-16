@@ -39,7 +39,31 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ## Installation
 
-<!-- TODO: Will try to release this in cargo, homebrew and aur -->
+### Mac-Os
+
+```bash
+brew tap bibekbhusal0/packages
+brew trust bibekbhusal0/packages
+brew install focusd
+```
+
+### Arch
+
+```bash
+yay -S focusd
+```
+
+### Windows
+
+Not supported yet.
+
+### Other
+
+First make sure cargo is installed.
+
+```bash
+cargo install focusd
+```
 
 ### Building from Source
 
