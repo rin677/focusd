@@ -77,19 +77,33 @@ jobs:
           mkdir release
           find dist -type f -exec cp {} release/ \;
 
+      - name: Detect prerelease
+        id: prerelease
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          if [[ "$TAG" =~ [ab] ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: release-notes.md
           files: release/*
+          prerelease: ${{ steps.prerelease.outputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clear release notes
+        if: steps.prerelease.outputs.prerelease != 'true'
         run: |
           : > release-notes.md
 
       - name: Commit cleared release notes
+        if: steps.prerelease.outputs.prerelease != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
