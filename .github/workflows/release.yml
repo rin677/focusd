@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -16,22 +19,24 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             binary_name: focusd
-            asset_name: focusd-linux-x86_64
+            artifact_name: focusd-linux-x86_64
 
           - os: macos-13
             target: x86_64-apple-darwin
             binary_name: focusd
-            asset_name: focusd-macos-x86_64
+            artifact_name: focusd-macos-x86_64
 
           - os: macos-14
             target: aarch64-apple-darwin
             binary_name: focusd
-            asset_name: focusd-macos-aarch64
+            artifact_name: focusd-macos-aarch64
 
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            binary_name: focusd.exe
-            asset_name: focusd-windows-x86_64.exe
+          # TODO: Windows support.
+          #
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   binary_name: focusd.exe
+          #   artifact_name: focusd-windows-x86_64.exe
 
     steps:
       - name: Checkout
@@ -51,11 +56,32 @@ jobs:
           mkdir -p dist
           cp \
             target/${{ matrix.target }}/release/${{ matrix.binary_name }} \
-            dist/${{ matrix.asset_name }}
+            dist/${{ matrix.artifact_name }}
 
-      - name: Upload Release Asset
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.artifact_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten Artifacts
+        run: |
+          mkdir release
+          find dist -type f -exec cp {} release/ \;
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
