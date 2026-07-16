@@ -21,11 +21,6 @@ jobs:
             binary_name: focusd
             artifact_name: focusd-linux-x86_64
 
-          - os: macos-13
-            target: x86_64-apple-darwin
-            binary_name: focusd
-            artifact_name: focusd-macos-x86_64
-
           - os: macos-14
             target: aarch64-apple-darwin
             binary_name: focusd
@@ -69,8 +64,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
         with:
           path: dist
 
@@ -82,6 +80,25 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          body_path: release-notes.md
           files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clear release notes
+        run: |
+          : > release-notes.md
+
+      - name: Commit cleared release notes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add release-notes.md
+
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+
+          git commit -m "chore: clear release notes"
+          git push origin HEAD:master
