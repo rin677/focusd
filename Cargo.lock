@@ -2119,9 +2119,9 @@ dependencies = [
 
 [[package]]
 name = "tui-piechart"
-version = "0.3.3"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "852c46a27659b68ebd4852c20f1e6c723235b0e7f04588527f051a19e866a856"
+checksum = "6c34435c65cd79e6a39844554d05ba35511a03fb3fbb3f9b77745149163c0b31"
 dependencies = [
  "ratatui",
 ]
