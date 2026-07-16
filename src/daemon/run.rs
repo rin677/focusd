@@ -102,7 +102,7 @@ pub fn run_daemon() {
     loop {
       thread::sleep(tick_rate);
       {
-        let mut state = s.lock().unwrap();
+        let mut state = s.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
         if state.running {
           decrease_sec(&mut state);
           println!(

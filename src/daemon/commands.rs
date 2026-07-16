@@ -48,7 +48,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   let mut line = String::new();
   reader.read_line(&mut line)?;
 
-  let mut s = state.lock().unwrap();
+  let mut s = state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
   let l = line.trim().to_string();
   println!("Got message {l}");
   let response = if l == parse_message(Message::Running) {

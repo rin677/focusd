@@ -10,7 +10,11 @@ use crate::{
 use std::time::Duration;
 
 pub fn decrease_sec(state: &mut TimerState) {
-  let new_time = state.time_remaining - Duration::from_secs(1);
+  let Some(new_time) = state.time_remaining.checked_sub(Duration::from_secs(1)) else {
+    next_session(state);
+    on_finish();
+    return;
+  };
   state.time_remaining = new_time;
   if new_time.is_zero() {
     next_session(state);
