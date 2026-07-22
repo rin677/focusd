@@ -1,4 +1,4 @@
-To-do list for v `0.2.0`
+# To-Do List For `v0.2.0`
 
 Updated post release.
 
@@ -47,3 +47,15 @@ Updated post release.
     - [ ] Start long break directly
     - [ ] Start preset directly
     - [ ] Start custom duration timer
+
+# Release Notes
+
+## Breaking Changes
+- Removed some duplicate commands line arguments (just use `pause` instead of `pause-session`):
+    - `pause-session`
+    - `resume-session`
+    - `reset-session`
+    - `stop-session`
+    - `skip-session`
+    - `next-session`
+- Changed `stop-daemon` to `--stop-daemon`

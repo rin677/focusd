@@ -91,7 +91,7 @@ Those commands can also be seen by running `focusd --help`
 - `prints-stats` - Print stats.
 - `print-history` - Print all the history.
 - `status` - Shows timer status in JSON format, this is mainly for waybar (see the section for [waybar](#waybar-configuration))
-- `stop-daemon` - Stop daemon if running.
+- `--stop-daemon` - Stop daemon if running.
 - `--daemon` - Start daemon (force stops currently running daemon).
 
 ### Keymap
