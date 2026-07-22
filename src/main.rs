@@ -20,6 +20,7 @@ use crate::{
   database::history::print_history,
   stats::calculate::print_stats,
   tui::app::Pages,
+  utils::print::Print,
 };
 use clap::{Parser, Subcommand};
 
@@ -114,19 +115,15 @@ fn main() -> io::Result<()> {
     Some(Command::Stats) => launch_tui(Pages::Stats),
     Some(Command::History) => launch_tui(Pages::History),
 
-    Some(Command::Pause) => send_command(Message::PauseSession).map(|m| println!("{m}")),
-    Some(Command::Resume) => send_command(Message::ResumeSession).map(|m| println!("{m}")),
-    Some(Command::Toggle) => send_command(Message::ToggleSession).map(|m| println!("{m}")),
-    Some(Command::Reset) | Some(Command::Stop) => {
-      send_command(Message::ResetSession).map(|m| println!("{m}"))
-    }
-    Some(Command::Next) | Some(Command::Skip) => {
-      send_command(Message::NextSession).map(|m| println!("{m}"))
-    }
-    Some(Command::Start) => send_command(Message::StartSession).map(|m| println!("{m}")),
-    Some(Command::Work) => send_command(Message::StartWork).map(|m| println!("{m}")),
-    Some(Command::ShortBreak) => send_command(Message::StartShortBreak).map(|m| println!("{m}")),
-    Some(Command::LongBreak) => send_command(Message::StartLongBreak).map(|m| println!("{m}")),
+    Some(Command::Pause) => send_command(Message::PauseSession).print(),
+    Some(Command::Resume) => send_command(Message::ResumeSession).print(),
+    Some(Command::Toggle) => send_command(Message::ToggleSession).print(),
+    Some(Command::Reset) | Some(Command::Stop) => send_command(Message::ResetSession).print(),
+    Some(Command::Next) | Some(Command::Skip) => send_command(Message::NextSession).print(),
+    Some(Command::Start) => send_command(Message::StartSession).print(),
+    Some(Command::Work) => send_command(Message::StartWork).print(),
+    Some(Command::ShortBreak) => send_command(Message::StartShortBreak).print(),
+    Some(Command::LongBreak) => send_command(Message::StartLongBreak).print(),
     None => launch_tui(Pages::Timer),
   }
 }
