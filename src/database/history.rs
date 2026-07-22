@@ -77,8 +77,9 @@ pub fn get_db() -> io::Result<Connection> {
 
 /// Add the given session to history database
 pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
-  let completed_duration =
-    (time_for_session(state.session_type) - state.time_remaining).as_secs() as i64;
+  let completed_duration = time_for_session(state.session_type)
+    .saturating_sub(state.time_remaining)
+    .as_secs() as i64;
   if completed_duration < 20 {
     println!("Not adding session shorter than 20 seconds to database");
     return Ok(());
