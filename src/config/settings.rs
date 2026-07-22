@@ -25,7 +25,8 @@ pub const POMODORO_PRESET: Preset = Preset {
   sessions_before_long_break: 4,
 };
 
-/// Data type of confit (which will be stored in `~/.config/focusd/config.toml`)
+/// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
+// TODO: Allow customizing fonts, hooks, gool and more
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
   pub active_preset: String,

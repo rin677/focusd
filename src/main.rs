@@ -22,6 +22,8 @@ use crate::{
   tui::app::Pages,
 };
 
+// TODO: CLI arguments to start work/break directly
+// TODO:: Maybe use https://docs.rs/clap/latest/clap/  for parsing CLI arguments
 fn main() -> io::Result<()> {
   create_config_file();
 
