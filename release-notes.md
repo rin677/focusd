@@ -41,10 +41,10 @@ Updated post release.
     - [ ] Add/remove hooks
     - [ ] Set daily goal
 
-- [ ] CLI improvements
-    - [ ] Start work session directly
-    - [ ] Start short break directly
-    - [ ] Start long break directly
+- [/] CLI improvements
+    - [X] Start work session directly
+    - [X] Start short break directly
+    - [X] Start long break directly
     - [ ] Start preset directly
     - [ ] Start custom duration timer
 
@@ -59,3 +59,7 @@ Updated post release.
     - `skip-session`
     - `next-session`
 - Changed `stop-daemon` to `--stop-daemon`
+
+## New Features
+- CLI Arguments:
+    - Directly start specific mode with arguments `work`, `short-break` and `long-break`

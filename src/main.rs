@@ -72,6 +72,12 @@ enum Command {
   Skip,
   /// Start the session
   Start,
+  /// Start work session directly
+  Work,
+  /// Start short break session directly
+  ShortBreak,
+  /// Start long break session directly
+  LongBreak,
 }
 
 // TODO: CLI arguments to start work/break directly
@@ -118,6 +124,9 @@ fn main() -> io::Result<()> {
       send_command(Message::NextSession).map(|m| println!("{m}"))
     }
     Some(Command::Start) => send_command(Message::StartSession).map(|m| println!("{m}")),
+    Some(Command::Work) => send_command(Message::StartWork).map(|m| println!("{m}")),
+    Some(Command::ShortBreak) => send_command(Message::StartShortBreak).map(|m| println!("{m}")),
+    Some(Command::LongBreak) => send_command(Message::StartLongBreak).map(|m| println!("{m}")),
     None => launch_tui(Pages::Timer),
   }
 }

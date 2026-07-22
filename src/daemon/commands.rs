@@ -1,8 +1,8 @@
 use crate::{
-  daemon::{socket_path, run::stop_daemon},
+  daemon::{run::stop_daemon, socket_path},
   timer::{
-    engine::{next_session, render_time, reset_session, start_session},
-    state::{TimerSnapShot, TimerState},
+    engine::{next_session, render_time, reset_session, start_session, start_specific_session},
+    state::{SessionType, TimerSnapShot, TimerState},
     utils::name_for_session,
   },
 };
@@ -21,6 +21,9 @@ pub enum Message {
   NextSession,
   GetSession,
   ResetSession,
+  StartWork,
+  StartLongBreak,
+  StartShortBreak,
 
   // Test
   Running,
@@ -39,6 +42,9 @@ pub fn parse_message(message: Message) -> String {
     Message::GetSession => String::from("GetSession"),
     Message::ResetSession => String::from("ResetSession"),
     Message::StopDaemon => String::from("StopDaemon"),
+    Message::StartWork => String::from("StartWork"),
+    Message::StartShortBreak => String::from("StartShortBreak"),
+    Message::StartLongBreak => String::from("StartLongBreak"),
     Message::Running => String::from("RUNNING"),
   }
 }
@@ -48,7 +54,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   let mut line = String::new();
   reader.read_line(&mut line)?;
 
-  let mut s = state.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+  let mut s = state
+    .lock()
+    .unwrap_or_else(|poisoned| poisoned.into_inner());
   let l = line.trim().to_string();
   println!("Got message {l}");
   let response = if l == parse_message(Message::Running) {
@@ -88,6 +96,15 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   } else if l == parse_message(Message::ResetSession) {
     reset_session(&mut s);
     format!("{} Session restarted", name_for_session(s.session_type))
+  } else if l == parse_message(Message::StartWork) {
+    start_specific_session(&mut s, SessionType::Work);
+    "Work session started".to_string()
+  } else if l == parse_message(Message::StartShortBreak) {
+    start_specific_session(&mut s, SessionType::ShortBreak);
+    "Short Break started".to_string()
+  } else if l == parse_message(Message::StartLongBreak) {
+    start_specific_session(&mut s, SessionType::LongBreak);
+    "Long Break started".to_string()
   } else {
     "Command not found".to_string()
   };

@@ -40,6 +40,21 @@ pub fn start_session(state: &mut TimerState) {
   state.running = true
 }
 
+/// Start timer while going to specific session
+pub fn start_specific_session(state: &mut TimerState, session_type: SessionType) {
+  let is_current_session = state.session_type == session_type;
+  state.session_type = session_type;
+  state.time_remaining = time_for_session(session_type);
+  state.running = true;
+  if !is_current_session {
+    state.session_number = match session_type {
+      SessionType::Work => get_next_session_number(state.session_number),
+      SessionType::LongBreak => get_crr_preset().sessions_before_long_break,
+      SessionType::ShortBreak => state.session_number,
+    }
+  }
+}
+
 pub fn reset_session(state: &mut TimerState) {
   state.running = false;
   state.time_remaining = time_for_session(state.session_type);
@@ -54,13 +69,17 @@ pub fn next_session(state: &mut TimerState) {
   show_complete_notification(state);
   state.session_type = next_session_name(state.session_type, state.session_number);
   if state.session_type == SessionType::Work {
-    let preset = get_crr_preset();
-    state.session_number = if preset.sessions_before_long_break == state.session_number {
-      1
-    } else {
-      state.session_number + 1
-    }
+    state.session_number = get_next_session_number(state.session_number);
   }
 
   state.time_remaining = time_for_session(state.session_type);
+}
+
+fn get_next_session_number(crr_session_number: u64) -> u64 {
+  let preset = get_crr_preset();
+  if preset.sessions_before_long_break == crr_session_number {
+    1
+  } else {
+    crr_session_number + 1
+  }
 }
