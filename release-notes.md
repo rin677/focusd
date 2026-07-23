@@ -13,10 +13,15 @@ Updated post release.
         - [ ] Allow changing font
         - [ ] Allow hiding ASCII art
         - [ ] Allow hiding dashboard
+        - [ ] Allow hiding progress gauze
 
 - [ ] Customization options
     - [ ] Font
     - [ ] Themes
+    - [ ] Sounds
+        - [ ] start short break
+        - [ ] start long break
+        - [ ] start work
     - [ ] Hooks
         - [ ] Session started
         - [ ] Session completed
@@ -40,6 +45,8 @@ Updated post release.
     - [ ] Edit fonts
     - [ ] Add/remove hooks
     - [ ] Set daily goal
+
+- [ ] Play sounds when session ends
 
 - [/] CLI improvements
     - [X] Start work session directly
