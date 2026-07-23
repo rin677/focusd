@@ -5,8 +5,18 @@ use std::{
   fs, io,
   path::PathBuf,
 };
+use toml::Value;
 
 use crate::{throw, utils::profile::Profile};
+
+/// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
+// TODO: Allow customizing fonts, hooks, gool and more
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+  pub active_preset: String,
+  pub presets: HashMap<String, Preset>,
+  pub show_notifications: bool,
+}
 
 /// Preset type for session
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
@@ -24,15 +34,6 @@ pub const POMODORO_PRESET: Preset = Preset {
   long_break_minutes: 15,
   sessions_before_long_break: 4,
 };
-
-/// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
-// TODO: Allow customizing fonts, hooks, gool and more
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
-  pub active_preset: String,
-  pub presets: HashMap<String, Preset>,
-  pub show_notifications: bool,
-}
 
 impl Default for Config {
   fn default() -> Self {
@@ -63,9 +64,30 @@ fn config_path() -> Option<PathBuf> {
   Some(PathBuf::from(home).join(path))
 }
 
+fn get<T>(table: &toml::value::Table, key: &str, default: T) -> T
+where
+  T: serde::de::DeserializeOwned,
+{
+  table
+    .get(key)
+    .and_then(|v| T::deserialize(v.clone()).ok())
+    .unwrap_or(default)
+}
+
 fn load_config(path: &PathBuf) -> io::Result<Config> {
   let contents = fs::read_to_string(path)?;
-  toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+  let mut cfg = Config::default();
+  let raw: Value =
+    toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+  let table = raw.as_table();
+  if let Some(val) = table {
+    cfg.active_preset = get(val, "active_preset", cfg.active_preset);
+    cfg.presets = get(val, "presets", cfg.presets);
+    cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
+  }
+
+  Ok(cfg)
 }
 
 /// Returns the configuration
@@ -79,7 +101,6 @@ pub fn get_config() -> Config {
       return Config::default();
     }
 
-    // FIX: Gives default config if something is wrong in config file Ignoring all the configs
     if let Ok(config) = load_config(&path) {
       return config;
     }
