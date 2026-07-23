@@ -15,7 +15,7 @@ impl Profile {
   pub fn current() -> Self {
     let exe = env::current_exe().unwrap_or_default();
 
-    if exe.ends_with(std::path::Path::new("target/debug/focusd")) {
+    if exe.to_string_lossy().contains("target/debug") {
       Self::Dev
     } else {
       Self::Prod
