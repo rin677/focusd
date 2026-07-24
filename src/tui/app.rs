@@ -167,6 +167,8 @@ impl App {
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('j') => self.history_down(),
       KeyCode::Char('k') => self.history_up(),
+      KeyCode::Up => self.history_up(),
+      KeyCode::Down => self.history_down(),
       _ => {}
     }
   }

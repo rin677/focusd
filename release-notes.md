@@ -66,6 +66,7 @@ Updated post release.
     - `skip-session`
     - `next-session`
 - Changed `stop-daemon` to `--stop-daemon`
+- Up and down key can scroll in history page.
 
 ## New Features
 - CLI Arguments:
