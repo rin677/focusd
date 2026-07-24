@@ -169,6 +169,13 @@ impl App {
       KeyCode::Char('k') => self.history_up(),
       KeyCode::Up => self.history_up(),
       KeyCode::Down => self.history_down(),
+      KeyCode::Char('c')
+        if key_event
+          .modifiers
+          .contains(crossterm::event::KeyModifiers::CONTROL) =>
+      {
+        self.quit();
+      }
       _ => {}
     }
   }
