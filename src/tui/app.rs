@@ -134,7 +134,7 @@ impl App {
     frame.render_widget(Text::from(right_header_text), right_space);
 
     let main_block = Block::bordered().title_bottom(
-      Line::from(":Press q to quit: Space to toggle timer : N to skip : R to reset").centered(),
+      Line::from(" Press q to quit - Space to toggle timer - N to skip - R to reset").centered(),
     );
     frame.render_widget(&main_block, main_area);
 
