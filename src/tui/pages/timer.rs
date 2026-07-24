@@ -13,10 +13,22 @@ use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect},
   style::Modifier,
-  widgets::{LineGauge, Paragraph},
+  widgets::{Block, LineGauge, Padding, Paragraph},
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+  let cfg = get_config();
+  if cfg.tui_show_stats {
+    let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(9)]);
+    let [first, second] = area.layout(&layout);
+    render_timer_no_stats(timer_state, first, frame);
+    render_stats(second, frame);
+  } else {
+    render_timer_no_stats(timer_state, area, frame);
+  }
+}
+
+fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   let cfg = get_config();
   let show_art = cfg.tui_show_ascii_art;
   let show_progress = cfg.tui_show_progress;
@@ -46,6 +58,14 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   }
 
   // TODO: Include other things as well, dashboard with presets, and today's stats.
+}
+
+fn render_stats(area: Rect, frame: &mut Frame) {
+  let block = Block::bordered()
+    .title("Today's stats")
+    .padding(Padding::horizontal(1));
+  let text = big_text("Stats loading ...");
+  frame.render_widget(Paragraph::new(text).centered().block(block), area);
 }
 
 fn render_text(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
