@@ -16,6 +16,10 @@ pub struct Config {
   pub active_preset: String,
   pub presets: HashMap<String, Preset>,
   pub show_notifications: bool,
+
+  // TUI settings
+  pub tui_show_progress: bool,
+  pub tui_show_ascii_art: bool,
 }
 
 /// Preset type for session
@@ -52,6 +56,8 @@ impl Default for Config {
       active_preset: "pomodoro".to_string(),
       presets,
       show_notifications: true,
+      tui_show_progress: true,
+      tui_show_ascii_art: true,
     }
   }
 }
@@ -84,6 +90,8 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
   if let Some(val) = table {
     cfg.active_preset = get(val, "active_preset", cfg.active_preset);
     cfg.presets = get(val, "presets", cfg.presets);
+    cfg.tui_show_progress = get(val, "tui_show_progress", cfg.tui_show_progress);
+    cfg.tui_show_ascii_art = get(val, "tui_show_ascii_art", cfg.tui_show_ascii_art);
     cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
   }
 

@@ -171,6 +171,8 @@ This is the default config file.
 ```toml
 active_preset = "pomodoro"
 show_notifications = true # Show notification when session ends
+tui_show_progress = true
+tui_show_ascii_art = true
 
 [presets.pomodoro]
 work_minutes = 25

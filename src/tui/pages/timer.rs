@@ -1,6 +1,7 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::{
+  config::settings::get_config,
   timer::{
     engine::render_time,
     state::{SessionType, TimerState},
@@ -16,33 +17,56 @@ use ratatui::{
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
-  let centered = area.centered(Constraint::Max(38), Constraint::Max(30));
-  let layout = Layout::vertical([
-    Constraint::Length(23),
-    Constraint::Length(6),
-    Constraint::Max(1),
-  ]);
-  let [art, first, second] = centered.layout(&layout);
+  let cfg = get_config();
+  let show_art = cfg.tui_show_ascii_art;
+  let show_progress = cfg.tui_show_progress;
+  let mut constrains: Vec<Constraint> = Vec::new();
+  let mut h = 6;
+  if show_art {
+    h += 23;
+    constrains.push(Constraint::Length(23));
+  }
+  constrains.push(Constraint::Length(6));
+  if show_progress {
+    h += 1;
+    constrains.push(Constraint::Length(1));
+  }
+  let centered = area.centered(Constraint::Max(38), Constraint::Max(h));
+  let layout = Layout::vertical(constrains);
+  let areas = centered.layout_vec(&layout);
+
+  if show_art {
+    render_ascssi_art(timer_state, areas[0], frame);
+  }
+  let text_area = if show_art { areas[1] } else { areas[0] };
+  render_text(timer_state, text_area, frame);
+  if show_progress {
+    let gauge_area = if show_art { areas[2] } else { areas[1] };
+    render_gauge(timer_state, gauge_area, frame);
+  }
+
+  // TODO: Include other things as well, dashboard with presets, and today's stats.
+}
+
+fn render_text(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+  let t = render_time(timer_state);
+  let text = big_text(&t);
+  frame.render_widget(Paragraph::new(text).centered(), area);
+}
+
+fn render_gauge(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   let percent = (timer_state.time_remaining.as_secs()) as f64
     / (time_for_session(timer_state.session_type).as_secs()) as f64;
-  let t = render_time(timer_state);
-  render_ascssi(timer_state, art, frame);
-
-  let text = big_text(&t);
-  frame.render_widget(Paragraph::new(text).centered(), first);
   let progress = LineGauge::default()
     .style(Modifier::BOLD)
     .filled_symbol("█")
     .unfilled_symbol("░")
     .label("")
     .ratio(1_f64 - percent);
-
-  // TODO: Include other things as well, dashboard with presets, and today's stats.
-
-  frame.render_widget(progress, second);
+  frame.render_widget(progress, area);
 }
 
-fn render_ascssi(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+fn render_ascssi_art(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
   let clock_frames = vec![
     include_str!("../../../resources/clock/1.txt"),
     include_str!("../../../resources/clock/2.txt"),

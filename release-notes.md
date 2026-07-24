@@ -2,18 +2,18 @@
 
 Updated post release.
 
-- [ ] Timer Page
+- [/] Timer Page
     - [ ] Add dashboard
         - [ ] Today's focus
         - [ ] Sessions completed
         - [ ] Current streak
         - [ ] Active preset
         - [ ] Daily goal progress
-    - [ ] Make it customizable
+    - [/] Make it customizable
         - [ ] Allow changing font
-        - [ ] Allow hiding ASCII art
+        - [X] Allow hiding ASCII art
         - [ ] Allow hiding dashboard
-        - [ ] Allow hiding progress gauze
+        - [X] Allow hiding progress gauze
 
 - [ ] Customization options
     - [ ] Font
@@ -71,3 +71,6 @@ Updated post release.
 ## New Features
 - CLI Arguments:
     - Directly start specific mode with arguments `work`, `short-break` and `long-break`
+- TUI:
+    - You can hide progress with `tui_show_progress` in config file.
+    - You can hide ASCII art with `tui_show_ascii_art` in config file.
