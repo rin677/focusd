@@ -2,11 +2,14 @@ use crate::{
   config::settings::get_crr_preset,
   daemon::commands::{Message, get_timer_state, send_command},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
-  tui::pages::{
-    history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
-    // settings::show_settings,
-    stats::show_stats,
-    timer::show_timer,
+  tui::{
+    merge_block::MergeBlock,
+    pages::{
+      history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
+      // settings::show_settings,
+      stats::show_stats,
+      timer::show_timer,
+    },
   },
   utils::ignore::IgnoreType,
 };
@@ -18,9 +21,9 @@ use std::{
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  layout::{Constraint, Layout},
-  text::{Line, Text},
-  widgets::Block,
+  layout::{Constraint, Layout, Rect},
+  text::Text,
+  widgets::{Block, Paragraph},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -110,35 +113,46 @@ impl App {
       preset.sessions_before_long_break,
       render_time(&self.timer_state),
     );
-    let top_layout = Layout::horizontal([
-      Constraint::Fill(0),
-      Constraint::Length(right_header_text.len() as u16),
-    ])
-    .spacing(2);
-
-    let outer_layout = Layout::vertical([
-      Constraint::Length(1), // Header
-      Constraint::Fill(1),   // Main area
-    ])
-    .spacing(0);
-
-    let [top, main_area] = frame.area().layout(&outer_layout);
-
-    let [left_space, right_space] = top.layout(&top_layout);
     let current_page = match self.app_state.current_page {
       Pages::Timer => "Timer",
       Pages::Stats => "Stats",
       Pages::History => "History",
     };
-    frame.render_widget(Text::from(format!("Focusd: {current_page}")), left_space);
+
+    let main_area = frame.area();
+    let main_block = Block::bordered();
+    frame.render_widget(&main_block, main_area);
+    let main_inner = main_block.inner(main_area);
+
+    let [header, inner_area, footer] = Layout::vertical([
+      Constraint::Length(1), // Header
+      Constraint::Fill(1),   // Content
+      Constraint::Length(2), // Footer
+    ])
+    .spacing(0)
+    .areas(main_inner);
+
+    let top_layout = Layout::horizontal([
+      Constraint::Fill(0),
+      Constraint::Length(right_header_text.len() as u16),
+    ])
+    .spacing(2);
+    let [left_space, right_space] = header.layout(&top_layout);
+    frame.render_widget(Text::from(format!(" Focusd: {current_page} ")), left_space);
     frame.render_widget(Text::from(right_header_text), right_space);
 
-    let main_block = Block::bordered().title_bottom(
-      Line::from(" Press q to quit - Space to toggle timer - N to skip - R to reset").centered(),
+    let footer_sep = Rect::new(footer.x, footer.y, footer.width, 1);
+    let footer_text = Rect::new(footer.x, footer.y + 1, footer.width, 1);
+    MergeBlock::new("")
+      .top()
+      .no_padding()
+      .render(frame, footer_sep);
+    frame.render_widget(
+      Paragraph::new(" Press q to quit - Space to toggle timer - N to skip - R to reset ")
+        .centered(),
+      footer_text,
     );
-    frame.render_widget(&main_block, main_area);
 
-    let inner_area = main_block.inner(main_area);
     match self.app_state.current_page {
       Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
       Pages::History => show_history(inner_area, frame, &mut self.app_state),

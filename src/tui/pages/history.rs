@@ -1,7 +1,7 @@
 use crate::{
   database::history::get_full_history_no_err,
   timer::utils::name_for_session,
-  tui::app::AppState,
+  tui::{app::AppState, merge_block::MergeBlock},
   utils::{figlet::big_text, times_ago::render_duration},
 };
 use ratatui::{
@@ -29,6 +29,7 @@ pub fn get_history_index() -> usize {
 }
 
 pub fn show_history(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
+  let area = MergeBlock::new("").top().render(frame, area);
   let all_history = get_full_history_no_err();
 
   if all_history.is_empty() {

@@ -5,6 +5,7 @@ use crate::{
     get_daily_work_durations_7_days, get_daily_work_durations_n_days, get_longest_streak,
     get_session_type_distribution, get_total_time,
   },
+  tui::merge_block::MergeBlock,
   utils::times_ago::render_duration,
 };
 use ratatui::{
@@ -12,7 +13,7 @@ use ratatui::{
   layout::{Constraint, Layout, Rect},
   style::{Color, Style},
   text::{Line, Span, Text},
-  widgets::{Bar, BarChart, Block, Padding, Paragraph},
+  widgets::{Bar, BarChart, Paragraph},
 };
 use tui_piechart::{PieChart, PieSlice, symbols};
 
@@ -20,8 +21,8 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
   let show_bar_chart = area.height > 15;
   let show_pie_chart = area.height > 25;
   let mut constraints: Vec<Constraint> = vec![
-    Constraint::Max(4), // Total
-    Constraint::Max(4), // Streak
+    Constraint::Max(5), // Total
+    Constraint::Max(5), // Streak
   ];
 
   if show_bar_chart {
@@ -31,7 +32,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
     constraints.push(Constraint::Fill(1));
   }
 
-  let layout = Layout::vertical(constraints).spacing(1);
+  let layout = Layout::vertical(constraints).spacing(0);
 
   let l = area.layout_vec(&layout);
 
@@ -58,11 +59,9 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title("Streak & Completion")
-    .padding(Padding::horizontal(1));
-  let inner = block.inner(area);
-  frame.render_widget(block, area);
+  let inner = MergeBlock::new(" Streak & Completion ")
+    .top()
+    .render(frame, area);
 
   let layout = Layout::vertical([Constraint::Max(1), Constraint::Max(1)]);
   let [streek, completion] = inner.layout(&layout);
@@ -91,9 +90,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let bar_gap: u16 = 1;
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
-  let block = Block::bordered().title("Daily Focus");
-  let inner = block.inner(area);
-  frame.render_widget(block, area);
+  let inner = MergeBlock::new(" Daily Focus ").top().render(frame, area);
 
   let days = ((inner.width as usize) / cols_per_bar).max(7).min(90);
 
@@ -127,9 +124,10 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 }
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Daily Focus (4 weeks)");
-  let inner = block.inner(area);
-  frame.render_widget(block, area);
+  let inner = MergeBlock::new(" Daily Focus (4 weeks) ")
+    .top()
+    .left()
+    .render(frame, area);
 
   let data = get_daily_work_durations_n_days(28);
   if data.is_empty() {
@@ -194,6 +192,11 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     return;
   }
 
+  let inner = MergeBlock::new(" Session Types ")
+    .top()
+    .left()
+    .render(frame, area);
+
   let colors = [
     Color::Cyan,
     Color::Yellow,
@@ -209,10 +212,9 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
 
   let chart = PieChart::new(slices)
     .pie_char(symbols::PIE_CHAR_BLOCK)
-    .block(Block::bordered().title("Session Types"))
     .show_legend(true)
     .show_percentages(false);
-  frame.render_widget(chart, area);
+  frame.render_widget(chart, inner);
 }
 
 fn heat_color(intensity: usize) -> Color {
@@ -236,9 +238,7 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Time Summary");
-  let inner = block.inner(area);
-  frame.render_widget(block, area);
+  let inner = MergeBlock::new(" Time Summary ").top().render(frame, area);
 
   let total_layout = Layout::horizontal([
     Constraint::Percentage(25),

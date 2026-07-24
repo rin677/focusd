@@ -7,16 +7,18 @@ use crate::{
     state::{SessionType, TimerState},
     utils::time_for_session,
   },
+  tui::merge_block::MergeBlock,
   utils::figlet::big_text,
 };
 use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect},
   style::Modifier,
-  widgets::{Block, LineGauge, Padding, Paragraph},
+  widgets::{LineGauge, Paragraph},
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+  let area = MergeBlock::new("").top().render(frame, area);
   let cfg = get_config();
   if cfg.tui_show_stats {
     let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(9)]);
@@ -61,11 +63,9 @@ fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame
 }
 
 fn render_stats(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title("Today's stats")
-    .padding(Padding::horizontal(1));
+  let inner = MergeBlock::new(" Today's stats ").top().render(frame, area);
   let text = big_text("Stats loading ...");
-  frame.render_widget(Paragraph::new(text).centered().block(block), area);
+  frame.render_widget(Paragraph::new(text).centered(), inner);
 }
 
 fn render_text(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
