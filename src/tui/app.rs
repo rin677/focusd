@@ -1,6 +1,6 @@
 use crate::{
   config::settings::get_crr_preset,
-  daemon::commands::{Message, get_timer_state, send_command},
+  daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
     merge_block::{MergeBlock, clear_bottom_tees},
@@ -179,9 +179,9 @@ impl App {
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
       KeyCode::Char('q') => self.quit(),
-      KeyCode::Char(' ') => send_command(Message::ToggleSession).ignore_type(),
-      KeyCode::Char('n') => send_command(Message::NextSession).ignore_type(),
-      KeyCode::Char('r') => send_command(Message::ResetSession).ignore_type(),
+      KeyCode::Char(' ') => send_message(Message::ToggleSession).ignore_type(),
+      KeyCode::Char('n') => send_message(Message::NextSession).ignore_type(),
+      KeyCode::Char('r') => send_message(Message::ResetSession).ignore_type(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {

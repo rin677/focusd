@@ -14,7 +14,7 @@ use std::io;
 use crate::{
   config::settings::create_config_file,
   daemon::{
-    commands::{Message, send_command},
+    commands::{Message, PayloadMessage, send_message, send_message_with_payload},
     run::{ensure_daemon_active, run_daemon},
   },
   database::history::print_history,
@@ -91,7 +91,7 @@ fn main() -> io::Result<()> {
     return Ok(());
   }
   if cli.stop_daemon {
-    send_command(Message::StopDaemon).map(|m| println!("{m}"))?;
+    send_message(Message::StopDaemon).map(|m| println!("{m}"))?;
     return Ok(());
   }
 
@@ -115,15 +115,23 @@ fn main() -> io::Result<()> {
     Some(Command::Stats) => launch_tui(Pages::Stats),
     Some(Command::History) => launch_tui(Pages::History),
 
-    Some(Command::Pause) => send_command(Message::PauseSession).print(),
-    Some(Command::Resume) => send_command(Message::ResumeSession).print(),
-    Some(Command::Toggle) => send_command(Message::ToggleSession).print(),
-    Some(Command::Reset) | Some(Command::Stop) => send_command(Message::ResetSession).print(),
-    Some(Command::Next) | Some(Command::Skip) => send_command(Message::NextSession).print(),
-    Some(Command::Start) => send_command(Message::StartSession).print(),
-    Some(Command::Work) => send_command(Message::StartWork).print(),
-    Some(Command::ShortBreak) => send_command(Message::StartShortBreak).print(),
-    Some(Command::LongBreak) => send_command(Message::StartLongBreak).print(),
+    Some(Command::Pause) => send_message(Message::PauseSession).print(),
+    Some(Command::Resume) => send_message(Message::ResumeSession).print(),
+    Some(Command::Toggle) => send_message(Message::ToggleSession).print(),
+    Some(Command::Reset) | Some(Command::Stop) => send_message(Message::ResetSession).print(),
+    Some(Command::Next) | Some(Command::Skip) => send_message(Message::NextSession).print(),
+    Some(Command::Start) => send_message(Message::StartSession).print(),
+
+    Some(Command::Work) => {
+      send_message_with_payload(PayloadMessage::SelectSession, "Work".into()).print()
+    }
+    Some(Command::ShortBreak) => {
+      send_message_with_payload(PayloadMessage::SelectSession, "Short Break".into()).print()
+    }
+    Some(Command::LongBreak) => {
+      send_message_with_payload(PayloadMessage::SelectSession, "Long Break".into()).print()
+    }
+
     None => launch_tui(Pages::Timer),
   }
 }
