@@ -77,7 +77,7 @@ fn render_stats_and_presets(area: Rect, frame: &mut Frame, app_state: &mut AppSt
 }
 
 fn render_stats(area: Rect, frame: &mut Frame) {
-  let inner = MergeBlock::new(" Today's stats ")
+  let inner = MergeBlock::new("Today's stats")
     .left()
     .top()
     .no_padding()

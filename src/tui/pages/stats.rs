@@ -59,7 +59,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let inner = MergeBlock::new(" Streak & Completion ")
+  let inner = MergeBlock::new("Streak & Completion")
     .top()
     .render(frame, area);
 
@@ -90,7 +90,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let bar_gap: u16 = 1;
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
-  let inner = MergeBlock::new(" Daily Focus ").top().render(frame, area);
+  let inner = MergeBlock::new("Daily Focus").top().render(frame, area);
 
   let days = ((inner.width as usize) / cols_per_bar).max(7).min(90);
 
@@ -124,7 +124,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 }
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
-  let inner = MergeBlock::new(" Daily Focus (4 weeks) ")
+  let inner = MergeBlock::new("Daily Focus (4 weeks)")
     .top()
     .render(frame, area);
 
@@ -191,7 +191,7 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     return;
   }
 
-  let inner = MergeBlock::new(" Session Types ")
+  let inner = MergeBlock::new("Session Types")
     .top()
     .left()
     .render(frame, area);
@@ -237,7 +237,7 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
-  let inner = MergeBlock::new(" Time Summary ").top().render(frame, area);
+  let inner = MergeBlock::new("Time Summary").top().render(frame, area);
 
   let total_layout = Layout::horizontal([
     Constraint::Percentage(25),
