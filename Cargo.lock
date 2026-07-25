@@ -821,6 +821,7 @@ dependencies = [
  "serde_json",
  "toml",
  "tui-piechart",
+ "tui-widget-list",
 ]
 
 [[package]]
@@ -2244,6 +2245,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c34435c65cd79e6a39844554d05ba35511a03fb3fbb3f9b77745149163c0b31"
 dependencies = [
  "ratatui",
+]
+
+[[package]]
+name = "tui-widget-list"
+version = "0.15.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39fc4e2d4f0673ad55213e1db3203b2f5962d8e99acbc54faa59318c435b010a"
+dependencies = [
+ "ratatui-core",
+ "ratatui-widgets",
 ]
 
 [[package]]

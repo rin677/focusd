@@ -1,5 +1,3 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
-
 use crate::{
   config::settings::get_config,
   timer::{
@@ -7,23 +5,32 @@ use crate::{
     state::{SessionType, TimerState},
     utils::time_for_session,
   },
-  tui::merge_block::MergeBlock,
+  tui::{app::AppState, merge_block::MergeBlock},
   utils::figlet::big_text,
 };
+
 use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect},
+  prelude::*,
   style::Modifier,
   widgets::{LineGauge, Paragraph},
 };
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use tui_widget_list::{ListBuilder, ListState, ListView};
 
-pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+pub fn show_timer(
+  timer_state: &TimerState,
+  area: Rect,
+  frame: &mut Frame,
+  app_state: &mut AppState,
+) {
   let cfg = get_config();
   if cfg.tui_show_stats {
     let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(9)]);
     let [first, second] = area.layout(&layout);
     render_timer_no_stats(timer_state, first, frame);
-    render_stats(second, frame);
+    render_stats_and_presets(second, frame, app_state);
   } else {
     render_timer_no_stats(timer_state, area, frame);
   }
@@ -62,10 +69,38 @@ fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame
   // TODO: Include other things as well, dashboard with presets, and today's stats.
 }
 
+fn render_stats_and_presets(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
+  let split = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
+  let [preset_area, stats_area] = area.layout(&split);
+  render_presets(preset_area, frame, &mut app_state.preset_start_index);
+  render_stats(stats_area, frame);
+}
+
 fn render_stats(area: Rect, frame: &mut Frame) {
-  let inner = MergeBlock::new(" Today's stats ").top().render(frame, area);
+  // TODO: Implement this
+  let inner = MergeBlock::new(" Today's stats ")
+    .left()
+    .top()
+    .render(frame, area);
   let text = big_text("Stats loading ...");
   frame.render_widget(Paragraph::new(text).centered(), inner);
+}
+
+fn render_presets(area: Rect, frame: &mut Frame, preset_index: &mut usize) {
+  let area = MergeBlock::new("presets").top().render(frame, area);
+
+  let builder = ListBuilder::new(|context| {
+    let mut item = Line::from(format!("Item {}", context.index));
+    if context.is_selected {
+      item = item.style(Style::default().bg(Color::DarkGray));
+    }
+    (item, 1)
+  });
+
+  let mut state = ListState::default();
+  state.select(Some(*preset_index));
+  let list = ListView::new(builder, 20);
+  list.render(area, frame.buffer_mut(), &mut state);
 }
 
 fn render_text(timer_state: &TimerState, area: Rect, frame: &mut Frame) {

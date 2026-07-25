@@ -40,6 +40,7 @@ pub struct AppState {
   current_page: Pages,
   pub max_history_index: usize,
   pub crr_history_index: usize,
+  pub preset_start_index: usize,
 }
 
 impl Default for AppState {
@@ -49,6 +50,7 @@ impl Default for AppState {
       current_page: Pages::Timer,
       max_history_index: 10,
       crr_history_index: 0,
+      preset_start_index: 0,
     }
   }
 }
@@ -144,6 +146,13 @@ impl App {
     frame.render_widget(Text::from(format!(" Focusd: {current_page} ")), left_space);
     frame.render_widget(Text::from(right_header_text), right_space);
 
+    match self.app_state.current_page {
+      Pages::Timer => show_timer(&self.timer_state, inner_area, frame, &mut self.app_state),
+      Pages::History => show_history(inner_area, frame, &mut self.app_state),
+      Pages::Stats => show_stats(inner_area, frame),
+      // Pages::Settings => show_settings(inner_area, frame),
+    }
+
     let footer_sep = Rect::new(footer.x, footer.y, footer.width, 1);
     let footer_text = Rect::new(footer.x, footer.y + 1, footer.width, 1);
     MergeBlock::new("")
@@ -155,13 +164,6 @@ impl App {
         .centered(),
       footer_text,
     );
-
-    match self.app_state.current_page {
-      Pages::Timer => show_timer(&self.timer_state, inner_area, frame),
-      Pages::History => show_history(inner_area, frame, &mut self.app_state),
-      Pages::Stats => show_stats(inner_area, frame),
-      // Pages::Settings => show_settings(inner_area, frame),
-    }
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
@@ -182,10 +184,17 @@ impl App {
       KeyCode::Char('r') => send_command(Message::ResetSession).ignore_type(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
-      KeyCode::Char('j') => self.history_down(),
-      KeyCode::Char('k') => self.history_up(),
-      KeyCode::Up => self.history_up(),
-      KeyCode::Down => self.history_down(),
+      KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {
+        Pages::Timer => self.preset_down(),
+        Pages::History => self.history_down(),
+        _ => {}
+      },
+      KeyCode::Char('k') | KeyCode::Up => match self.app_state.current_page {
+        Pages::Timer => self.preset_up(),
+        Pages::History => self.history_up(),
+        _ => {}
+      },
+
       KeyCode::Char('c')
         if key_event
           .modifiers
@@ -216,15 +225,24 @@ impl App {
   }
 
   fn history_up(&mut self) {
-    if self.app_state.current_page == Pages::History && self.app_state.crr_history_index > 0 {
+    if self.app_state.crr_history_index > 0 {
       self.app_state.crr_history_index -= 1;
     }
   }
   fn history_down(&mut self) {
-    if self.app_state.current_page == Pages::History
-      && self.app_state.crr_history_index < self.app_state.max_history_index
-    {
+    if self.app_state.crr_history_index < self.app_state.max_history_index {
       self.app_state.crr_history_index += 1;
+    }
+  }
+
+  fn preset_up(&mut self) {
+    if self.app_state.preset_start_index > 0 {
+      self.app_state.preset_start_index -= 1;
+    }
+  }
+  fn preset_down(&mut self) {
+    if self.app_state.preset_start_index < 19 {
+      self.app_state.preset_start_index += 1;
     }
   }
 }
