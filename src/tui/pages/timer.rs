@@ -18,7 +18,6 @@ use ratatui::{
 };
 
 pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
-  let area = MergeBlock::new("").top().render(frame, area);
   let cfg = get_config();
   if cfg.tui_show_stats {
     let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(9)]);
@@ -31,6 +30,7 @@ pub fn show_timer(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
 }
 
 fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+  let area = MergeBlock::new("").top().render(frame, area);
   let cfg = get_config();
   let show_art = cfg.tui_show_ascii_art;
   let show_progress = cfg.tui_show_progress;

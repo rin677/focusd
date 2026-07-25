@@ -126,7 +126,6 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 fn render_heatmap(area: Rect, frame: &mut Frame) {
   let inner = MergeBlock::new(" Daily Focus (4 weeks) ")
     .top()
-    .left()
     .render(frame, area);
 
   let data = get_daily_work_durations_n_days(28);

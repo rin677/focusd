@@ -3,7 +3,7 @@ use crate::{
   daemon::commands::{Message, get_timer_state, send_command},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
-    merge_block::MergeBlock,
+    merge_block::{MergeBlock, clear_bottom_tees},
     pages::{
       history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
       // settings::show_settings,
@@ -100,6 +100,7 @@ impl App {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
+    clear_bottom_tees();
     let icon = if self.timer_state.running {
       ""
     } else {

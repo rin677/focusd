@@ -1,11 +1,22 @@
-use ratatui::{Frame, layout::Rect, widgets::Paragraph};
+use ratatui::{
+  Frame,
+  layout::Rect,
+  text::{Line, Text},
+  widgets::Paragraph,
+};
+use std::sync::Mutex;
+
+static BOTTOM_TEES: Mutex<Vec<(u16, u16)>> = Mutex::new(Vec::new());
+
+pub fn clear_bottom_tees() {
+  BOTTOM_TEES.lock().unwrap().clear();
+}
 
 pub struct MergeBlock<'a> {
   title: &'a str,
   top: bool,
   left: bool,
   padding: bool,
-  frame: bool,
 }
 
 impl<'a> MergeBlock<'a> {
@@ -15,7 +26,6 @@ impl<'a> MergeBlock<'a> {
       top: false,
       left: false,
       padding: true,
-      frame: false,
     }
   }
 
@@ -37,16 +47,9 @@ impl<'a> MergeBlock<'a> {
   pub fn render(&self, frame: &mut Frame, area: Rect) -> Rect {
     if self.top {
       let border_x = area.x.saturating_sub(1);
-      let border_w = if self.left {
-        area.width + 1
-      } else {
-        area.width + 2
-      };
-      let (left_char, right_char) = if self.frame {
-        ("├", "┐")
-      } else {
-        ("├", "┤")
-      };
+      let border_w = area.width + 2;
+      let left_char = if self.left { "┬" } else { "├" };
+      let right_char = "┤";
       let sep = if self.title.is_empty() {
         format!(
           "{}{}{}",
@@ -68,15 +71,30 @@ impl<'a> MergeBlock<'a> {
         Paragraph::new(sep),
         Rect::new(border_x, area.y, border_w, 1),
       );
+
+      let tees = BOTTOM_TEES.lock().unwrap();
+      for &(col, row) in tees.iter() {
+        if row == area.y {
+          let idx = col as i32 - border_x as i32;
+          if idx > 0 && idx < border_w as i32 - 1 {
+            frame.render_widget(Paragraph::new("┴"), Rect::new(col, area.y, 1, 1));
+          }
+        }
+      }
     }
 
     let content_y = area.y + if self.top { 1 } else { 0 };
     let content_height = area.height - if self.top { 1 } else { 0 };
     if self.left && content_height > 0 {
+      let v: Vec<Line> = (0..content_height).map(|_| Line::from("│")).collect();
       frame.render_widget(
-        Paragraph::new("│"),
+        Paragraph::new(Text::from(v)),
         Rect::new(area.x.saturating_sub(1), content_y, 1, content_height),
       );
+      BOTTOM_TEES
+        .lock()
+        .unwrap()
+        .push((area.x.saturating_sub(1), area.y + area.height));
     }
 
     let pad = if self.padding { 1 } else { 0 };
