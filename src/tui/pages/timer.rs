@@ -1,12 +1,14 @@
 use crate::{
   config::settings::get_config,
+  database::history::get_full_history_no_err,
+  stats::calculate::{DurType, get_current_streak, get_total_time},
   timer::{
     engine::render_time,
     state::{SessionType, TimerState},
     utils::time_for_session,
   },
   tui::{app::AppState, merge_block::MergeBlock},
-  utils::figlet::big_text,
+  utils::{figlet::big_text, times_ago::render_duration},
 };
 
 use ratatui::{
@@ -27,7 +29,7 @@ pub fn show_timer(
 ) {
   let cfg = get_config();
   if cfg.tui_show_stats {
-    let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(9)]);
+    let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(5)]);
     let [first, second] = area.layout(&layout);
     render_timer_no_stats(timer_state, first, frame);
     render_stats_and_presets(second, frame, app_state);
@@ -65,8 +67,6 @@ fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame
     let gauge_area = if show_art { areas[2] } else { areas[1] };
     render_gauge(timer_state, gauge_area, frame);
   }
-
-  // TODO: Include other things as well, dashboard with presets, and today's stats.
 }
 
 fn render_stats_and_presets(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
@@ -80,13 +80,29 @@ fn render_stats(area: Rect, frame: &mut Frame) {
   let inner = MergeBlock::new(" Today's stats ")
     .left()
     .top()
+    .no_padding()
     .render(frame, area);
-  let text = big_text("Stats loading ...");
-  frame.render_widget(Paragraph::new(text).centered(), inner);
+  let history = get_full_history_no_err();
+  let focused = format!(
+    "Focused: {}",
+    render_duration(get_total_time(DurType::Today))
+  );
+  let streak = format!("Streak: {}", get_current_streak(history));
+  let sessions = format!("Sessions: {}", get_todays_sessions());
+  let text = format!(" {focused}\n {sessions}\n {streak}");
+  frame.render_widget(Paragraph::new(text), inner);
+}
+
+fn get_todays_sessions() -> usize {
+  // TODO: Implement this
+  8
 }
 
 fn render_presets(area: Rect, frame: &mut Frame, preset_index: &mut usize) {
-  let area = MergeBlock::new("Presets").top().render(frame, area);
+  let area = MergeBlock::new("Presets")
+    .top()
+    .no_padding()
+    .render(frame, area);
   let cfg = get_config();
   let presets = cfg.presets;
 
