@@ -1,7 +1,7 @@
 use crate::{
   config::settings::get_config,
   database::history::get_full_history_no_err,
-  stats::calculate::{DurType, get_current_streak, get_total_time},
+  stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
   timer::{
     engine::render_time,
     state::{SessionType, TimerState},
@@ -91,11 +91,6 @@ fn render_stats(area: Rect, frame: &mut Frame) {
   let sessions = format!("Sessions: {}", get_todays_sessions());
   let text = format!(" {focused}\n {sessions}\n {streak}");
   frame.render_widget(Paragraph::new(text), inner);
-}
-
-fn get_todays_sessions() -> usize {
-  // TODO: Implement this
-  8
 }
 
 fn render_presets(area: Rect, frame: &mut Frame, preset_index: &mut usize) {

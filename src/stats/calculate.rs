@@ -44,6 +44,19 @@ pub fn get_total_time(dur: DurType) -> isize {
   db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0)
 }
 
+/// Returns total number sessions completed today (including breaks and work)
+///
+/// Returns 0 in case of any errors
+pub fn get_todays_sessions() -> isize {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return 0,
+  };
+  let r#where = get_sql_condition(DurType::Today, false);
+  let sql = format!("SELECT COUNT(*) FROM history {where}");
+  db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0)
+}
+
 /// Returns total number of completed work session
 ///
 /// returns 0 in case of errors
