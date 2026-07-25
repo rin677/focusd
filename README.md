@@ -278,7 +278,7 @@ This is project is recently made and will be under heavy development so there mi
 
 ## Contributing
 
-Feel free to open issues if you encounter any issues or have some feature ideas. But pull requests are not accepted currently. That's because as stated above main goal for building this project is for me to learn rust.
+Feel free to open issues if you encounter any issues or have some feature ideas. But pull requests are not accepted currently. That's because as stated above main goal for building this project is for me to learn rust. But even if you descide to make a Pull request make it to [v-2 branch](https://github.com/BibekBhusal0/focusd/tree/v-2) unless it's a hotfix.
 
 ## License
 
