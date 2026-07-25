@@ -12,7 +12,7 @@ Updated post release.
     - [/] Make it customizable
         - [ ] Allow changing font
         - [X] Allow hiding ASCII art
-        - [ ] Allow hiding dashboard
+        - [X] Allow hiding dashboard
         - [X] Allow hiding progress gauze
 
 - [ ] Customization options
@@ -72,5 +72,6 @@ Updated post release.
 - CLI Arguments:
     - Directly start specific mode with arguments `work`, `short-break` and `long-break`
 - TUI:
+    - New layout which don't have multiple borders.
     - You can hide progress with `tui_show_progress` in config file.
     - You can hide ASCII art with `tui_show_ascii_art` in config file.
