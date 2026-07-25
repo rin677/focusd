@@ -19,6 +19,7 @@ use crate::{
   },
   database::history::print_history,
   stats::calculate::print_stats,
+  timer::{state::SessionType, utils::name_for_session},
   tui::app::Pages,
   utils::print::Print,
 };
@@ -122,16 +123,18 @@ fn main() -> io::Result<()> {
     Some(Command::Next) | Some(Command::Skip) => send_message(Message::NextSession).print(),
     Some(Command::Start) => send_message(Message::StartSession).print(),
 
-    Some(Command::Work) => {
-      send_message_with_payload(PayloadMessage::SelectSession, "Work".into()).print()
-    }
-    Some(Command::ShortBreak) => {
-      send_message_with_payload(PayloadMessage::SelectSession, "Short Break".into()).print()
-    }
-    Some(Command::LongBreak) => {
-      send_message_with_payload(PayloadMessage::SelectSession, "Long Break".into()).print()
-    }
+    Some(Command::Work) => start_session(SessionType::Work),
+    Some(Command::ShortBreak) => start_session(SessionType::ShortBreak),
+    Some(Command::LongBreak) => start_session(SessionType::LongBreak),
 
     None => launch_tui(Pages::Timer),
   }
+}
+
+fn start_session(session_type: SessionType) -> io::Result<()> {
+  send_message_with_payload(
+    PayloadMessage::SelectSession,
+    name_for_session(session_type).into(),
+  )
+  .print()
 }
