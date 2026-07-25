@@ -5,7 +5,7 @@ use crate::{
   tui::{
     merge_block::{MergeBlock, clear_bottom_tees},
     pages::{
-      history::{get_history_index, scroll_history_down, scroll_history_up, show_history},
+      history::show_history,
       // settings::show_settings,
       stats::show_stats,
       timer::show_timer,
@@ -39,6 +39,7 @@ pub struct AppState {
   exit: bool,
   current_page: Pages,
   pub max_history_index: usize,
+  pub crr_history_index: usize,
 }
 
 impl Default for AppState {
@@ -47,6 +48,7 @@ impl Default for AppState {
       exit: false,
       current_page: Pages::Timer,
       max_history_index: 10,
+      crr_history_index: 0,
     }
   }
 }
@@ -213,16 +215,16 @@ impl App {
     }
   }
 
-  fn history_up(&self) {
-    if self.app_state.current_page == Pages::History && get_history_index() > 0 {
-      scroll_history_up();
+  fn history_up(&mut self) {
+    if self.app_state.current_page == Pages::History && self.app_state.crr_history_index > 0 {
+      self.app_state.crr_history_index -= 1;
     }
   }
-  fn history_down(&self) {
+  fn history_down(&mut self) {
     if self.app_state.current_page == Pages::History
-      && get_history_index() < self.app_state.max_history_index
+      && self.app_state.crr_history_index < self.app_state.max_history_index
     {
-      scroll_history_down();
+      self.app_state.crr_history_index += 1;
     }
   }
 }
