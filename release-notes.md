@@ -3,11 +3,11 @@
 Updated post release.
 
 - [/] Timer Page
-    - [ ] Add dashboard
+    - [/] Add dashboard
         - [ ] Today's focus
         - [ ] Sessions completed
         - [ ] Current streak
-        - [ ] Active preset
+        - [/] Active preset
         - [ ] Daily goal progress
     - [/] Make it customizable
         - [ ] Allow changing font

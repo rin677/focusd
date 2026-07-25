@@ -77,7 +77,6 @@ fn render_stats_and_presets(area: Rect, frame: &mut Frame, app_state: &mut AppSt
 }
 
 fn render_stats(area: Rect, frame: &mut Frame) {
-  // TODO: Implement this
   let inner = MergeBlock::new(" Today's stats ")
     .left()
     .top()
@@ -87,19 +86,44 @@ fn render_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_presets(area: Rect, frame: &mut Frame, preset_index: &mut usize) {
-  let area = MergeBlock::new("presets").top().render(frame, area);
+  let area = MergeBlock::new("Presets").top().render(frame, area);
+  let cfg = get_config();
+  let presets = cfg.presets;
 
+  let mut names: Vec<&str> = presets.keys().map(|s| s.as_str()).collect();
+  names.sort();
+  let count = names.len();
+
+  let active = cfg.active_preset.clone();
   let builder = ListBuilder::new(|context| {
-    let mut item = Line::from(format!("Item {}", context.index));
+    let text = match names.get(context.index) {
+      Some(name) => {
+        let item = presets.get(*name).copied().unwrap();
+        format!(
+          "{} {} {}/{}/{} x {}",
+          if *name == active { ">" } else { " " },
+          name,
+          item.work_minutes,
+          item.short_break_minutes,
+          item.long_break_minutes,
+          item.sessions_before_long_break
+        )
+      }
+      None => String::new(),
+    };
+    let mut item = Line::from(text);
     if context.is_selected {
       item = item.style(Style::default().bg(Color::DarkGray));
     }
     (item, 1)
   });
 
+  if *preset_index >= count && count > 0 {
+    *preset_index = count - 1;
+  }
   let mut state = ListState::default();
   state.select(Some(*preset_index));
-  let list = ListView::new(builder, 20);
+  let list = ListView::new(builder, count);
   list.render(area, frame.buffer_mut(), &mut state);
 }
 
