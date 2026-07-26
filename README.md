@@ -92,6 +92,7 @@ Those commands can also be seen by running `focusd --help`
 - `print-history` - Print all the history.
 - `status` - Shows timer status in JSON format, this is mainly for waybar (see the section for [waybar](#waybar-configuration))
 - `work`/`short-break`/`long-break` to start specific session directly.
+- `--preset` - Select specific preset.
 - `--stop-daemon` - Stop daemon if running.
 - `--daemon` - Start daemon (force stops currently running daemon).
 

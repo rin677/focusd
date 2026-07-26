@@ -52,7 +52,7 @@ Updated post release.
     - [X] Start work session directly
     - [X] Start short break directly
     - [X] Start long break directly
-    - [ ] Start preset directly
+    - [X] Start preset directly
     - [ ] Start custom duration timer
 
 # Release Notes
@@ -71,6 +71,7 @@ Updated post release.
 ## New Features
 - CLI Arguments:
     - Directly start specific mode with arguments `work`, `short-break` and `long-break`
+    - Directly select specific preset with `--preset`.
 - TUI:
     - New layout which don't have multiple borders.
     - You can hide progress with `tui_show_progress` in config file.

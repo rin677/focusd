@@ -44,6 +44,10 @@ struct Cli {
   /// Stop deamon if already running
   #[arg(long)]
   stop_daemon: bool,
+
+  /// Select specific preset
+  #[arg(short, long)]
+  preset: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -97,6 +101,12 @@ fn main() -> io::Result<()> {
   }
 
   ensure_daemon_active(true)?;
+
+  if let Some(p) = cli.preset {
+    println!("got preset {}", p);
+    send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
+    return Ok(());
+  }
 
   let launch_tui = |page| tui::app::main(page);
 

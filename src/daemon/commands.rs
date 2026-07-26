@@ -1,7 +1,10 @@
 use crate::{
   daemon::{run::stop_daemon, socket_path},
   timer::{
-    engine::{next_session, render_time, reset_session, start_session, start_specific_session},
+    engine::{
+      next_session, render_time, reset_session, select_preset, start_session,
+      start_specific_session,
+    },
     state::{TimerSnapShot, TimerState},
     utils::{get_session_type, name_for_session},
   },
@@ -141,6 +144,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       let session_type = get_session_type(value);
       start_specific_session(&mut s, session_type);
       response = format!("{} Session started", name_for_session(session_type));
+    } else if p.message == parse_payload_messages(PayloadMessage::SelectPreset) {
+      let value = p.payload.as_str().unwrap();
+      select_preset(&mut s, value)?;
     }
   }
 

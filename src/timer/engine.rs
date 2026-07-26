@@ -1,7 +1,8 @@
 use crate::{
-  config::settings::get_crr_preset,
+  config::settings::{get_config, get_crr_preset, save_config},
   database::history::add_session_to_db,
   notification::show_complete_notification,
+  throw,
   timer::{
     state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
@@ -58,6 +59,26 @@ pub fn start_specific_session(state: &mut TimerState, session_type: SessionType)
 pub fn reset_session(state: &mut TimerState) {
   state.running = false;
   state.time_remaining = time_for_session(state.session_type);
+}
+
+pub fn select_preset(state: &mut TimerState, preset_name: &str) -> std::io::Result<()> {
+  let config = get_config();
+  let preset = config.presets.get(preset_name);
+  match preset {
+    Some(_) => {
+      let mut new_config = config.clone();
+      new_config.active_preset = preset_name.to_string();
+      save_config(&new_config)?;
+      state.session_number = 1;
+      state.session_type = SessionType::Work;
+      reset_session(state);
+    }
+    None => {
+      println!("Something went wrong");
+      throw!("Something went wrong");
+    }
+  }
+  Ok(())
 }
 
 /// Goes next sesson

@@ -11,7 +11,7 @@ use crate::{throw, utils::profile::Profile};
 
 /// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
 // TODO: Allow customizing fonts, hooks, gool and more
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
   pub active_preset: String,
   pub presets: HashMap<String, Preset>,
