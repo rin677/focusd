@@ -1,6 +1,8 @@
 use crate::{
-  config::settings::get_crr_preset,
-  daemon::commands::{Message, get_timer_state, send_message},
+  config::settings::{get_config, get_crr_preset},
+  daemon::commands::{
+    Message, PayloadMessage, get_timer_state, send_message, send_message_with_payload,
+  },
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
     merge_block::{MergeBlock, clear_bottom_tees},
@@ -40,7 +42,7 @@ pub struct AppState {
   current_page: Pages,
   pub max_history_index: usize,
   pub crr_history_index: usize,
-  pub preset_start_index: usize,
+  pub preset_selected_index: usize,
 }
 
 impl Default for AppState {
@@ -50,7 +52,7 @@ impl Default for AppState {
       current_page: Pages::Timer,
       max_history_index: 10,
       crr_history_index: 0,
-      preset_start_index: 0,
+      preset_selected_index: 0,
     }
   }
 }
@@ -194,6 +196,20 @@ impl App {
         Pages::History => self.history_up(),
         _ => {}
       },
+      KeyCode::Enter => {
+        if self.app_state.current_page == Pages::Timer {
+          let cfg = get_config();
+          let presets = cfg.presets;
+
+          let mut names: Vec<&str> = presets.keys().map(|s| s.as_str()).collect();
+          names.sort();
+          let preset = names.get(self.app_state.preset_selected_index);
+          if let Some(p) = preset {
+            send_message_with_payload(PayloadMessage::SelectPreset, p.to_string().into())
+              .ignore_type();
+          }
+        }
+      }
 
       KeyCode::Char('c')
         if key_event
@@ -236,13 +252,13 @@ impl App {
   }
 
   fn preset_up(&mut self) {
-    if self.app_state.preset_start_index > 0 {
-      self.app_state.preset_start_index -= 1;
+    if self.app_state.preset_selected_index > 0 {
+      self.app_state.preset_selected_index -= 1;
     }
   }
   fn preset_down(&mut self) {
-    if self.app_state.preset_start_index < 19 {
-      self.app_state.preset_start_index += 1;
+    if self.app_state.preset_selected_index < 19 {
+      self.app_state.preset_selected_index += 1;
     }
   }
 }

@@ -72,7 +72,7 @@ fn render_timer_no_stats(timer_state: &TimerState, area: Rect, frame: &mut Frame
 fn render_stats_and_presets(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
   let split = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
   let [preset_area, stats_area] = area.layout(&split);
-  render_presets(preset_area, frame, &mut app_state.preset_start_index);
+  render_presets(preset_area, frame, &mut app_state.preset_selected_index);
   render_stats(stats_area, frame);
 }
 
