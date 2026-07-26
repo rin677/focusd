@@ -146,7 +146,10 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       response = format!("{} Session started", name_for_session(session_type));
     } else if p.message == parse_payload_messages(PayloadMessage::SelectPreset) {
       let value = p.payload.as_str().unwrap();
-      select_preset(&mut s, value)?;
+      match select_preset(&mut s, value) {
+        Ok(_) => response = format!("Preset {} selected", value),
+        Err(e) => response = e.to_string(),
+      }
     }
   }
 

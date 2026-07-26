@@ -72,13 +72,12 @@ pub fn select_preset(state: &mut TimerState, preset_name: &str) -> std::io::Resu
       state.session_number = 1;
       state.session_type = SessionType::Work;
       reset_session(state);
+      Ok(())
     }
     None => {
-      println!("Something went wrong");
-      throw!("Something went wrong");
+      throw!(format!("Preset {preset_name} not found"));
     }
   }
-  Ok(())
 }
 
 /// Goes next sesson

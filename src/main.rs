@@ -103,7 +103,6 @@ fn main() -> io::Result<()> {
   ensure_daemon_active(true)?;
 
   if let Some(p) = cli.preset {
-    println!("got preset {}", p);
     send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
     return Ok(());
   }
