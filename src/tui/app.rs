@@ -1,16 +1,14 @@
 use crate::{
-  config::settings::{get_config, get_crr_preset},
-  daemon::commands::{
-    Message, PayloadMessage, get_timer_state, send_message, send_message_with_payload,
-  },
+  config::settings::get_crr_preset,
+  daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
     merge_block::{MergeBlock, clear_bottom_tees},
     pages::{
-      history::show_history,
+      history::HistoryPage,
       // settings::show_settings,
       stats::show_stats,
-      timer::show_timer,
+      timer::TimerPage,
     },
   },
   utils::ignore::IgnoreType,
@@ -28,8 +26,9 @@ use ratatui::{
   widgets::{Block, Paragraph},
 };
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 pub enum Pages {
+  #[default]
   Timer,
   Stats,
   History,
@@ -37,24 +36,12 @@ pub enum Pages {
   // Settings,
 }
 
+#[derive(Default)]
 pub struct AppState {
   exit: bool,
   current_page: Pages,
-  pub max_history_index: usize,
-  pub crr_history_index: usize,
-  pub preset_selected_index: usize,
-}
-
-impl Default for AppState {
-  fn default() -> Self {
-    AppState {
-      exit: false,
-      current_page: Pages::Timer,
-      max_history_index: 10,
-      crr_history_index: 0,
-      preset_selected_index: 0,
-    }
-  }
+  timer_page: TimerPage,
+  history_page: HistoryPage,
 }
 
 struct App {
@@ -151,8 +138,11 @@ impl App {
     frame.render_widget(Text::from(right_header_text), right_space);
 
     match self.app_state.current_page {
-      Pages::Timer => show_timer(&self.timer_state, inner_area, frame, &mut self.app_state),
-      Pages::History => show_history(inner_area, frame, &mut self.app_state),
+      Pages::Timer => self
+        .app_state
+        .timer_page
+        .render(&self.timer_state, inner_area, frame),
+      Pages::History => self.app_state.history_page.render(inner_area, frame),
       Pages::Stats => show_stats(inner_area, frame),
       // Pages::Settings => show_settings(inner_area, frame),
     }
@@ -189,27 +179,18 @@ impl App {
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {
-        Pages::Timer => self.preset_down(),
-        Pages::History => self.history_down(),
+        Pages::Timer => self.app_state.timer_page.preset_down(),
+        Pages::History => self.app_state.history_page.history_down(),
         _ => {}
       },
       KeyCode::Char('k') | KeyCode::Up => match self.app_state.current_page {
-        Pages::Timer => self.preset_up(),
-        Pages::History => self.history_up(),
+        Pages::Timer => self.app_state.timer_page.preset_up(),
+        Pages::History => self.app_state.history_page.history_up(),
         _ => {}
       },
       KeyCode::Enter => {
         if self.app_state.current_page == Pages::Timer {
-          let cfg = get_config();
-          let presets = cfg.presets;
-
-          let mut names: Vec<&str> = presets.keys().map(|s| s.as_str()).collect();
-          names.sort();
-          let preset = names.get(self.app_state.preset_selected_index);
-          if let Some(p) = preset {
-            send_message_with_payload(PayloadMessage::SelectPreset, p.to_string().into())
-              .ignore_type();
-          }
+          self.app_state.timer_page.select_preset();
         }
       }
 
@@ -239,28 +220,6 @@ impl App {
       let m = new_index % total_pages as isize;
       let abs_new_index: usize = (total_pages as isize + m) as usize % total_pages;
       self.app_state.current_page = self.all_pages[abs_new_index]
-    }
-  }
-
-  fn history_up(&mut self) {
-    if self.app_state.crr_history_index > 0 {
-      self.app_state.crr_history_index -= 1;
-    }
-  }
-  fn history_down(&mut self) {
-    if self.app_state.crr_history_index < self.app_state.max_history_index {
-      self.app_state.crr_history_index += 1;
-    }
-  }
-
-  fn preset_up(&mut self) {
-    if self.app_state.preset_selected_index > 0 {
-      self.app_state.preset_selected_index -= 1;
-    }
-  }
-  fn preset_down(&mut self) {
-    if self.app_state.preset_selected_index < 19 {
-      self.app_state.preset_selected_index += 1;
     }
   }
 }

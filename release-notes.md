@@ -5,9 +5,9 @@ Updated post release.
 - [/] Timer Page
     - [/] Add dashboard
         - [X] Today's focus
-        - [ ] Sessions completed
+        - [X] Sessions completed
         - [X] Current streak
-        - [/] Active preset
+        - [X] Active preset
         - [ ] Daily goal progress
     - [/] Make it customizable
         - [ ] Allow changing font
