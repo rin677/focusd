@@ -152,7 +152,7 @@ fn render_gauge(timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     .filled_symbol("█")
     .unfilled_symbol("░")
     .label("")
-    .ratio(1_f64 - percent);
+    .ratio(1f64 - percent.clamp(0f64, 1f64));
   frame.render_widget(progress, area);
 }
 
