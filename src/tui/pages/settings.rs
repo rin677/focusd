@@ -1,6 +1,7 @@
 use crate::utils::figlet::big_text;
 use ratatui::{Frame, layout::Rect, widgets::Paragraph};
 
+#[allow(dead_code)]
 pub fn show_settings(area: Rect, frame: &mut Frame) {
   // TODO: Implement this
   let text = big_text("Settings will be here");

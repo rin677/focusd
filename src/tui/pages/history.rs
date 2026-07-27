@@ -32,8 +32,7 @@ pub fn show_history(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
   }
 
   let mut table_items: Vec<Row> = Vec::new();
-  for i in start..n {
-    let history = &all_history[i];
+  for history in &all_history[start..n] {
     let status = if history.completed_duration == history.planned_duration {
       "Completed"
     } else {

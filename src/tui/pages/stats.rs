@@ -92,12 +92,12 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 
   let inner = MergeBlock::new("Daily Focus").top().render(frame, area);
 
-  let days = ((inner.width as usize) / cols_per_bar).max(7).min(90);
+  let days = ((inner.width as usize) / cols_per_bar).clamp(7, 90);
 
   let (data, max_value) = if days == 7 {
     let d = get_daily_work_durations_7_days();
     let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
-    (d.into_iter().map(|(l, v)| (l, v)).collect::<Vec<_>>(), max)
+    (d.into_iter().collect::<Vec<_>>(), max)
   } else {
     let d = get_daily_work_durations_n_days(days);
     let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);

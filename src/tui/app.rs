@@ -65,8 +65,10 @@ struct App {
 
 pub fn main(page: Pages) -> io::Result<()> {
   let state = get_timer_state()?;
-  let mut app_state = AppState::default();
-  app_state.current_page = page;
+  let app_state = AppState {
+    current_page: page,
+    ..Default::default()
+  };
   let mut app = App {
     app_state,
     timer_state: state,
