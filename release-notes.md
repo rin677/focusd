@@ -9,14 +9,14 @@ Updated post release.
         - [X] Current streak
         - [X] Active preset
         - [ ] Daily goal progress
-    - [/] Make it customizable
-        - [ ] Allow changing font
+    - [X] Make it customizable
+        - [X] Allow changing font
         - [X] Allow hiding ASCII art
         - [X] Allow hiding dashboard
         - [X] Allow hiding progress gauze
 
-- [ ] Customization options
-    - [ ] Font
+- [/] Customization options
+    - [X] Font
     - [ ] Themes
     - [ ] Sounds
         - [ ] start short break
@@ -34,7 +34,11 @@ Updated post release.
         - [ ] Notify when goal is reached
 
 - [ ] Settings Page
-    - [ ] Home page
+    - [ ] Home page:
+        - [ ] Hide/show stats
+        - [ ] Hide/show ASCII Art
+        - [ ] Hide/show progress
+        - [ ] Edit fonts
     - [ ] Edit presets
         - [ ] Create preset
         - [ ] Delete preset
@@ -42,7 +46,6 @@ Updated post release.
         - [ ] Edit durations
     - [ ] Edit notification settings
     - [ ] Edit themes
-    - [ ] Edit fonts
     - [ ] Add/remove hooks
     - [ ] Set daily goal
 
@@ -66,7 +69,6 @@ Updated post release.
     - `skip-session`
     - `next-session`
 - Changed `stop-daemon` to `--stop-daemon`
-- Up and down key can scroll in history page.
 
 ## New Features
 - CLI Arguments:
@@ -76,3 +78,5 @@ Updated post release.
     - New layout which don't have multiple borders.
     - You can hide progress with `tui_show_progress` in config file.
     - You can hide ASCII art with `tui_show_ascii_art` in config file.
+    - You can now customize fonts with `font` in config file.
+    - Up and down key can scroll in history page.
