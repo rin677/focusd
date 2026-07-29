@@ -11,11 +11,15 @@ use crate::{throw, utils::profile::Profile};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Fonts {
-  Terminus,
-  SmBlock,
-  Mono12,
+  AnsiRegular,
+  AnsiShadow,
+  DosRebel,
   Future,
+  Mono12,
   Mono9,
+  SmBlock,
+  Terminus,
+  TubesRegular,
 }
 
 /// Data type of config (which will be stored in `~/.config/focusd/config.toml`)

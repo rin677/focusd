@@ -20,11 +20,21 @@ fn get_font(font: Fonts) -> Font {
   let make_figlet_from_file = |f: &str| Font::Figlet(FIGlet::from_content(f).unwrap());
 
   match font {
-    Fonts::Terminus => make_figlet_from_file(include_str!("../../resources/fonts/terminus.flf")),
-    Fonts::SmBlock => make_toilet(Toilet::smblock()),
-    Fonts::Mono12 => make_toilet(Toilet::mono12()),
+    Fonts::AnsiRegular => {
+      make_figlet_from_file(include_str!("../../resources/fonts/ANSI Regular.flf"))
+    }
+    Fonts::AnsiShadow => {
+      make_figlet_from_file(include_str!("../../resources/fonts/ANSI Shadow.flf"))
+    }
+    Fonts::DosRebel => make_figlet_from_file(include_str!("../../resources/fonts/DOS Rebel.flf")),
     Fonts::Future => make_toilet(Toilet::future()),
+    Fonts::Mono12 => make_toilet(Toilet::mono12()),
     Fonts::Mono9 => make_toilet(Toilet::mono9()),
+    Fonts::SmBlock => make_toilet(Toilet::smblock()),
+    Fonts::Terminus => make_figlet_from_file(include_str!("../../resources/fonts/terminus.flf")),
+    Fonts::TubesRegular => {
+      make_figlet_from_file(include_str!("../../resources/fonts/Tubes-Regular.flf"))
+    }
   }
 }
 
