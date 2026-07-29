@@ -64,30 +64,42 @@ impl TimerPage {
   }
 
   fn render_timer_no_stats(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
+    let t = render_time(timer_state);
+    let text = big_text(&t);
+
     let area = MergeBlock::new("").top().render(frame, area);
     let cfg = get_config();
     let show_art = cfg.tui_show_ascii_art;
     let show_progress = cfg.tui_show_progress;
     let mut constrains: Vec<Constraint> = Vec::new();
-    let mut h = 6;
+    let lines: Vec<&str> = text.lines().collect();
+    let text_height = lines.len() as u16;
+    let text_width = lines
+      .iter()
+      .map(|line| line.chars().count())
+      .max()
+      .unwrap_or(4) as u16;
+    let mut h = text_height + 1;
     if show_art {
       h += 23;
       constrains.push(Constraint::Length(23));
     }
-    constrains.push(Constraint::Length(6));
+    constrains.push(Constraint::Length(text_height + 1));
     if show_progress {
       h += 1;
       constrains.push(Constraint::Length(1));
     }
-    let centered = area.centered(Constraint::Max(38), Constraint::Max(h));
+    let centered = area.centered(Constraint::Max(text_width.max(38)), Constraint::Max(h));
     let layout = Layout::vertical(constrains);
     let areas = centered.layout_vec(&layout);
 
     if show_art {
       self.render_ascssi_art(timer_state, areas[0], frame);
     }
+
     let text_area = if show_art { areas[1] } else { areas[0] };
-    self.render_text(timer_state, text_area, frame);
+    frame.render_widget(Paragraph::new(text).centered(), text_area);
+
     if show_progress {
       let gauge_area = if show_art { areas[2] } else { areas[1] };
       self.render_gauge(timer_state, gauge_area, frame);
@@ -163,12 +175,6 @@ impl TimerPage {
     list.render(area, frame.buffer_mut(), &mut state);
   }
 
-  fn render_text(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
-    let t = render_time(timer_state);
-    let text = big_text(&t);
-    frame.render_widget(Paragraph::new(text).centered(), area);
-  }
-
   fn render_gauge(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     let percent = (timer_state.time_remaining.as_secs()) as f64
       / (time_for_session(timer_state.session_type).as_secs()) as f64;
@@ -217,6 +223,16 @@ impl TimerPage {
       .get(frame_index)
       .copied()
       .unwrap_or(session_frames[0]);
-    frame.render_widget(Paragraph::new(crr_frame), area);
+
+    let lines: Vec<&str> = crr_frame.lines().collect();
+    let frame_height = lines.len() as u16;
+    let frame_width = lines
+      .iter()
+      .map(|line| line.chars().count())
+      .max()
+      .unwrap_or(4) as u16;
+
+    let centered = area.centered(Constraint::Max(frame_width), Constraint::Max(frame_height));
+    frame.render_widget(Paragraph::new(crr_frame), centered);
   }
 }

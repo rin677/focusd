@@ -13,6 +13,7 @@ use crate::{throw, utils::profile::Profile};
 pub enum Fonts {
   Terminus,
   SmBlock,
+  Mono12,
   Future,
   Mono9,
 }

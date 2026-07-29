@@ -17,12 +17,12 @@ impl Font {
 
 fn get_font(font: Fonts) -> Font {
   let make_toilet = |f: Result<Toilet, _>| Font::Toilet(f.unwrap());
+  let make_figlet_from_file = |f: &str| Font::Figlet(FIGlet::from_content(f).unwrap());
 
   match font {
-    Fonts::Terminus => {
-      Font::Figlet(FIGlet::from_content(include_str!("../../resources/terminus.flf")).unwrap())
-    }
+    Fonts::Terminus => make_figlet_from_file(include_str!("../../resources/fonts/terminus.flf")),
     Fonts::SmBlock => make_toilet(Toilet::smblock()),
+    Fonts::Mono12 => make_toilet(Toilet::mono12()),
     Fonts::Future => make_toilet(Toilet::future()),
     Fonts::Mono9 => make_toilet(Toilet::mono9()),
   }
