@@ -4,12 +4,7 @@ use crate::{
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
     merge_block::{MergeBlock, clear_bottom_tees},
-    pages::{
-      history::HistoryPage,
-      // settings::show_settings,
-      stats::show_stats,
-      timer::TimerPage,
-    },
+    pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
   },
   utils::ignore::IgnoreType,
 };
@@ -32,8 +27,7 @@ pub enum Pages {
   Timer,
   Stats,
   History,
-  // TODO: Settings page
-  // Settings,
+  Settings,
 }
 
 #[derive(Default)]
@@ -42,6 +36,7 @@ pub struct AppState {
   current_page: Pages,
   timer_page: TimerPage,
   history_page: HistoryPage,
+  settings_page: SettingsPage,
 }
 
 struct App {
@@ -59,12 +54,7 @@ pub fn main(page: Pages) -> io::Result<()> {
   let mut app = App {
     app_state,
     timer_state: state,
-    all_pages: vec![
-      Pages::Timer,
-      Pages::Stats,
-      Pages::History,
-      // Pages::Settings,
-    ],
+    all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
   };
   let mut terminal = ratatui::init();
   let result = app.run(&mut terminal);
@@ -113,6 +103,7 @@ impl App {
       Pages::Timer => "Timer",
       Pages::Stats => "Stats",
       Pages::History => "History",
+      Pages::Settings => "Settings",
     };
 
     let main_area = frame.area();
@@ -144,7 +135,7 @@ impl App {
         .render(&self.timer_state, inner_area, frame),
       Pages::History => self.app_state.history_page.render(inner_area, frame),
       Pages::Stats => show_stats(inner_area, frame),
-      // Pages::Settings => show_settings(inner_area, frame),
+      Pages::Settings => self.app_state.settings_page.render(inner_area, frame),
     }
 
     let footer_sep = Rect::new(footer.x, footer.y, footer.width, 1);
