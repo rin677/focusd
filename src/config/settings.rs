@@ -9,6 +9,14 @@ use toml::Value;
 
 use crate::{throw, utils::profile::Profile};
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Fonts {
+  Terminus,
+  SmBlock,
+  Future,
+  Mono9,
+}
+
 /// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
 // TODO: Allow customizing fonts, hooks, gool and more
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -21,6 +29,8 @@ pub struct Config {
   pub tui_show_progress: bool,
   pub tui_show_ascii_art: bool,
   pub tui_show_stats: bool,
+
+  pub font: Fonts,
 }
 
 /// Preset type for session
@@ -60,6 +70,7 @@ impl Default for Config {
       tui_show_progress: true,
       tui_show_ascii_art: true,
       tui_show_stats: true,
+      font: Fonts::Terminus,
     }
   }
 }
@@ -93,6 +104,7 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
     cfg.active_preset = get(val, "active_preset", cfg.active_preset);
     cfg.presets = get(val, "presets", cfg.presets);
     cfg.tui_show_stats = get(val, "tui_show_stats", cfg.tui_show_stats);
+    cfg.font = get(val, "font", cfg.font);
     cfg.tui_show_progress = get(val, "tui_show_progress", cfg.tui_show_progress);
     cfg.tui_show_ascii_art = get(val, "tui_show_ascii_art", cfg.tui_show_ascii_art);
     cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
