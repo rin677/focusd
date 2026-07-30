@@ -152,13 +152,12 @@ pub fn get_crr_preset() -> Preset {
 /// Generates config files with default configuration
 pub fn create_config_file() {
   let Some(path) = config_path() else { return };
-  // TODO: create better config with commnet explaining what each key does
   if let Some(parent) = path.parent() {
     let _ = fs::create_dir_all(parent);
   }
   if !path.exists() {
-    let config = Config::default();
-    let _ = save_config(&config);
+    let config = include_str!("../../examples/config.toml");
+    fs::write(path, config).ok();
   }
 }
 
