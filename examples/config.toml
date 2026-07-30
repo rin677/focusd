@@ -1,0 +1,37 @@
+# Which preset is currently active
+active_preset = "pomodoro"
+
+# Show desktop notifications when session ends
+show_notifications = true
+
+# Show progress of timer
+tui_show_progress = true
+# Show ascci art and animation
+tui_show_ascii_art = true
+# Show short stats/preset in timer page
+tui_show_stats = true
+
+# Font used by the Clock in TUI.
+# Available fonts: AnsiRegular, AnsiShadow, DosRebel, Future, Mono12, Mono9, SmBlock, Terminus, TubesRegular
+font = "Terminus"
+
+## Presets define your work/break cycle.
+[presets.pomodoro]
+work_minutes = 25
+short_break_minutes = 5
+long_break_minutes = 15
+sessions_before_long_break = 4
+
+[presets.deep_work]
+work_minutes = 50
+short_break_minutes = 10
+long_break_minutes = 30
+sessions_before_long_break = 4
+
+## You can add more presets here if you want.
+## Example:
+# [presets.study]
+# work_minutes = 45
+# short_break_minutes = 10
+# long_break_minutes = 20
+# sessions_before_long_break = 4
