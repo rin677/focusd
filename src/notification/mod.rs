@@ -4,7 +4,7 @@ use crate::{
   config::settings::get_config,
   stats::calculate::{DurType, get_total_time},
   timer::{
-    state::TimerState,
+    state::{SessionType, TimerState},
     utils::{name_for_session, next_session as next_session_name, time_for_session},
   },
 };
@@ -31,7 +31,16 @@ pub fn show_complete_notification(state: &TimerState) {
     let goal_min = get_config().daily_goal_minutes;
     let goal = (goal_min * 60) as isize;
     let focused_today = get_total_time(DurType::Today);
-    if focused_today >= goal {
+
+    if focused_today >= goal && state.session_type == SessionType::Work {
+      // check if goal was completed in this session
+      let focused_this_session = time_for_session(state.session_type) - state.time_remaining;
+      let completed_in_this_session =
+        (focused_today - focused_this_session.as_secs() as isize) < goal;
+      if !completed_in_this_session {
+        return;
+      }
+
       Notification::new()
         .summary("Daily Goal completed")
         .body(&format!(
