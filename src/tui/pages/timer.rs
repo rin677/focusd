@@ -124,9 +124,13 @@ impl TimerPage {
       "Focused: {}",
       render_duration(get_total_time(DurType::Today))
     );
+    let goal = format!(
+      "Goal: {}",
+      render_duration(get_config().daily_goal_minutes * 60)
+    );
     let streak = format!("Streak: {}", get_current_streak(history));
     let sessions = format!("Sessions: {}", get_todays_sessions());
-    let text = format!(" {focused}\n {sessions}\n {streak}");
+    let text = format!(" {focused}\n {goal}\n {sessions}\n {streak}");
     frame.render_widget(Paragraph::new(text), inner);
   }
 

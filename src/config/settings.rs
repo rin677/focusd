@@ -30,6 +30,7 @@ pub struct Config {
   pub active_preset: String,
   pub presets: HashMap<String, Preset>,
   pub show_notifications: bool,
+  pub daily_goal_minutes: u64,
 
   // TUI settings
   pub tui_show_progress: bool,
@@ -73,6 +74,7 @@ impl Default for Config {
       active_preset: "pomodoro".to_string(),
       presets,
       show_notifications: true,
+      daily_goal_minutes: 0,
       tui_show_progress: true,
       tui_show_ascii_art: true,
       tui_show_stats: true,
@@ -114,6 +116,7 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
     cfg.tui_show_progress = get(val, "tui_show_progress", cfg.tui_show_progress);
     cfg.tui_show_ascii_art = get(val, "tui_show_ascii_art", cfg.tui_show_ascii_art);
     cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
+    cfg.daily_goal_minutes = get(val, "daily_goal_minutes", cfg.daily_goal_minutes);
   }
 
   Ok(cfg)

@@ -1,5 +1,6 @@
 # Which preset is currently active
 active_preset = "pomodoro"
+daily_goal_minutes = 0
 
 # Show desktop notifications when session ends
 show_notifications = true
