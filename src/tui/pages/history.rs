@@ -73,12 +73,12 @@ impl HistoryPage {
     frame.render_widget(list, area);
   }
 
-  pub fn history_up(&mut self) {
+  pub fn up(&mut self) {
     if self.crr_history_index > 0 {
       self.crr_history_index -= 1;
     }
   }
-  pub fn history_down(&mut self) {
+  pub fn down(&mut self) {
     if self.crr_history_index < self.max_history_index {
       self.crr_history_index += 1;
     }

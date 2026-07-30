@@ -40,12 +40,12 @@ impl TimerPage {
     }
   }
 
-  pub fn preset_up(&mut self) {
+  pub fn up(&mut self) {
     if self.preset_selected_index > 0 {
       self.preset_selected_index -= 1;
     }
   }
-  pub fn preset_down(&mut self) {
+  pub fn down(&mut self) {
     let count = get_config().presets.len();
     if self.preset_selected_index < count {
       self.preset_selected_index += 1;

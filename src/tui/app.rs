@@ -170,14 +170,14 @@ impl App {
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {
-        Pages::Timer => self.app_state.timer_page.preset_down(),
-        Pages::History => self.app_state.history_page.history_down(),
+        Pages::Timer => self.app_state.timer_page.down(),
+        Pages::History => self.app_state.history_page.down(),
         Pages::Settings => self.app_state.settings_page.down(),
         _ => {}
       },
       KeyCode::Char('k') | KeyCode::Up => match self.app_state.current_page {
-        Pages::Timer => self.app_state.timer_page.preset_up(),
-        Pages::History => self.app_state.history_page.history_up(),
+        Pages::Timer => self.app_state.timer_page.up(),
+        Pages::History => self.app_state.history_page.up(),
         Pages::Settings => self.app_state.settings_page.up(),
         _ => {}
       },
