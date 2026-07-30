@@ -56,6 +56,8 @@ enum Command {
   Stats,
   /// Launch TUI in history page
   History,
+  /// Launch TUI in settings page
+  Settings,
   /// Print all stats
   PrintStats,
   /// Print all history
@@ -124,6 +126,7 @@ fn main() -> io::Result<()> {
     }
     Some(Command::Stats) => launch_tui(Pages::Stats),
     Some(Command::History) => launch_tui(Pages::History),
+    Some(Command::Settings) => launch_tui(Pages::Settings),
 
     Some(Command::Pause) => send_message(Message::PauseSession).print(),
     Some(Command::Resume) => send_message(Message::ResumeSession).print(),
