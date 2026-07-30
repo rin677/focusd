@@ -1,7 +1,6 @@
 use crate::{
   database::history::get_full_history_no_err,
   timer::utils::name_for_session,
-  tui::merge_block::MergeBlock,
   utils::{figlet::big_text, times_ago::render_duration},
 };
 use ratatui::{
@@ -27,7 +26,6 @@ impl Default for HistoryPage {
 
 impl HistoryPage {
   pub fn render(&mut self, area: Rect, frame: &mut Frame) {
-    let area = MergeBlock::new("").top().render(frame, area);
     let all_history = get_full_history_no_err();
 
     if all_history.is_empty() {

@@ -1,4 +1,5 @@
 use crate::{
+  tui::layout::split_vertical,
   config::settings::get_config,
   daemon::commands::{PayloadMessage, send_message_with_payload},
   database::history::get_full_history_no_err,
@@ -8,16 +9,16 @@ use crate::{
     state::{SessionType, TimerState},
     utils::time_for_session,
   },
-  tui::merge_block::MergeBlock,
   utils::{figlet::big_text, ignore::IgnoreType, times_ago::render_duration},
 };
 
 use ratatui::{
   Frame,
-  layout::{Constraint, Layout, Rect},
+  layout::{Constraint, Layout, Rect, Spacing},
   prelude::*,
   style::Modifier,
-  widgets::{LineGauge, Paragraph},
+  symbols::merge::MergeStrategy,
+  widgets::{Block, LineGauge, Paragraph},
 };
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tui_widget_list::{ListBuilder, ListState, ListView};
@@ -31,7 +32,8 @@ impl TimerPage {
   pub fn render(&mut self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     let cfg = get_config();
     if cfg.tui_show_stats {
-      let layout = Layout::vertical([Constraint::Fill(1), Constraint::Length(5)]);
+      let layout =
+        Layout::vertical([Constraint::Fill(1), Constraint::Length(6)]).spacing(Spacing::Overlap(1));
       let [first, second] = area.layout(&layout);
       self.render_timer_no_stats(timer_state, first, frame);
       self.render_stats_and_presets(second, frame);
@@ -67,7 +69,6 @@ impl TimerPage {
     let t = render_time(timer_state);
     let text = big_text(&t);
 
-    let area = MergeBlock::new("").top().render(frame, area);
     let cfg = get_config();
     let show_art = cfg.tui_show_ascii_art;
     let show_progress = cfg.tui_show_progress;
@@ -107,18 +108,17 @@ impl TimerPage {
   }
 
   fn render_stats_and_presets(&mut self, area: Rect, frame: &mut Frame) {
-    let split = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]);
-    let [preset_area, stats_area] = area.layout(&split);
+    let (preset_area, stats_area) = split_vertical(area);
     self.render_presets(preset_area, frame);
     self.render_stats(stats_area, frame);
   }
 
   fn render_stats(&self, area: Rect, frame: &mut Frame) {
-    let inner = MergeBlock::new("Today's stats")
-      .left()
-      .top()
-      .no_padding()
-      .render(frame, area);
+    let block = Block::bordered()
+      .merge_borders(MergeStrategy::Exact)
+      .title("Today's stats");
+    frame.render_widget(&block, area);
+    let inner = block.inner(area);
     let history = get_full_history_no_err();
     let focused = format!(
       "Focused: {}",
@@ -135,10 +135,11 @@ impl TimerPage {
   }
 
   fn render_presets(&mut self, area: Rect, frame: &mut Frame) {
-    let area = MergeBlock::new("Presets")
-      .top()
-      .no_padding()
-      .render(frame, area);
+    let block = Block::bordered()
+      .merge_borders(MergeStrategy::Exact)
+      .title("Presets");
+    frame.render_widget(&block, area);
+    let area = block.inner(area);
     let cfg = get_config();
     let presets = cfg.presets;
 

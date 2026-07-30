@@ -1,3 +1,3 @@
 pub mod app;
-pub mod merge_block;
+pub mod layout;
 pub mod pages;

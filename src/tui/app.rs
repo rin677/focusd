@@ -2,10 +2,7 @@ use crate::{
   config::settings::get_crr_preset,
   daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
-  tui::{
-    merge_block::{MergeBlock, clear_bottom_tees},
-    pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
-  },
+  tui::pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
   utils::ignore::IgnoreType,
 };
 use std::{
@@ -16,7 +13,8 @@ use std::{
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
-  layout::{Constraint, Layout, Rect},
+  layout::{Constraint, Layout, Spacing},
+  symbols::merge::MergeStrategy,
   text::Text,
   widgets::{Block, Paragraph},
 };
@@ -85,7 +83,6 @@ impl App {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
-    clear_bottom_tees();
     let icon = if self.timer_state.running {
       ""
     } else {
@@ -106,44 +103,45 @@ impl App {
       Pages::Settings => "Settings",
     };
 
-    let main_area = frame.area();
-    let main_block = Block::bordered();
-    frame.render_widget(&main_block, main_area);
-    let main_inner = main_block.inner(main_area);
-
+    let area = frame.area();
     let [header, inner_area, footer] = Layout::vertical([
-      Constraint::Length(1), // Header
+      Constraint::Length(3), // Header
       Constraint::Fill(1),   // Content
-      Constraint::Length(2), // Footer
+      Constraint::Length(3), // Footer
     ])
-    .spacing(0)
-    .areas(main_inner);
+    .spacing(Spacing::Overlap(1))
+    .areas(area);
+
+    let content_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    frame.render_widget(&content_block, inner_area);
+
+    let header_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    frame.render_widget(&header_block, header);
+    let header_inner = header_block.inner(header);
 
     let top_layout = Layout::horizontal([
       Constraint::Fill(0),
       Constraint::Length(right_header_text.len() as u16),
     ])
     .spacing(2);
-    let [left_space, right_space] = header.layout(&top_layout);
+    let [left_space, right_space] = header_inner.layout(&top_layout);
     frame.render_widget(Text::from(format!(" Focusd: {current_page} ")), left_space);
     frame.render_widget(Text::from(right_header_text), right_space);
+    let page_area = content_block.inner(inner_area);
 
     match self.app_state.current_page {
       Pages::Timer => self
         .app_state
         .timer_page
         .render(&self.timer_state, inner_area, frame),
-      Pages::History => self.app_state.history_page.render(inner_area, frame),
       Pages::Stats => show_stats(inner_area, frame),
-      Pages::Settings => self.app_state.settings_page.render(inner_area, frame),
+      Pages::History => self.app_state.history_page.render(page_area, frame),
+      Pages::Settings => self.app_state.settings_page.render(page_area, frame),
     }
 
-    let footer_sep = Rect::new(footer.x, footer.y, footer.width, 1);
-    let footer_text = Rect::new(footer.x, footer.y + 1, footer.width, 1);
-    MergeBlock::new("")
-      .top()
-      .no_padding()
-      .render(frame, footer_sep);
+    let footer_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    frame.render_widget(&footer_block, footer);
+    let footer_text = footer_block.inner(footer);
     frame.render_widget(
       Paragraph::new(" Press q to quit - Space to toggle timer - N to skip - R to reset ")
         .centered(),
