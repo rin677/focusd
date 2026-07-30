@@ -1,5 +1,5 @@
 use crate::{
-  config::settings::{get_config, get_crr_preset, save_config},
+  config::settings::{get_config, get_crr_preset, set_config_value},
   database::history::add_session_to_db,
   notification::show_complete_notification,
   throw,
@@ -9,6 +9,7 @@ use crate::{
   },
 };
 use std::time::Duration;
+use toml_edit::value;
 
 pub fn decrease_sec(state: &mut TimerState) {
   let Some(new_time) = state.time_remaining.checked_sub(Duration::from_secs(1)) else {
@@ -66,9 +67,7 @@ pub fn select_preset(state: &mut TimerState, preset_name: &str) -> std::io::Resu
   let preset = config.presets.get(preset_name);
   match preset {
     Some(_) => {
-      let mut new_config = config.clone();
-      new_config.active_preset = preset_name.to_string();
-      save_config(&new_config)?;
+      set_config_value("active_preset", value(preset_name)).unwrap();
       state.session_number = 1;
       state.session_type = SessionType::Work;
       reset_session(state);

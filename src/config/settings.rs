@@ -6,6 +6,7 @@ use std::{
   path::PathBuf,
 };
 use toml::Value;
+use toml_edit::{DocumentMut, Item};
 
 use crate::{throw, utils::profile::Profile};
 
@@ -168,4 +169,25 @@ pub fn save_config(config: &Config) -> io::Result<()> {
   };
   let toml_string = toml::to_string_pretty(config).expect("failed to serialize");
   fs::write(path, toml_string)
+}
+
+pub fn set_config_value<T>(key: &str, value: T) -> io::Result<()>
+where
+  T: Into<Item>,
+{
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+  doc[key] = value.into();
+  match fs::write(path, doc.to_string()) {
+    Ok(_) => println!("Done"),
+    Err(e) => println!("error occoured {e}"),
+  }
+  Ok(())
 }
