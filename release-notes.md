@@ -2,13 +2,13 @@
 
 Updated post release.
 
-- [/] Timer Page
-    - [/] Add dashboard
+- [X] Timer Page
+    - [X] Add dashboard
         - [X] Today's focus
         - [X] Sessions completed
         - [X] Current streak
         - [X] Active preset
-        - [ ] Daily goal progress
+        - [X] Daily goal progress
     - [X] Make it customizable
         - [X] Allow changing font
         - [X] Allow hiding ASCII art
@@ -28,10 +28,10 @@ Updated post release.
         - [ ] Session paused
         - [ ] Session resumed
         - [ ] Session skipped
-    - [ ] Daily goals
-        - [ ] Configure daily goal
-        - [ ] Track progress
-        - [ ] Notify when goal is reached
+    - [X] Daily goals
+        - [X] Configure daily goal
+        - [X] Track progress
+        - [X] Notify when goal is reached
 
 - [ ] Settings Page
     - [ ] Home page:
