@@ -2,7 +2,10 @@ use crate::{
   config::settings::get_crr_preset,
   daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
-  tui::pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
+  tui::{
+    pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
+    popup::Popup,
+  },
   utils::ignore::IgnoreType,
 };
 use std::{
@@ -41,6 +44,7 @@ struct App {
   app_state: AppState,
   timer_state: TimerState,
   all_pages: Vec<Pages>,
+  popup: Popup,
 }
 
 pub fn main(page: Pages) -> io::Result<()> {
@@ -52,6 +56,7 @@ pub fn main(page: Pages) -> io::Result<()> {
   let mut app = App {
     app_state,
     timer_state: state,
+    popup: Popup::default(),
     all_pages: vec![Pages::Timer, Pages::Stats, Pages::History, Pages::Settings],
   };
   let mut terminal = ratatui::init();
@@ -147,6 +152,8 @@ impl App {
         .centered(),
       footer_text,
     );
+
+    self.popup.render(self.app_state.current_page, area, frame);
   }
 
   fn handle_events(&mut self) -> io::Result<()> {
@@ -161,12 +168,20 @@ impl App {
 
   fn handle_key_event(&mut self, key_event: KeyEvent) {
     match key_event.code {
-      KeyCode::Char('q') => self.quit(),
+      KeyCode::Char('q') => {
+        if self.popup.showen {
+          self.popup.hide()
+        } else {
+          self.quit()
+        }
+      }
       KeyCode::Char(' ') => send_message(Message::ToggleSession).ignore_type(),
       KeyCode::Char('n') => send_message(Message::NextSession).ignore_type(),
       KeyCode::Char('r') => send_message(Message::ResetSession).ignore_type(),
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
+      KeyCode::Char('?') => self.popup.toggle(),
+      KeyCode::Esc => self.popup.hide(),
       KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {
         Pages::Timer => self.app_state.timer_page.down(),
         Pages::History => self.app_state.history_page.down(),
