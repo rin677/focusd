@@ -6,7 +6,7 @@ use std::{
   path::PathBuf,
 };
 use toml::Value;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::{DocumentMut, Item, value};
 
 use crate::{throw, utils::profile::Profile};
 
@@ -187,9 +187,12 @@ where
     .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
   doc[key] = value.into();
-  match fs::write(path, doc.to_string()) {
-    Ok(_) => println!("Done"),
-    Err(e) => println!("error occoured {e}"),
-  }
-  Ok(())
+  fs::write(path, doc.to_string())
+}
+
+pub fn toggle_config_value(key: &str) -> io::Result<()> {
+  let config = get_config();
+  let raw: toml::Value = toml::Value::try_from(config).expect("failed to serialize config");
+  let current = raw[key].as_bool().expect("Value is not boolean");
+  set_config_value(key, value(!current))
 }

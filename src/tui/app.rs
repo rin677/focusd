@@ -194,11 +194,11 @@ impl App {
         Pages::Settings => self.app_state.settings_page.up(),
         _ => {}
       },
-      KeyCode::Enter => {
-        if self.app_state.current_page == Pages::Timer {
-          self.app_state.timer_page.select_preset();
-        }
-      }
+      KeyCode::Enter | KeyCode::Char('l') => match self.app_state.current_page {
+        Pages::Timer => self.app_state.timer_page.select_preset(),
+        Pages::Settings => self.app_state.settings_page.handle_right(),
+        _ => {}
+      },
 
       KeyCode::Char('c')
         if key_event
