@@ -59,7 +59,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
   let block = Block::bordered()
-    .title("Streak & Completion")
+    .title(" Streak & Completion ")
     .merge_borders(MergeStrategy::Exact);
   frame.render_widget(&block, area);
   let inner = block.inner(area);
@@ -92,7 +92,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
   let block = Block::bordered()
-    .title("Daily Focus")
+    .title(" Daily Focus ")
     .merge_borders(MergeStrategy::Exact);
   frame.render_widget(&block, area);
   let inner = block.inner(area);
@@ -130,7 +130,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
   let block = Block::bordered()
-    .title("Daily Focus (4 weeks)")
+    .title(" Daily Focus (4 weeks) ")
     .merge_borders(MergeStrategy::Exact);
   frame.render_widget(&block, area);
   let inner = block.inner(area);
@@ -199,7 +199,7 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
   }
 
   let block = Block::bordered()
-    .title("Session Types")
+    .title(" Session Types ")
     .merge_borders(MergeStrategy::Exact);
   frame.render_widget(&block, area);
   let inner = block.inner(area);
@@ -246,7 +246,7 @@ fn fmt_duration_short(seconds: u64) -> String {
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
   let block = Block::bordered()
-    .title("Time Summary")
+    .title(" Time Summary ")
     .merge_borders(MergeStrategy::Exact);
   frame.render_widget(&block, area);
   let inner = block.inner(area);

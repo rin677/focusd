@@ -1,5 +1,4 @@
 use crate::{
-  tui::layout::split_vertical,
   config::settings::get_config,
   daemon::commands::{PayloadMessage, send_message_with_payload},
   database::history::get_full_history_no_err,
@@ -9,6 +8,7 @@ use crate::{
     state::{SessionType, TimerState},
     utils::time_for_session,
   },
+  tui::layout::split_vertical,
   utils::{figlet::big_text, ignore::IgnoreType, times_ago::render_duration},
 };
 
@@ -116,7 +116,7 @@ impl TimerPage {
   fn render_stats(&self, area: Rect, frame: &mut Frame) {
     let block = Block::bordered()
       .merge_borders(MergeStrategy::Exact)
-      .title("Today's stats");
+      .title(" Today's stats ");
     frame.render_widget(&block, area);
     let inner = block.inner(area);
     let history = get_full_history_no_err();
@@ -137,7 +137,7 @@ impl TimerPage {
   fn render_presets(&mut self, area: Rect, frame: &mut Frame) {
     let block = Block::bordered()
       .merge_borders(MergeStrategy::Exact)
-      .title("Presets");
+      .title(" Presets ");
     frame.render_widget(&block, area);
     let area = block.inner(area);
     let cfg = get_config();
