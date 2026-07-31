@@ -55,18 +55,23 @@ impl Popup {
       ("?".to_string(), "Toggle help menu".to_string()),
     ];
 
-    if current_page == Pages::Timer {
-      if get_config().tui_show_stats {
-        keymaps.push(("Enter".to_string(), "Select the preset".to_string()));
+    match current_page {
+      Pages::Timer => {
+        if get_config().tui_show_stats {
+          keymaps.push(("Enter".to_string(), "Select the preset".to_string()));
+        }
+        keymaps.push(("k/↑".to_string(), "Prevoius preset".to_string()));
+        keymaps.push(("j/↓".to_string(), "Next preset".to_string()));
       }
-      keymaps.push(("k/↑".to_string(), "Prevoius preset".to_string()));
-      keymaps.push(("j/↓".to_string(), "Next preset".to_string()));
-    } else if current_page == Pages::History {
-      keymaps.push(("k/↑".to_string(), "Scroll up".to_string()));
-      keymaps.push(("j/↓".to_string(), "Scroll down".to_string()));
-    } else if current_page == Pages::Settings {
-      keymaps.push(("k/↑".to_string(), "Down".to_string()));
-      keymaps.push(("j/↓".to_string(), "Up".to_string()));
+      Pages::History => {
+        keymaps.push(("k/↑".to_string(), "Scroll up".to_string()));
+        keymaps.push(("j/↓".to_string(), "Scroll down".to_string()));
+      }
+      Pages::Settings => {
+        keymaps.push(("k/↑".to_string(), "Down".to_string()));
+        keymaps.push(("j/↓".to_string(), "Up".to_string()));
+      }
+      _ => {}
     }
     keymaps
   }
