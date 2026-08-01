@@ -194,11 +194,21 @@ impl App {
         Pages::Settings => self.app_state.settings_page.up(),
         _ => {}
       },
-      KeyCode::Enter | KeyCode::Char('l') => match self.app_state.current_page {
+      KeyCode::Enter => match self.app_state.current_page {
         Pages::Timer => self.app_state.timer_page.select_preset(),
         Pages::Settings => self.app_state.settings_page.handle_right(),
         _ => {}
       },
+      KeyCode::Char('l') | KeyCode::Right => {
+        if self.app_state.current_page == Pages::Settings {
+          self.app_state.settings_page.handle_right()
+        }
+      }
+      KeyCode::Char('h') | KeyCode::Left => {
+        if self.app_state.current_page == Pages::Settings {
+          self.app_state.settings_page.handle_left()
+        }
+      }
 
       KeyCode::Char('c')
         if key_event
