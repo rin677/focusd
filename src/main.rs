@@ -94,8 +94,6 @@ fn main() -> io::Result<()> {
 
   let cli = Cli::parse();
   if cli.daemon {
-    let cfg = get_config();
-    eprintln!("DEBUGPRINT[256]: {}:{}: cfg={:#?}", file!(), line!(), cfg);
     run_daemon();
     return Ok(());
   }

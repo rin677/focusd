@@ -24,3 +24,23 @@ pub fn session_start_hook(session: SessionType) {
     SessionType::ShortBreak => run_command(cfg.hook_start_short_break),
   }
 }
+
+pub fn pause_hooks(session: SessionType) {
+  let cfg = get_config();
+  run_command(cfg.hook_pause);
+  match session {
+    SessionType::Work => run_command(cfg.hook_pause_work),
+    SessionType::LongBreak => run_command(cfg.hook_pause_long_break),
+    SessionType::ShortBreak => run_command(cfg.hook_pause_short_break),
+  }
+}
+
+pub fn resume_hooks(session: SessionType) {
+  let cfg = get_config();
+  run_command(cfg.hook_resume);
+  match session {
+    SessionType::Work => run_command(cfg.hook_resume_work),
+    SessionType::LongBreak => run_command(cfg.hook_resume_long_break),
+    SessionType::ShortBreak => run_command(cfg.hook_resume_short_break),
+  }
+}
