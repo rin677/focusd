@@ -12,7 +12,7 @@ mod waybar;
 use std::io;
 
 use crate::{
-  config::settings::create_config_file,
+  config::settings::{create_config_file, get_config},
   daemon::{
     commands::{Message, PayloadMessage, send_message, send_message_with_payload},
     run::{ensure_daemon_active, run_daemon},
@@ -94,6 +94,8 @@ fn main() -> io::Result<()> {
 
   let cli = Cli::parse();
   if cli.daemon {
+    let cfg = get_config();
+    eprintln!("DEBUGPRINT[256]: {}:{}: cfg={:#?}", file!(), line!(), cfg);
     run_daemon();
     return Ok(());
   }

@@ -38,6 +38,19 @@ pub struct Config {
   pub tui_show_stats: bool,
 
   pub font: Fonts,
+
+  // Hooks
+  pub hook_pause: String,
+  pub hook_resume: String,
+  pub hook_resume_short_break: String,
+  pub hook_pause_short_break: String,
+  pub hook_resume_work: String,
+  pub hook_pause_work: String,
+  pub hook_pause_long_break: String,
+  pub hook_resume_long_break: String,
+  pub hook_start_short_break: String,
+  pub hook_start_long_break: String,
+  pub hook_start_work: String,
 }
 
 /// Preset type for session
@@ -79,6 +92,17 @@ impl Default for Config {
       tui_show_ascii_art: true,
       tui_show_stats: true,
       font: Fonts::Terminus,
+      hook_pause_short_break: "".to_string(),
+      hook_resume_short_break: "".to_string(),
+      hook_pause_work: "".to_string(),
+      hook_resume_work: "".to_string(),
+      hook_pause_long_break: "".to_string(),
+      hook_resume_long_break: "".to_string(),
+      hook_start_short_break: "".to_string(),
+      hook_start_long_break: "".to_string(),
+      hook_start_work: "".to_string(),
+      hook_pause: "".to_string(),
+      hook_resume: "".to_string(),
     }
   }
 }
@@ -117,6 +141,17 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
     cfg.tui_show_ascii_art = get(val, "tui_show_ascii_art", cfg.tui_show_ascii_art);
     cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
     cfg.daily_goal_minutes = get(val, "daily_goal_minutes", cfg.daily_goal_minutes);
+    cfg.hook_pause_short_break = get(val, "hook_pause_short_break", cfg.hook_pause_short_break);
+    cfg.hook_resume_short_break = get(val, "hook_resume_short_break", cfg.hook_resume_short_break);
+    cfg.hook_pause_work = get(val, "hook_pause_work", cfg.hook_pause_work);
+    cfg.hook_resume_work = get(val, "hook_resume_work", cfg.hook_resume_work);
+    cfg.hook_pause_long_break = get(val, "hook_pause_long_break", cfg.hook_pause_long_break);
+    cfg.hook_resume_long_break = get(val, "hook_resume_long_break", cfg.hook_resume_long_break);
+    cfg.hook_start_short_break = get(val, "hook_start_short_break", cfg.hook_start_short_break);
+    cfg.hook_start_long_break = get(val, "hook_start_long_break", cfg.hook_start_long_break);
+    cfg.hook_start_work = get(val, "hook_start_work", cfg.hook_start_work);
+    cfg.hook_pause = get(val, "hook_pause", cfg.hook_pause);
+    cfg.hook_resume = get(val, "hook_resume", cfg.hook_resume);
   }
 
   Ok(cfg)

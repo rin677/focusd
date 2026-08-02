@@ -7,25 +7,55 @@ use crate::{
     state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
+  utils::ignore::IgnoreType,
 };
+use std::process::Command;
 use std::time::Duration;
 use toml_edit::value;
 
+fn run_command(cmd: String) {
+  //   eprintln!("DEBUGPRINT[253]: {}:{} (after fn run_command(command: Option<String>) )", file!(), line!());
+  // let Some(cmd) = command else { return };
+  eprintln!("DEBUGPRINT[248]: {}:{}: cmd={:#?}", file!(), line!(), cmd);
+  let parts: Vec<&str> = cmd.split_whitespace().collect();
+  if parts.is_empty() {
+    return;
+  }
+
+  let mut cmd = Command::new(parts[0]);
+  if parts.len() > 1 {
+    cmd.args(&parts[1..]);
+  }
+
+  let output = cmd.output();
+  eprintln!("DEBUGPRINT[246]: {}:{}: output={:#?}", file!(), line!(), output);
+}
+
 pub fn decrease_sec(state: &mut TimerState) {
   let Some(new_time) = state.time_remaining.checked_sub(Duration::from_secs(1)) else {
-    next_session(state);
-    on_finish();
+    on_finish(state);
     return;
   };
   state.time_remaining = new_time;
   if new_time.is_zero() {
-    next_session(state);
-    on_finish();
+    on_finish(state);
   }
 }
 
-pub fn on_finish() {
-  // TODO: Maybe notification or some hook
+pub fn on_finish(state: &mut TimerState) {
+  next_session(state);
+  session_start_hook(state.session_type);
+}
+
+fn session_start_hook(session: SessionType) {
+    eprintln!("DEBUGPRINT[251]: {}:{} (after fn session_start_hook(session: SessionTy…)", file!(), line!());
+  let cfg = get_config();
+  eprintln!("DEBUGPRINT[255]: {}:{}: cfg={:#?}", file!(), line!(), cfg);
+  match session {
+    SessionType::Work => run_command(cfg.hook_start_work),
+    SessionType::LongBreak => run_command(cfg.hook_start_long_break),
+    SessionType::ShortBreak => run_command(cfg.hook_start_short_break),
+  }
 }
 
 /// Returns readable time given state of timer
@@ -48,6 +78,7 @@ pub fn start_specific_session(state: &mut TimerState, session_type: SessionType)
   state.session_type = session_type;
   state.time_remaining = time_for_session(session_type);
   state.running = true;
+  session_start_hook(session_type);
   if !is_current_session {
     state.session_number = match session_type {
       SessionType::Work => get_next_session_number(state.session_number),
@@ -91,6 +122,7 @@ pub fn next_session(state: &mut TimerState) {
     state.session_number = get_next_session_number(state.session_number);
   }
 
+  session_start_hook(state.session_type);
   state.time_remaining = time_for_session(state.session_type);
 }
 
