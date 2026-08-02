@@ -4,28 +4,13 @@ use crate::{
   notification::show_complete_notification,
   throw,
   timer::{
+    hooks::session_start_hook,
     state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
 };
-use std::process::Command;
 use std::time::Duration;
 use toml_edit::value;
-
-fn run_command(command: Option<String>) {
-  let Some(cmd) = command else { return };
-  let parts: Vec<&str> = cmd.split_whitespace().collect();
-  if parts.is_empty() {
-    return;
-  }
-
-  let mut cmd = Command::new(parts[0]);
-  if parts.len() > 1 {
-    cmd.args(&parts[1..]);
-  }
-
-  let _ = cmd.output();
-}
 
 pub fn decrease_sec(state: &mut TimerState) {
   let Some(new_time) = state.time_remaining.checked_sub(Duration::from_secs(1)) else {
@@ -41,15 +26,6 @@ pub fn decrease_sec(state: &mut TimerState) {
 pub fn on_finish(state: &mut TimerState) {
   next_session(state);
   session_start_hook(state.session_type);
-}
-
-fn session_start_hook(session: SessionType) {
-  let cfg = get_config();
-  match session {
-    SessionType::Work => run_command(cfg.hook_start_work),
-    SessionType::LongBreak => run_command(cfg.hook_start_long_break),
-    SessionType::ShortBreak => run_command(cfg.hook_start_short_break),
-  }
 }
 
 /// Returns readable time given state of timer
