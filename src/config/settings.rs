@@ -10,7 +10,7 @@ use toml_edit::{DocumentMut, Item, value};
 
 use crate::{throw, utils::profile::Profile};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Fonts {
   AnsiRegular,
   AnsiShadow,

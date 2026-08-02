@@ -70,6 +70,11 @@ impl Popup {
       Pages::Settings => {
         keymaps.push(("k/↑".to_string(), "Down".to_string()));
         keymaps.push(("j/↓".to_string(), "Up".to_string()));
+        keymaps.push((
+          "l/→".to_string(),
+          "Open Sub menu or scroll through values".to_string(),
+        ));
+        keymaps.push(("h/←".to_string(), "Back".to_string()));
       }
       _ => {}
     }

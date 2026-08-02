@@ -1,8 +1,9 @@
 use crate::{
-  config::settings::{get_config, toggle_config_value},
+  config::settings::{Fonts, get_config, set_config_value, toggle_config_value},
   utils::{ignore::IgnoreType, times_ago::render_duration},
 };
 use ratatui::{Frame, layout::Rect, prelude::*};
+use toml_edit::value;
 use tui_widget_list::{ListBuilder, ListState, ListView};
 
 #[derive(Clone, Copy)]
@@ -132,6 +133,7 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiStats => enabled(config.tui_show_stats),
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
+    SettingsSubItems::TuiFont => format!("{:?}", config.font),
     _ => "Not Implemented".to_string(),
   }
 }
@@ -226,6 +228,30 @@ impl SettingsPage {
         SettingsSubItems::TuiProgress => toggle_config_value("tui_show_progress").ignore_type(),
         SettingsSubItems::TuiAsciiArt => toggle_config_value("tui_show_ascii_art").ignore_type(),
         SettingsSubItems::TuiStats => toggle_config_value("tui_show_stats").ignore_type(),
+        SettingsSubItems::TuiFont => {
+          let selected_font = get_config().font;
+          let all_fonts: Vec<Fonts> = vec![
+            Fonts::AnsiRegular,
+            Fonts::AnsiShadow,
+            Fonts::DosRebel,
+            Fonts::Future,
+            Fonts::Mono12,
+            Fonts::Mono9,
+            Fonts::SmBlock,
+            Fonts::Terminus,
+            Fonts::TubesRegular,
+          ];
+
+          if let Some(index) = all_fonts.iter().position(|f| *f == selected_font) {
+            let next_font = if index == all_fonts.len() - 1 {
+              &all_fonts[0]
+            } else {
+              &all_fonts[index + 1]
+            };
+            let f = format!("{:?}", next_font);
+            set_config_value("font", value(f)).ignore_type();
+          }
+        }
         _ => {}
       }
       return;
