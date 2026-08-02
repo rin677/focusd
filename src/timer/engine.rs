@@ -7,16 +7,13 @@ use crate::{
     state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
-  utils::ignore::IgnoreType,
 };
 use std::process::Command;
 use std::time::Duration;
 use toml_edit::value;
 
-fn run_command(cmd: String) {
-  //   eprintln!("DEBUGPRINT[253]: {}:{} (after fn run_command(command: Option<String>) )", file!(), line!());
-  // let Some(cmd) = command else { return };
-  eprintln!("DEBUGPRINT[248]: {}:{}: cmd={:#?}", file!(), line!(), cmd);
+fn run_command(command: Option<String>) {
+  let Some(cmd) = command else { return };
   let parts: Vec<&str> = cmd.split_whitespace().collect();
   if parts.is_empty() {
     return;
@@ -27,8 +24,7 @@ fn run_command(cmd: String) {
     cmd.args(&parts[1..]);
   }
 
-  let output = cmd.output();
-  eprintln!("DEBUGPRINT[246]: {}:{}: output={:#?}", file!(), line!(), output);
+  let _ = cmd.output();
 }
 
 pub fn decrease_sec(state: &mut TimerState) {
@@ -48,9 +44,7 @@ pub fn on_finish(state: &mut TimerState) {
 }
 
 fn session_start_hook(session: SessionType) {
-    eprintln!("DEBUGPRINT[251]: {}:{} (after fn session_start_hook(session: SessionTy…)", file!(), line!());
   let cfg = get_config();
-  eprintln!("DEBUGPRINT[255]: {}:{}: cfg={:#?}", file!(), line!(), cfg);
   match session {
     SessionType::Work => run_command(cfg.hook_start_work),
     SessionType::LongBreak => run_command(cfg.hook_start_long_break),
