@@ -1,8 +1,7 @@
 use crate::{config::settings::get_config, timer::state::SessionType};
 use std::process::Command;
 
-fn run_command(command: Option<String>) {
-  let Some(cmd) = command else { return };
+fn run_command(cmd: String) {
   let parts: Vec<&str> = cmd.split_whitespace().collect();
   if parts.is_empty() {
     return;
