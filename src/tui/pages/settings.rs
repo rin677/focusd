@@ -85,8 +85,8 @@ fn name_for_settings_item(item: &SettingsItem) -> String {
     SettingsItem::Notification => "Notification".to_string(),
     SettingsItem::DailyGoal => "Daily Goal".to_string(),
     SettingsItem::Preset => "Preset".to_string(),
-    SettingsItem::Hooks => "Hooks (Not implemented)".to_string(),
-    SettingsItem::Sounds => "Sounds (Not Implemented)".to_string(),
+    SettingsItem::Hooks => "Hooks".to_string(),
+    SettingsItem::Sounds => "Sounds".to_string(),
     SettingsItem::Tui => "TUI".to_string(),
   }
 }
@@ -115,15 +115,15 @@ fn name_for_settings_sub_item(item: &SettingsSubItems) -> String {
 
     SettingsSubItems::HookPause => "Hook Pause".to_string(),
     SettingsSubItems::HookResume => "Hook Resume".to_string(),
-    SettingsSubItems::HookPauseWork => "Hook pause work".to_string(),
-    SettingsSubItems::HookResumeWork => "Hook resume work".to_string(),
-    SettingsSubItems::HookPauseLongBreak => "Hook resume short break".to_string(),
-    SettingsSubItems::HookPauseShortBreak => "Hook pause short break".to_string(),
-    SettingsSubItems::HookResumeLongBreak => "Hook resume long break".to_string(),
-    SettingsSubItems::HookResumeShortBreak => "Hook resume short break".to_string(),
-    SettingsSubItems::HookStartShortBreak => "Hook start short break".to_string(),
-    SettingsSubItems::HookStartLongBreak => "Hook start long break".to_string(),
-    SettingsSubItems::HookStartWork => "Hook start work".to_string(),
+    SettingsSubItems::HookPauseWork => "Hook Pause Work".to_string(),
+    SettingsSubItems::HookResumeWork => "Hook Resume Work".to_string(),
+    SettingsSubItems::HookPauseLongBreak => "Hook Resume Short Break".to_string(),
+    SettingsSubItems::HookPauseShortBreak => "Hook Pause Short Break".to_string(),
+    SettingsSubItems::HookResumeLongBreak => "Hook Resume Long Break".to_string(),
+    SettingsSubItems::HookResumeShortBreak => "Hook Resume Short Break".to_string(),
+    SettingsSubItems::HookStartShortBreak => "Hook Start Short Break".to_string(),
+    SettingsSubItems::HookStartLongBreak => "Hook Start Long Break".to_string(),
+    SettingsSubItems::HookStartWork => "Hook Start Work".to_string(),
   }
 }
 
@@ -134,6 +134,18 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
     SettingsSubItems::TuiFont => format!("{:?}", config.font),
+
+    SettingsSubItems::HookPause => config.hook_pause,
+    SettingsSubItems::HookResume => config.hook_resume,
+    SettingsSubItems::HookPauseWork => config.hook_pause_work,
+    SettingsSubItems::HookResumeWork => config.hook_resume_work,
+    SettingsSubItems::HookPauseLongBreak => config.hook_pause_long_break,
+    SettingsSubItems::HookResumeLongBreak => config.hook_resume_long_break,
+    SettingsSubItems::HookPauseShortBreak => config.hook_pause_short_break,
+    SettingsSubItems::HookResumeShortBreak => config.hook_resume_short_break,
+    SettingsSubItems::HookStartShortBreak => config.hook_start_short_break,
+    SettingsSubItems::HookStartLongBreak => config.hook_start_long_break,
+    SettingsSubItems::HookStartWork => config.hook_start_work,
     _ => "Not Implemented".to_string(),
   }
 }
