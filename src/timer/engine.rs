@@ -92,7 +92,9 @@ pub fn next_session(state: &mut TimerState) {
     state.session_number = get_next_session_number(state.session_number);
   }
 
-  session_start_hook(state.session_type);
+  if state.running {
+    session_start_hook(state.session_type);
+  }
   state.time_remaining = time_for_session(state.session_type);
 }
 

@@ -5,8 +5,9 @@ use crate::{
       next_session, render_time, reset_session, select_preset, start_session,
       start_specific_session,
     },
+    hooks::{pause_hooks, resume_hooks, session_start_hook},
     state::{TimerSnapShot, TimerState},
-    utils::{get_session_type, name_for_session},
+    utils::{get_session_type, name_for_session, time_for_session},
   },
 };
 use serde::{Deserialize, Serialize};
@@ -118,7 +119,17 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       };
       s.running = new_running;
 
-      let status = if new_running { "resumed" } else { "paused" };
+      let mut status = "resumed";
+      if new_running {
+        if s.time_remaining == time_for_session(s.session_type) {
+          session_start_hook(s.session_type);
+        } else {
+          resume_hooks(s.session_type);
+        }
+      } else {
+        pause_hooks(s.session_type);
+        status = "paused";
+      }
       format!(
         "{} {} time remaining: {}",
         name_for_session(s.session_type),
