@@ -169,6 +169,15 @@ fn get_sub_items(item: &SettingsItem) -> Vec<SettingsSubItems> {
   }
 }
 
+fn increase_goal() {
+  let goal = get_config().daily_goal_minutes;
+  let _ = set_config_value("daily_goal_minutes", value((goal + 5) as i64));
+}
+fn decrease_goal() {
+  let goal = get_config().daily_goal_minutes;
+  let _ = set_config_value("daily_goal_minutes", value(goal.saturating_sub(5) as i64));
+}
+
 impl SettingsPage {
   pub fn render(&self, area: Rect, frame: &mut Frame) {
     let items = self.get_items_to_render();
@@ -265,7 +274,7 @@ impl SettingsPage {
     }
     match crr_item {
       SettingsItem::Notification => toggle_config_value("show_notifications").ignore_type(),
-      SettingsItem::Tui => println!("i know i will not be printed"),
+      SettingsItem::DailyGoal => increase_goal(),
       _ => {}
     }
   }
@@ -273,6 +282,13 @@ impl SettingsPage {
   pub fn handle_left(&mut self) {
     if self.in_sub_menu {
       self.in_sub_menu = false
+    } else {
+      let crr_item = self.get_selected_item_main();
+      match crr_item {
+        SettingsItem::Notification => toggle_config_value("show_notifications").ignore_type(),
+        SettingsItem::DailyGoal => decrease_goal(),
+        _ => {}
+      }
     }
   }
 
