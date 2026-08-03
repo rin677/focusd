@@ -22,29 +22,29 @@ Updated post release.
         - [ ] start short break
         - [ ] start long break
         - [ ] start work
-    - [ ] Hooks
-        - [ ] Session started
-        - [ ] Session completed
-        - [ ] Session paused
-        - [ ] Session resumed
-        - [ ] Session skipped
+    - [X] Hooks
+        - [X] Session started
+        - [X] Session completed
+        - [X] Session paused
+        - [X] Session resumed
+        - [X] Session skipped
     - [X] Daily goals
         - [X] Configure daily goal
         - [X] Track progress
         - [X] Notify when goal is reached
 
-- [ ] Settings Page
-    - [ ] Home page:
-        - [ ] Hide/show stats
-        - [ ] Hide/show ASCII Art
-        - [ ] Hide/show progress
-        - [ ] Edit fonts
+- [/] Settings Page
+    - [X] Home page:
+        - [X] Hide/show stats
+        - [X] Hide/show ASCII Art
+        - [X] Hide/show progress
+        - [X] Edit fonts
     - [ ] Edit presets
         - [ ] Create preset
         - [ ] Delete preset
         - [ ] Select active preset
         - [ ] Edit durations
-    - [ ] Edit notification settings
+    - [X] Edit notification settings
     - [ ] Edit themes
     - [ ] Add/remove hooks
     - [ ] Set daily goal
@@ -80,3 +80,15 @@ Updated post release.
     - You can hide ASCII art with `tui_show_ascii_art` in config file.
     - You can now customize fonts with `font` in config file.
     - Up and down key can scroll in history page.
+- Hooks, any shell commands can be executed when timer is paused/resumed and when session starts. It might be useful to send notifications or to toggle music. These are all the hooks available:
+    - hook_pause
+    - hook_resume
+    - hook_resume_short_break
+    - hook_pause_short_break
+    - hook_resume_work
+    - hook_pause_work
+    - hook_pause_long_break
+    - hook_resume_long_break
+    - hook_start_short_break
+    - hook_start_long_break
+    - hook_start_work

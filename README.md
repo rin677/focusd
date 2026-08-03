@@ -21,6 +21,8 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ## Screenshots
 
+<!-- :FIX: images are rendered correctly -->
+
 ### Timer Page
 
 <img width="640" height="656" alt="Image" src="https://github.com/user-attachments/assets/bcdf5f8d-bc9d-4934-ad22-055b4bf09b98" />
@@ -98,7 +100,7 @@ Those commands can also be seen by running `focusd --help`
 
 ### Keymap
 
-For TUI those are the keymaps:
+For TUI those are the keymaps (You can see those keymaps by pressing `?` which shows help menu):
 
 - `space` toggle pomodoro timer.
 - `n` skip to next session.
@@ -167,14 +169,28 @@ esac
 ## Configuration
 
 The config file is stored at `~/.config/focusd/config.toml`
-This is the default config file.
+This is the [default config file](./examples/config.toml).
 
 ```toml
+# Which preset is currently active
 active_preset = "pomodoro"
-show_notifications = true # Show notification when session ends
-tui_show_progress = true
-tui_show_ascii_art = true
+daily_goal_minutes = 0
 
+# Show desktop notifications when session ends
+show_notifications = true
+
+# Show progress of timer
+tui_show_progress = true
+# Show ascci art and animation
+tui_show_ascii_art = true
+# Show short stats/preset in timer page
+tui_show_stats = true
+
+# Font used by the Clock in TUI.
+# Available fonts: AnsiRegular, AnsiShadow, DosRebel, Future, Mono12, Mono9, SmBlock, Terminus, TubesRegular
+font = "Terminus"
+
+## Presets define your work/break cycle.
 [presets.pomodoro]
 work_minutes = 25
 short_break_minutes = 5
@@ -187,7 +203,13 @@ short_break_minutes = 10
 long_break_minutes = 30
 sessions_before_long_break = 4
 
-# ... More presets can be defined here
+## You can add more presets here if you want.
+## Example:
+# [presets.study]
+# work_minutes = 45
+# short_break_minutes = 10
+# long_break_minutes = 20
+# sessions_before_long_break = 4
 ```
 
 ### Waybar Configuration
@@ -269,16 +291,10 @@ Example:
 
 This project is far from perfect and I will keep improving this. Here are some of the planned features.
 
-- [ ] Include hooks (to be triggered when session ends/starts)
-- [ ] Make timer page customizable, maybe show dashboard like interface
-- [ ] Including settings page so that settings can be changed interactively
+- [X] Include hooks (to be triggered when session ends/starts)
+- [X] Make timer page customizable, maybe show dashboard like interface
+- [/] Including settings page so that settings can be changed interactively
 - [ ] Session tags and daily goals
-
-## Known Issues
-
-This is project is recently made and will be under heavy development so there might be some issues/bugs. Those are knows issues:
-
-- If config file don't contain correct data-type in single field, entire config file will not load (falling back to default config)
 
 ## Contributing
 
