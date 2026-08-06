@@ -39,15 +39,15 @@ Updated post release.
         - [X] Hide/show ASCII Art
         - [X] Hide/show progress
         - [X] Edit fonts
-    - [ ] Edit presets
+    - [/] Edit presets
         - [ ] Create preset
         - [ ] Delete preset
-        - [ ] Select active preset
-        - [ ] Edit durations
+        - [X] Select active preset
+        - [X] Edit durations
     - [X] Edit notification settings
     - [ ] Edit themes
-    - [ ] Add/remove hooks
-    - [ ] Set daily goal
+    - [X] Add/remove hooks
+    - [X] Set daily goal
 
 - [ ] Play sounds when session ends
 
