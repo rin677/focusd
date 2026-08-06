@@ -1,5 +1,7 @@
 use crate::{
-  config::settings::{Fonts, get_config, set_config_value, toggle_config_value},
+  config::settings::{
+    Fonts, get_config, get_crr_preset, set_config_value, set_preset_value, toggle_config_value,
+  },
   utils::{ignore::IgnoreType, times_ago::render_duration},
 };
 use crossterm::event::{Event, KeyCode, KeyEvent};
@@ -32,6 +34,12 @@ pub enum SettingsSubItems {
   TuiStats,
   TuiFont,
   TuiTheme,
+
+  PresetActive,
+  PresetWork,
+  PresetShortBreak,
+  PresetLongBreak,
+  PresetSessions,
 
   SoundShortBreak,
   SoundLongBreak,
@@ -115,6 +123,7 @@ fn value_for_settings_item(item: &SettingsItem) -> String {
   match item {
     SettingsItem::Notification => enabled(config.show_notifications),
     SettingsItem::Tui => ">".to_string(),
+    SettingsItem::Preset => config.active_preset,
     SettingsItem::DailyGoal => render_duration(config.daily_goal_minutes * 60),
     _ => "Not implemented".to_string(),
   }
@@ -127,6 +136,12 @@ fn name_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiProgress => "TUI show progress bar".to_string(),
     SettingsSubItems::TuiAsciiArt => "TUI show ASCII Art".to_string(),
     SettingsSubItems::TuiTheme => "TUI Theme".to_string(),
+
+    SettingsSubItems::PresetActive => "Active Preset".to_string(),
+    SettingsSubItems::PresetWork => "Work".to_string(),
+    SettingsSubItems::PresetShortBreak => "Short Break".to_string(),
+    SettingsSubItems::PresetLongBreak => "Long Break".to_string(),
+    SettingsSubItems::PresetSessions => "Sessions Before Long Break".to_string(),
 
     SettingsSubItems::SoundWork => "Sound Work".to_string(),
     SettingsSubItems::SoundShortBreak => "Sound Short Break".to_string(),
@@ -148,7 +163,14 @@ fn name_for_settings_sub_item(item: &SettingsSubItems) -> String {
 
 fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
   let config = get_config();
+  let preset = get_crr_preset();
   match item {
+    SettingsSubItems::PresetActive => config.active_preset,
+    SettingsSubItems::PresetWork => render_duration(preset.work_minutes * 60),
+    SettingsSubItems::PresetShortBreak => render_duration(preset.short_break_minutes * 60),
+    SettingsSubItems::PresetLongBreak => render_duration(preset.long_break_minutes * 60),
+    SettingsSubItems::PresetSessions => preset.sessions_before_long_break.to_string(),
+
     SettingsSubItems::TuiStats => enabled(config.tui_show_stats),
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
@@ -177,6 +199,13 @@ fn get_sub_items(item: &SettingsItem) -> Vec<SettingsSubItems> {
       SettingsSubItems::TuiStats,
       SettingsSubItems::TuiFont,
       SettingsSubItems::TuiTheme,
+    ],
+    SettingsItem::Preset => vec![
+      SettingsSubItems::PresetActive,
+      SettingsSubItems::PresetWork,
+      SettingsSubItems::PresetShortBreak,
+      SettingsSubItems::PresetLongBreak,
+      SettingsSubItems::PresetSessions,
     ],
     SettingsItem::Sounds => vec![
       SettingsSubItems::SoundWork,
@@ -224,6 +253,37 @@ fn increase_goal() {
 fn decrease_goal() {
   let goal = get_config().daily_goal_minutes;
   let _ = set_config_value("daily_goal_minutes", value(goal.saturating_sub(5) as i64));
+}
+
+fn cycle_active_preset(offset: isize) {
+  let config = get_config();
+  let mut names: Vec<&str> = config.presets.keys().map(|s| s.as_str()).collect();
+  names.sort();
+  if names.is_empty() {
+    return;
+  }
+  let current_index = names
+    .iter()
+    .position(|n| *n == config.active_preset)
+    .unwrap_or(0) as isize;
+  let next_index = (current_index + offset).rem_euclid(names.len() as isize) as usize;
+  set_config_value("active_preset", value(names[next_index])).ignore_type();
+}
+
+fn change_preset_value(field: &str, step: i64) {
+  let config = get_config();
+  let preset_name = config.active_preset.clone();
+  let Some(preset) = config.presets.get(&preset_name).copied() else {
+    return;
+  };
+  let current = match field {
+    "work_minutes" => preset.work_minutes as i64,
+    "short_break_minutes" => preset.short_break_minutes as i64,
+    "long_break_minutes" => preset.long_break_minutes as i64,
+    "sessions_before_long_break" => preset.sessions_before_long_break as i64,
+    _ => return,
+  };
+  set_preset_value(&preset_name, field, (current + step).max(0)).ignore_type();
 }
 
 impl SettingsPage {
@@ -305,6 +365,11 @@ impl SettingsPage {
         SettingsSubItems::TuiProgress => toggle_config_value("tui_show_progress").ignore_type(),
         SettingsSubItems::TuiAsciiArt => toggle_config_value("tui_show_ascii_art").ignore_type(),
         SettingsSubItems::TuiStats => toggle_config_value("tui_show_stats").ignore_type(),
+        SettingsSubItems::PresetActive => cycle_active_preset(1),
+        SettingsSubItems::PresetWork => change_preset_value("work_minutes", 5),
+        SettingsSubItems::PresetShortBreak => change_preset_value("short_break_minutes", 5),
+        SettingsSubItems::PresetLongBreak => change_preset_value("long_break_minutes", 5),
+        SettingsSubItems::PresetSessions => change_preset_value("sessions_before_long_break", 1),
         SettingsSubItems::TuiFont => {
           let selected_font = get_config().font;
           let all_fonts: Vec<Fonts> = vec![
@@ -353,7 +418,15 @@ impl SettingsPage {
 
   pub fn handle_left(&mut self) {
     if self.in_sub_menu {
-      self.in_sub_menu = false
+      let crr_item = self.get_selected_item_sub();
+      match crr_item {
+        SettingsSubItems::PresetActive => cycle_active_preset(-1),
+        SettingsSubItems::PresetWork => change_preset_value("work_minutes", -5),
+        SettingsSubItems::PresetShortBreak => change_preset_value("short_break_minutes", -5),
+        SettingsSubItems::PresetLongBreak => change_preset_value("long_break_minutes", -5),
+        SettingsSubItems::PresetSessions => change_preset_value("sessions_before_long_break", -1),
+        _ => self.in_sub_menu = false,
+      }
     } else {
       let crr_item = self.get_selected_item_main();
       match crr_item {
@@ -387,6 +460,10 @@ impl SettingsPage {
   }
   pub fn stop_editing(&mut self) {
     self.input_mode = InputMode::Normal
+  }
+
+  pub fn exit_sub_menu(&mut self) {
+    self.in_sub_menu = false;
   }
 
   pub fn handle_editing_key(&mut self, key_event: KeyEvent) {

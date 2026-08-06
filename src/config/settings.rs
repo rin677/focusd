@@ -231,3 +231,26 @@ pub fn toggle_config_value(key: &str) -> io::Result<()> {
   let current = raw[key].as_bool().expect("Value is not boolean");
   set_config_value(key, value(!current))
 }
+
+/// Updates a single field of a preset in the config file.
+pub fn set_preset_value(preset_name: &str, field: &str, new_value: i64) -> io::Result<()> {
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+  let Some(presets) = doc["presets"].as_table_mut() else {
+    throw!("presets not found");
+  };
+  let Some(preset) = presets.get_mut(preset_name) else {
+    throw!("preset not found");
+  };
+  let Some(table) = preset.as_table_mut() else {
+    throw!("preset is not a table");
+  };
+  table[field] = value(new_value);
+  fs::write(path, doc.to_string())
+}
