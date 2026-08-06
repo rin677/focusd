@@ -167,6 +167,10 @@ impl App {
   }
 
   fn handle_key_event(&mut self, key_event: KeyEvent) {
+    if self.app_state.current_page == Pages::Settings && self.app_state.settings_page.is_editing() {
+      self.app_state.settings_page.handle_editing_key(key_event);
+      return;
+    }
     match key_event.code {
       KeyCode::Char('q') => {
         if self.popup.showen {

@@ -2,8 +2,16 @@ use crate::{
   config::settings::{Fonts, get_config, set_config_value, toggle_config_value},
   utils::{ignore::IgnoreType, times_ago::render_duration},
 };
-use ratatui::{Frame, layout::Rect, prelude::*};
+use crossterm::event::{Event, KeyCode, KeyEvent};
+use ratatui::{
+  Frame,
+  layout::Rect,
+  prelude::*,
+  widgets::{Block, Paragraph},
+};
 use toml_edit::value;
+use tui_input::Input;
+use tui_input::backend::crossterm::EventHandler;
 use tui_widget_list::{ListBuilder, ListState, ListView};
 
 #[derive(Clone, Copy)]
@@ -47,6 +55,15 @@ pub struct SettingsPage {
   pub settings_items: Vec<SettingsItem>,
   pub in_sub_menu: bool,
   pub sub_menu_index: usize,
+  pub input: Input,
+  pub input_mode: InputMode,
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum InputMode {
+  #[default]
+  Normal,
+  Editing,
 }
 
 pub enum AnySettingItem {
@@ -60,6 +77,8 @@ impl Default for SettingsPage {
       selected_setting_index: 0,
       sub_menu_index: 0,
       in_sub_menu: false,
+      input: Input::default(),
+      input_mode: InputMode::Normal,
       settings_items: vec![
         SettingsItem::Preset,
         SettingsItem::Notification,
@@ -117,7 +136,7 @@ fn name_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::HookResume => "Hook Resume".to_string(),
     SettingsSubItems::HookPauseWork => "Hook Pause Work".to_string(),
     SettingsSubItems::HookResumeWork => "Hook Resume Work".to_string(),
-    SettingsSubItems::HookPauseLongBreak => "Hook Resume Short Break".to_string(),
+    SettingsSubItems::HookPauseLongBreak => "Hook Pause Long Break".to_string(),
     SettingsSubItems::HookPauseShortBreak => "Hook Pause Short Break".to_string(),
     SettingsSubItems::HookResumeLongBreak => "Hook Resume Long Break".to_string(),
     SettingsSubItems::HookResumeShortBreak => "Hook Resume Short Break".to_string(),
@@ -181,6 +200,23 @@ fn get_sub_items(item: &SettingsItem) -> Vec<SettingsSubItems> {
   }
 }
 
+fn hook_config_key(item: &SettingsSubItems) -> Option<&'static str> {
+  match item {
+    SettingsSubItems::HookPause => Some("hook_pause"),
+    SettingsSubItems::HookResume => Some("hook_resume"),
+    SettingsSubItems::HookPauseWork => Some("hook_pause_work"),
+    SettingsSubItems::HookResumeWork => Some("hook_resume_work"),
+    SettingsSubItems::HookPauseLongBreak => Some("hook_pause_long_break"),
+    SettingsSubItems::HookPauseShortBreak => Some("hook_pause_short_break"),
+    SettingsSubItems::HookResumeLongBreak => Some("hook_resume_long_break"),
+    SettingsSubItems::HookResumeShortBreak => Some("hook_resume_short_break"),
+    SettingsSubItems::HookStartShortBreak => Some("hook_start_short_break"),
+    SettingsSubItems::HookStartLongBreak => Some("hook_start_long_break"),
+    SettingsSubItems::HookStartWork => Some("hook_start_work"),
+    _ => None,
+  }
+}
+
 fn increase_goal() {
   let goal = get_config().daily_goal_minutes;
   let _ = set_config_value("daily_goal_minutes", value((goal + 5) as i64));
@@ -225,7 +261,27 @@ impl SettingsPage {
     };
     state.select(Some(selected_index));
     let list = ListView::new(builder, items.len());
-    list.render(area, frame.buffer_mut(), &mut state);
+
+    if self.is_editing() {
+      let [list_area, input_area] =
+        Layout::vertical([Constraint::Min(1), Constraint::Length(3)]).areas(area);
+      list.render(list_area, frame.buffer_mut(), &mut state);
+      self.render_input(input_area, frame);
+    } else {
+      list.render(area, frame.buffer_mut(), &mut state);
+    }
+  }
+
+  fn render_input(&self, area: Rect, frame: &mut Frame) {
+    let width = area.width.max(3) - 3;
+    let scroll = self.input.visual_scroll(width as usize);
+    let input = Paragraph::new(self.input.value())
+      .style(Style::default().fg(Color::Yellow))
+      .scroll((0, scroll as u16))
+      .block(Block::bordered().title(" Shell command (Enter: save, Esc: cancel) "));
+    frame.render_widget(input, area);
+    let x = self.input.visual_cursor().max(scroll) - scroll + 1;
+    frame.set_cursor_position((area.x + x as u16, area.y + 1));
   }
 
   pub fn get_items_to_render(&self) -> Vec<AnySettingItem> {
@@ -273,7 +329,11 @@ impl SettingsPage {
             set_config_value("font", value(f)).ignore_type();
           }
         }
-        _ => {}
+        _ => {
+          if hook_config_key(&crr_item).is_some() {
+            self.start_editing();
+          }
+        }
       }
       return;
     }
@@ -311,6 +371,40 @@ impl SettingsPage {
     let main = self.get_selected_item_main();
     let items = get_sub_items(&main);
     items[self.sub_menu_index]
+  }
+
+  pub fn is_editing(&self) -> bool {
+    self.input_mode == InputMode::Editing
+  }
+  pub fn start_editing(&mut self) {
+    if self.in_sub_menu {
+      let item = self.get_selected_item_sub();
+      if hook_config_key(&item).is_some() {
+        self.input = Input::new(value_for_settings_sub_item(&item));
+      }
+    }
+    self.input_mode = InputMode::Editing
+  }
+  pub fn stop_editing(&mut self) {
+    self.input_mode = InputMode::Normal
+  }
+
+  pub fn handle_editing_key(&mut self, key_event: KeyEvent) {
+    match key_event.code {
+      KeyCode::Enter => {
+        if self.in_sub_menu {
+          let item = self.get_selected_item_sub();
+          if let Some(key) = hook_config_key(&item) {
+            set_config_value(key, value(self.input.value().to_string())).ignore_type();
+          }
+        }
+        self.stop_editing();
+      }
+      KeyCode::Esc => self.stop_editing(),
+      _ => {
+        self.input.handle_event(&Event::Key(key_event));
+      }
+    }
   }
 
   pub fn up(&mut self) {

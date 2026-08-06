@@ -30,6 +30,7 @@ tui-piechart = "1.0.0"
 clap = {version =  "4.6.4", features = ["derive"] }
 tui-widget-list = "0.15.3"
 toml_edit = "0.25.13"
+tui-input = "0.15.3"
 
 [features]
 default = ["bundled-sqlite"]
