@@ -1,17 +1,15 @@
 use crate::{
-  config::settings::{
-    Fonts, create_preset, delete_active_preset, get_config, get_crr_preset,
-    set_config_value, set_preset_value, toggle_config_value,
+  config::{
+    settings::{
+      Fonts, create_preset, delete_active_preset, get_config, get_crr_preset, set_config_value,
+      set_preset_value, toggle_config_value,
+    },
+    themes::get_current_theme,
   },
   utils::{ignore::IgnoreType, times_ago::render_duration},
 };
 use crossterm::event::{Event, KeyCode, KeyEvent};
-use ratatui::{
-  Frame,
-  layout::Rect,
-  prelude::*,
-  widgets::{Block, Paragraph},
-};
+use ratatui::{Frame, layout::Rect, prelude::*, widgets::Paragraph};
 use toml_edit::value;
 use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
@@ -298,6 +296,7 @@ fn change_preset_value(field: &str, step: i64) {
 impl SettingsPage {
   pub fn render(&self, area: Rect, frame: &mut Frame) {
     let items = self.get_items_to_render();
+    let theme = get_current_theme();
 
     let builder = ListBuilder::new(|context| {
       let text = match items.get(context.index) {
@@ -317,7 +316,7 @@ impl SettingsPage {
       };
       let mut item = Line::from(text);
       if context.is_selected {
-        item = item.style(Style::default().bg(Color::DarkGray));
+        item = item.style(theme.selected);
       }
       (item, 1)
     });
@@ -342,6 +341,7 @@ impl SettingsPage {
   }
 
   fn render_input(&self, area: Rect, frame: &mut Frame) {
+    let theme = get_current_theme();
     let width = area.width.max(3) - 3;
     let scroll = self.input.visual_scroll(width as usize);
     let title = if matches!(self.get_selected_item_sub(), SettingsSubItems::PresetNew) {
@@ -350,9 +350,8 @@ impl SettingsPage {
       " Shell command (Enter: save, Esc: cancel) "
     };
     let input = Paragraph::new(self.input.value())
-      .style(Style::default().fg(Color::Yellow))
       .scroll((0, scroll as u16))
-      .block(Block::bordered().title(title));
+      .block(theme.block().title(title));
     frame.render_widget(input, area);
     let x = self.input.visual_cursor().max(scroll) - scroll + 1;
     frame.set_cursor_position((area.x + x as u16, area.y + 1));

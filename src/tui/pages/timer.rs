@@ -1,5 +1,5 @@
 use crate::{
-  config::settings::get_config,
+  config::{settings::get_config, themes::get_current_theme},
   daemon::commands::{PayloadMessage, send_message_with_payload},
   database::history::get_full_history_no_err,
   stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
@@ -17,8 +17,7 @@ use ratatui::{
   layout::{Constraint, Layout, Rect, Spacing},
   prelude::*,
   style::Modifier,
-  symbols::merge::MergeStrategy,
-  widgets::{Block, LineGauge, Paragraph},
+  widgets::{LineGauge, Paragraph},
 };
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tui_widget_list::{ListBuilder, ListState, ListView};
@@ -114,9 +113,9 @@ impl TimerPage {
   }
 
   fn render_stats(&self, area: Rect, frame: &mut Frame) {
-    let block = Block::bordered()
-      .merge_borders(MergeStrategy::Exact)
-      .title(" Today's stats ");
+    let theme = get_current_theme();
+    let block = theme.block().title(" Today's stats ");
+
     frame.render_widget(&block, area);
     let inner = block.inner(area);
     let history = get_full_history_no_err();
@@ -135,9 +134,9 @@ impl TimerPage {
   }
 
   fn render_presets(&mut self, area: Rect, frame: &mut Frame) {
-    let block = Block::bordered()
-      .merge_borders(MergeStrategy::Exact)
-      .title(" Presets ");
+    let theme = get_current_theme();
+    let block = theme.block().title(" Presets ");
+
     frame.render_widget(&block, area);
     let area = block.inner(area);
     let cfg = get_config();
@@ -166,7 +165,7 @@ impl TimerPage {
       };
       let mut item = Line::from(text);
       if context.is_selected {
-        item = item.style(Style::default().bg(Color::DarkGray));
+        item = item.style(theme.selected);
       }
       (item, 1)
     });

@@ -1,5 +1,5 @@
 use crate::{
-  config::settings::get_crr_preset,
+  config::{settings::get_crr_preset, themes::get_current_theme},
   daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
@@ -17,9 +17,8 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
   layout::{Constraint, Layout, Spacing},
-  symbols::merge::MergeStrategy,
   text::Text,
-  widgets::{Block, Paragraph},
+  widgets::Paragraph,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
@@ -88,6 +87,7 @@ impl App {
   }
 
   fn draw(&mut self, frame: &mut Frame) {
+    let theme = get_current_theme();
     let icon = if self.timer_state.running {
       ""
     } else {
@@ -117,10 +117,10 @@ impl App {
     .spacing(Spacing::Overlap(1))
     .areas(area);
 
-    let content_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    let content_block = theme.block();
     frame.render_widget(&content_block, inner_area);
 
-    let header_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    let header_block = theme.block();
     frame.render_widget(&header_block, header);
     let header_inner = header_block.inner(header);
 
@@ -130,7 +130,10 @@ impl App {
     ])
     .spacing(2);
     let [left_space, right_space] = header_inner.layout(&top_layout);
-    frame.render_widget(Text::from(format!(" Focusd: {current_page} ")), left_space);
+    frame.render_widget(
+      Text::styled(format!(" Focusd: {current_page} "), theme.title),
+      left_space,
+    );
     frame.render_widget(Text::from(right_header_text), right_space);
     let page_area = content_block.inner(inner_area);
 
@@ -144,7 +147,7 @@ impl App {
       Pages::Settings => self.app_state.settings_page.render(page_area, frame),
     }
 
-    let footer_block = Block::bordered().merge_borders(MergeStrategy::Exact);
+    let footer_block = theme.block();
     frame.render_widget(&footer_block, footer);
     let footer_text = footer_block.inner(footer);
     let hint = if self.app_state.current_page == Pages::Settings {

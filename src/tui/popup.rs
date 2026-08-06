@@ -1,10 +1,11 @@
+use crate::config::themes::get_current_theme;
 use crate::{config::settings::get_config, tui::app::Pages};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::{
   Frame,
   layout::{Constraint, Rect},
-  widgets::{Block, Clear, Paragraph},
+  widgets::{Clear, Paragraph},
 };
 
 #[derive(Default)]
@@ -14,8 +15,9 @@ pub struct Popup {
 
 impl Popup {
   pub fn render(&self, current_page: Pages, area: Rect, frame: &mut Frame) {
+    let theme = get_current_theme();
     if self.showen {
-      let popup_block = Block::bordered().title("Help");
+      let popup_block = theme.block().title("Help");
       let keymaps = self.get_keymaps(current_page);
       let text: Vec<Line> = keymaps
         .iter()

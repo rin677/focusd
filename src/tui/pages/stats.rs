@@ -1,4 +1,5 @@
 use crate::{
+  config::themes::get_current_theme,
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
@@ -13,9 +14,8 @@ use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect, Spacing},
   style::{Color, Style},
-  symbols::merge::MergeStrategy,
   text::{Line, Span, Text},
-  widgets::{Bar, BarChart, Block, Paragraph},
+  widgets::{Bar, BarChart, Paragraph},
 };
 use tui_piechart::{PieChart, PieSlice, symbols};
 
@@ -58,9 +58,8 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title(" Streak & Completion ")
-    .merge_borders(MergeStrategy::Exact);
+  let theme = get_current_theme();
+  let block = theme.block().title(" Streak & Completion ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -91,9 +90,8 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let bar_gap: u16 = 1;
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
-  let block = Block::bordered()
-    .title(" Daily Focus ")
-    .merge_borders(MergeStrategy::Exact);
+  let theme = get_current_theme();
+  let block = theme.block().title(" Daily Focus ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -129,9 +127,8 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 }
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title(" Daily Focus (4 weeks) ")
-    .merge_borders(MergeStrategy::Exact);
+  let theme = get_current_theme();
+  let block = theme.block().title(" Daily Focus (4 weeks) ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -198,9 +195,8 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     return;
   }
 
-  let block = Block::bordered()
-    .title(" Session Types ")
-    .merge_borders(MergeStrategy::Exact);
+  let theme = get_current_theme();
+  let block = theme.block().title(" Session Types ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -245,9 +241,8 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title(" Time Summary ")
-    .merge_borders(MergeStrategy::Exact);
+  let theme = get_current_theme();
+  let block = theme.block().title(" Time Summary ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
