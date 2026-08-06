@@ -9,6 +9,7 @@ use toml::Value;
 use toml_edit::{DocumentMut, Item, Table, value};
 
 use crate::{
+  config::themes::ThemeName,
   throw,
   utils::{ignore::IgnoreType, profile::Profile},
 };
@@ -40,6 +41,7 @@ pub struct Config {
   pub tui_show_ascii_art: bool,
   pub tui_show_stats: bool,
 
+  pub theme: ThemeName,
   pub font: Fonts,
 
   // Hooks
@@ -95,6 +97,7 @@ impl Default for Config {
       tui_show_ascii_art: true,
       tui_show_stats: true,
       font: Fonts::Terminus,
+      theme: ThemeName::Catpuccin,
       hook_pause_short_break: "".to_string(),
       hook_resume_short_break: "".to_string(),
       hook_pause_work: "".to_string(),
@@ -140,6 +143,7 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
     cfg.presets = get(val, "presets", cfg.presets);
     cfg.tui_show_stats = get(val, "tui_show_stats", cfg.tui_show_stats);
     cfg.font = get(val, "font", cfg.font);
+    cfg.theme = get(val, "theme", cfg.theme);
     cfg.tui_show_progress = get(val, "tui_show_progress", cfg.tui_show_progress);
     cfg.tui_show_ascii_art = get(val, "tui_show_ascii_art", cfg.tui_show_ascii_art);
     cfg.show_notifications = get(val, "show_notifications", cfg.show_notifications);
