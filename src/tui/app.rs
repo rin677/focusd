@@ -147,9 +147,13 @@ impl App {
     let footer_block = Block::bordered().merge_borders(MergeStrategy::Exact);
     frame.render_widget(&footer_block, footer);
     let footer_text = footer_block.inner(footer);
+    let hint = if self.app_state.current_page == Pages::Settings {
+      format!(" · {}", self.app_state.settings_page.footer_hint())
+    } else {
+      String::new()
+    };
     frame.render_widget(
-      Paragraph::new(" Press q to quit - Space to toggle timer - N to skip - R to reset ")
-        .centered(),
+      Paragraph::new(format!("Space Toggle timer · ? Keymaps {hint} ")).centered(),
       footer_text,
     );
 

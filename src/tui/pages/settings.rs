@@ -122,7 +122,7 @@ fn value_for_settings_item(item: &SettingsItem) -> String {
   let config = get_config();
   match item {
     SettingsItem::Notification => enabled(config.show_notifications),
-    SettingsItem::Tui => ">".to_string(),
+    SettingsItem::Tui | SettingsItem::Hooks => ">".to_string(),
     SettingsItem::Preset => config.active_preset,
     SettingsItem::DailyGoal => render_duration(config.daily_goal_minutes * 60),
     _ => "Not implemented".to_string(),
@@ -464,6 +464,45 @@ impl SettingsPage {
 
   pub fn exit_sub_menu(&mut self) {
     self.in_sub_menu = false;
+  }
+
+  pub fn footer_hint(&self) -> String {
+    if self.is_editing() {
+      return "Enter save · Esc cancel".to_string();
+    }
+    if !self.in_sub_menu {
+      match self.get_selected_item_main() {
+        SettingsItem::Notification => "←/→ toggle".to_string(),
+        SettingsItem::DailyGoal => "←/→ adjust".to_string(),
+        SettingsItem::Preset | SettingsItem::Tui | SettingsItem::Hooks | SettingsItem::Sounds => {
+          "→ open".to_string()
+        }
+      }
+    } else {
+      match self.get_selected_item_sub() {
+        SettingsSubItems::TuiProgress
+        | SettingsSubItems::TuiAsciiArt
+        | SettingsSubItems::TuiStats => "→ toggle · ← back".to_string(),
+        SettingsSubItems::TuiFont => "→ cycle · ← back".to_string(),
+        SettingsSubItems::PresetActive => "←/→ switch · Esc back".to_string(),
+        SettingsSubItems::PresetWork
+        | SettingsSubItems::PresetShortBreak
+        | SettingsSubItems::PresetLongBreak
+        | SettingsSubItems::PresetSessions => "←/→ adjust · Esc back".to_string(),
+        SettingsSubItems::HookPause
+        | SettingsSubItems::HookResume
+        | SettingsSubItems::HookPauseWork
+        | SettingsSubItems::HookResumeWork
+        | SettingsSubItems::HookResumeShortBreak
+        | SettingsSubItems::HookPauseShortBreak
+        | SettingsSubItems::HookResumeLongBreak
+        | SettingsSubItems::HookPauseLongBreak
+        | SettingsSubItems::HookStartShortBreak
+        | SettingsSubItems::HookStartLongBreak
+        | SettingsSubItems::HookStartWork => "→ edit · ← back".to_string(),
+        _ => "Not implemented".to_string(),
+      }
+    }
   }
 
   pub fn handle_editing_key(&mut self, key_event: KeyEvent) {
