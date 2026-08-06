@@ -6,9 +6,12 @@ use std::{
   path::PathBuf,
 };
 use toml::Value;
-use toml_edit::{DocumentMut, Item, value};
+use toml_edit::{DocumentMut, Item, Table, value};
 
-use crate::{throw, utils::profile::Profile};
+use crate::{
+  throw,
+  utils::{ignore::IgnoreType, profile::Profile},
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum Fonts {
@@ -253,4 +256,81 @@ pub fn set_preset_value(preset_name: &str, field: &str, new_value: i64) -> io::R
   };
   table[field] = value(new_value);
   fs::write(path, doc.to_string())
+}
+
+/// Creates a new preset copying values from the active preset and activates it.
+pub fn create_preset(name: &str) -> io::Result<()> {
+  let config = get_config();
+  if config.presets.contains_key(name) {
+    return Err(io::Error::new(
+      io::ErrorKind::AlreadyExists,
+      "preset already exists",
+    ));
+  }
+  let preset = get_crr_preset();
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+  let Some(presets) = doc["presets"].as_table_mut() else {
+    throw!("presets not found");
+  };
+  if presets.get(name).is_some() {
+    return Err(io::Error::new(
+      io::ErrorKind::AlreadyExists,
+      "preset already exists",
+    ));
+  }
+  let mut table = Table::new();
+  table["work_minutes"] = value(preset.work_minutes as i64);
+  table["short_break_minutes"] = value(preset.short_break_minutes as i64);
+  table["long_break_minutes"] = value(preset.long_break_minutes as i64);
+  table["sessions_before_long_break"] = value(preset.sessions_before_long_break as i64);
+  presets.insert(name, Item::Table(table));
+  fs::write(path, doc.to_string())?;
+  set_config_value("active_preset", value(name))
+}
+
+/// Deletes a preset and switches active preset to another one if needed.
+pub fn delete_preset(name: &str) -> io::Result<()> {
+  let config = get_config();
+  if config.presets.len() <= 1 {
+    throw!("cannot delete the last preset");
+  }
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+  let Some(presets) = doc["presets"].as_table_mut() else {
+    throw!("presets not found");
+  };
+  presets.remove(name);
+  fs::write(path, doc.to_string())?;
+
+  if config.active_preset == name {
+    let mut names: Vec<&str> = config
+      .presets
+      .keys()
+      .map(|s| s.as_str())
+      .filter(|k| *k != name)
+      .collect();
+    names.sort();
+    if let Some(next) = names.first() {
+      set_config_value("active_preset", value(*next))?;
+    }
+  }
+  Ok(())
+}
+
+pub fn delete_active_preset() {
+  let name = get_config().active_preset.clone();
+  delete_preset(&name).ignore_type();
 }

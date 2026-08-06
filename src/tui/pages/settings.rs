@@ -1,6 +1,7 @@
 use crate::{
   config::settings::{
-    Fonts, get_config, get_crr_preset, set_config_value, set_preset_value, toggle_config_value,
+    Fonts, create_preset, delete_active_preset, get_config, get_crr_preset,
+    set_config_value, set_preset_value, toggle_config_value,
   },
   utils::{ignore::IgnoreType, times_ago::render_duration},
 };
@@ -27,7 +28,7 @@ pub enum SettingsItem {
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SettingsSubItems {
   TuiProgress,
   TuiAsciiArt,
@@ -40,6 +41,8 @@ pub enum SettingsSubItems {
   PresetShortBreak,
   PresetLongBreak,
   PresetSessions,
+  PresetNew,
+  PresetDelete,
 
   SoundShortBreak,
   SoundLongBreak,
@@ -142,6 +145,8 @@ fn name_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::PresetShortBreak => "Short Break".to_string(),
     SettingsSubItems::PresetLongBreak => "Long Break".to_string(),
     SettingsSubItems::PresetSessions => "Sessions Before Long Break".to_string(),
+    SettingsSubItems::PresetNew => "New Preset".to_string(),
+    SettingsSubItems::PresetDelete => "Delete Preset".to_string(),
 
     SettingsSubItems::SoundWork => "Sound Work".to_string(),
     SettingsSubItems::SoundShortBreak => "Sound Short Break".to_string(),
@@ -170,6 +175,8 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::PresetShortBreak => render_duration(preset.short_break_minutes * 60),
     SettingsSubItems::PresetLongBreak => render_duration(preset.long_break_minutes * 60),
     SettingsSubItems::PresetSessions => preset.sessions_before_long_break.to_string(),
+    SettingsSubItems::PresetNew => ">".to_string(),
+    SettingsSubItems::PresetDelete => config.active_preset,
 
     SettingsSubItems::TuiStats => enabled(config.tui_show_stats),
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
@@ -206,6 +213,8 @@ fn get_sub_items(item: &SettingsItem) -> Vec<SettingsSubItems> {
       SettingsSubItems::PresetShortBreak,
       SettingsSubItems::PresetLongBreak,
       SettingsSubItems::PresetSessions,
+      SettingsSubItems::PresetNew,
+      SettingsSubItems::PresetDelete,
     ],
     SettingsItem::Sounds => vec![
       SettingsSubItems::SoundWork,
@@ -335,10 +344,15 @@ impl SettingsPage {
   fn render_input(&self, area: Rect, frame: &mut Frame) {
     let width = area.width.max(3) - 3;
     let scroll = self.input.visual_scroll(width as usize);
+    let title = if matches!(self.get_selected_item_sub(), SettingsSubItems::PresetNew) {
+      " Preset name (Enter: save, Esc: cancel) "
+    } else {
+      " Shell command (Enter: save, Esc: cancel) "
+    };
     let input = Paragraph::new(self.input.value())
       .style(Style::default().fg(Color::Yellow))
       .scroll((0, scroll as u16))
-      .block(Block::bordered().title(" Shell command (Enter: save, Esc: cancel) "));
+      .block(Block::bordered().title(title));
     frame.render_widget(input, area);
     let x = self.input.visual_cursor().max(scroll) - scroll + 1;
     frame.set_cursor_position((area.x + x as u16, area.y + 1));
@@ -370,6 +384,8 @@ impl SettingsPage {
         SettingsSubItems::PresetShortBreak => change_preset_value("short_break_minutes", 5),
         SettingsSubItems::PresetLongBreak => change_preset_value("long_break_minutes", 5),
         SettingsSubItems::PresetSessions => change_preset_value("sessions_before_long_break", 1),
+        SettingsSubItems::PresetNew => self.start_editing(),
+        SettingsSubItems::PresetDelete => delete_active_preset(),
         SettingsSubItems::TuiFont => {
           let selected_font = get_config().font;
           let all_fonts: Vec<Fonts> = vec![
@@ -454,6 +470,8 @@ impl SettingsPage {
       let item = self.get_selected_item_sub();
       if hook_config_key(&item).is_some() {
         self.input = Input::new(value_for_settings_sub_item(&item));
+      } else if matches!(item, SettingsSubItems::PresetNew) {
+        self.input = Input::default();
       }
     }
     self.input_mode = InputMode::Editing
@@ -489,6 +507,8 @@ impl SettingsPage {
         | SettingsSubItems::PresetShortBreak
         | SettingsSubItems::PresetLongBreak
         | SettingsSubItems::PresetSessions => "←/→ adjust · Esc back".to_string(),
+        SettingsSubItems::PresetNew => "→ create · ← back".to_string(),
+        SettingsSubItems::PresetDelete => "→ delete · ← back".to_string(),
         SettingsSubItems::HookPause
         | SettingsSubItems::HookResume
         | SettingsSubItems::HookPauseWork
@@ -510,8 +530,15 @@ impl SettingsPage {
       KeyCode::Enter => {
         if self.in_sub_menu {
           let item = self.get_selected_item_sub();
-          if let Some(key) = hook_config_key(&item) {
-            set_config_value(key, value(self.input.value().to_string())).ignore_type();
+          if SettingsSubItems::PresetNew == item {
+            let name = self.input.value().trim().to_string();
+            if !name.is_empty() {
+              create_preset(&name).ignore_type();
+            }
+          } else {
+            if let Some(key) = hook_config_key(&item) {
+              set_config_value(key, value(self.input.value().to_string())).ignore_type();
+            }
           }
         }
         self.stop_editing();
