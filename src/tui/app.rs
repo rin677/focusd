@@ -185,7 +185,13 @@ impl App {
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('?') => self.popup.toggle(),
-      KeyCode::Esc => self.popup.hide(),
+      KeyCode::Esc => {
+        if self.app_state.current_page == Pages::Settings {
+          self.app_state.settings_page.exit_sub_menu();
+        } else {
+          self.popup.hide()
+        }
+      }
       KeyCode::Char('j') | KeyCode::Down => match self.app_state.current_page {
         Pages::Timer => self.app_state.timer_page.down(),
         Pages::History => self.app_state.history_page.down(),
