@@ -9,7 +9,7 @@ use crate::{
     utils::time_for_session,
   },
   tui::layout::split_vertical,
-  utils::{figlet::big_text, ignore::IgnoreType, times_ago::render_duration},
+  utils::{cycle::cycle_index, figlet::big_text, ignore::IgnoreType, times_ago::render_duration},
 };
 
 use ratatui::{
@@ -42,15 +42,14 @@ impl TimerPage {
   }
 
   pub fn up(&mut self) {
-    if self.preset_selected_index > 0 {
-      self.preset_selected_index -= 1;
-    }
+    self.up_or_down(-1);
   }
   pub fn down(&mut self) {
+    self.up_or_down(1);
+  }
+  fn up_or_down(&mut self, offset: isize) {
     let count = get_config().presets.len();
-    if self.preset_selected_index < count {
-      self.preset_selected_index += 1;
-    }
+    self.preset_selected_index = cycle_index(self.preset_selected_index, count, offset)
   }
 
   pub fn select_preset(&mut self) {

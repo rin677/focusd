@@ -6,7 +6,11 @@ use crate::{
     },
     themes::get_current_theme,
   },
-  utils::{ignore::IgnoreType, times_ago::render_duration},
+  utils::{
+    cycle::{cycle_index, cycle_item},
+    ignore::IgnoreType,
+    times_ago::render_duration,
+  },
 };
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use ratatui::{Frame, layout::Rect, prelude::*, widgets::Paragraph};
@@ -264,17 +268,9 @@ fn decrease_goal() {
 
 fn cycle_active_preset(offset: isize) {
   let config = get_config();
-  let mut names: Vec<&str> = config.presets.keys().map(|s| s.as_str()).collect();
-  names.sort();
-  if names.is_empty() {
-    return;
-  }
-  let current_index = names
-    .iter()
-    .position(|n| *n == config.active_preset)
-    .unwrap_or(0) as isize;
-  let next_index = (current_index + offset).rem_euclid(names.len() as isize) as usize;
-  set_config_value("active_preset", value(names[next_index])).ignore_type();
+  let names: Vec<&str> = config.presets.keys().map(|s| s.as_str()).collect();
+  let next_item = cycle_item(config.active_preset.as_str(), &names, offset);
+  set_config_value("active_preset", value(next_item)).ignore_type();
 }
 
 fn change_preset_value(field: &str, step: i64) {
@@ -398,16 +394,9 @@ impl SettingsPage {
             Fonts::Terminus,
             Fonts::TubesRegular,
           ];
-
-          if let Some(index) = all_fonts.iter().position(|f| *f == selected_font) {
-            let next_font = if index == all_fonts.len() - 1 {
-              &all_fonts[0]
-            } else {
-              &all_fonts[index + 1]
-            };
-            let f = format!("{:?}", next_font);
-            set_config_value("font", value(f)).ignore_type();
-          }
+          let next_font = cycle_item(selected_font, &all_fonts, 1);
+          let f = format!("{:?}", next_font);
+          set_config_value("font", value(f)).ignore_type();
         }
         _ => {
           if hook_config_key(&crr_item).is_some() {
@@ -550,26 +539,24 @@ impl SettingsPage {
   }
 
   pub fn up(&mut self) {
-    if self.in_sub_menu {
-      if self.sub_menu_index > 0 {
-        self.sub_menu_index -= 1;
-      }
-    } else {
-      if self.selected_setting_index > 0 {
-        self.selected_setting_index -= 1;
-      }
-    }
+    self.up_or_down(-1)
   }
   pub fn down(&mut self) {
-    let count = self.get_items_to_render().len() - 1;
-    if self.in_sub_menu {
-      if self.sub_menu_index < count {
-        self.sub_menu_index += 1;
-      }
+    self.up_or_down(1)
+  }
+
+  pub fn up_or_down(&mut self, offset: isize) {
+    let count = self.get_items_to_render().len();
+    let index = if self.in_sub_menu {
+      self.sub_menu_index
     } else {
-      if self.selected_setting_index < count {
-        self.selected_setting_index += 1;
-      }
+      self.selected_setting_index
+    };
+    let next_index = cycle_index(index, count, offset);
+    if self.in_sub_menu {
+      self.sub_menu_index = next_index;
+    } else {
+      self.selected_setting_index = next_index
     }
   }
 }

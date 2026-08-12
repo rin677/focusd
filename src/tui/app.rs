@@ -6,7 +6,7 @@ use crate::{
     pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
     popup::Popup,
   },
-  utils::ignore::IgnoreType,
+  utils::{cycle::cycle_item, ignore::IgnoreType},
 };
 use std::{
   io,
@@ -243,16 +243,6 @@ impl App {
   }
 
   fn select_page(&mut self, offset: isize) {
-    if let Some(i) = self
-      .all_pages
-      .iter()
-      .position(|x| *x == self.app_state.current_page)
-    {
-      let total_pages = self.all_pages.len();
-      let new_index = i as isize + offset;
-      let m = new_index % total_pages as isize;
-      let abs_new_index: usize = (total_pages as isize + m) as usize % total_pages;
-      self.app_state.current_page = self.all_pages[abs_new_index]
-    }
+    self.app_state.current_page = cycle_item(self.app_state.current_page, &self.all_pages, offset);
   }
 }

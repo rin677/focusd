@@ -14,7 +14,7 @@ use crate::{
   utils::{ignore::IgnoreType, profile::Profile},
 };
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Copy)]
 pub enum Fonts {
   AnsiRegular,
   AnsiShadow,
