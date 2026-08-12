@@ -1,5 +1,8 @@
 use crate::{
-  config::{settings::get_crr_preset, themes::get_current_theme},
+  config::{
+    settings::get_crr_preset,
+    themes::{get_current_theme, themed_block},
+  },
   daemon::commands::{Message, get_timer_state, send_message},
   timer::{engine::render_time, state::TimerState, utils::name_for_session},
   tui::{
@@ -117,10 +120,10 @@ impl App {
     .spacing(Spacing::Overlap(1))
     .areas(area);
 
-    let content_block = theme.block();
+    let content_block = themed_block();
     frame.render_widget(&content_block, inner_area);
 
-    let header_block = theme.block();
+    let header_block = themed_block();
     frame.render_widget(&header_block, header);
     let header_inner = header_block.inner(header);
 
@@ -131,7 +134,7 @@ impl App {
     .spacing(2);
     let [left_space, right_space] = header_inner.layout(&top_layout);
     frame.render_widget(
-      Text::styled(format!(" Focusd: {current_page} "), theme.title),
+      Text::styled(format!(" Focusd: {current_page} "), theme.accent),
       left_space,
     );
     frame.render_widget(Text::from(right_header_text), right_space);
@@ -147,7 +150,7 @@ impl App {
       Pages::Settings => self.app_state.settings_page.render(page_area, frame),
     }
 
-    let footer_block = theme.block();
+    let footer_block = themed_block();
     frame.render_widget(&footer_block, footer);
     let footer_text = footer_block.inner(footer);
     let hint = if self.app_state.current_page == Pages::Settings {

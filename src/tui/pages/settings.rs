@@ -4,7 +4,7 @@ use crate::{
       Fonts, create_preset, delete_active_preset, get_config, get_crr_preset, set_config_value,
       set_preset_value, toggle_config_value,
     },
-    themes::get_current_theme,
+    themes::{get_current_theme, themed_block},
   },
   utils::{
     cycle::{cycle_index, cycle_item},
@@ -312,7 +312,7 @@ impl SettingsPage {
       };
       let mut item = Line::from(text);
       if context.is_selected {
-        item = item.style(theme.selected);
+        item = item.style(Style::default().bg(theme.selection));
       }
       (item, 1)
     });
@@ -337,7 +337,6 @@ impl SettingsPage {
   }
 
   fn render_input(&self, area: Rect, frame: &mut Frame) {
-    let theme = get_current_theme();
     let width = area.width.max(3) - 3;
     let scroll = self.input.visual_scroll(width as usize);
     let title = if matches!(self.get_selected_item_sub(), SettingsSubItems::PresetNew) {
@@ -347,7 +346,7 @@ impl SettingsPage {
     };
     let input = Paragraph::new(self.input.value())
       .scroll((0, scroll as u16))
-      .block(theme.block().title(title));
+      .block(themed_block().title(title));
     frame.render_widget(input, area);
     let x = self.input.visual_cursor().max(scroll) - scroll + 1;
     frame.set_cursor_position((area.x + x as u16, area.y + 1));

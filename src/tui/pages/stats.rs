@@ -1,5 +1,5 @@
 use crate::{
-  config::themes::get_current_theme,
+  config::themes::themed_block,
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
@@ -58,8 +58,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let theme = get_current_theme();
-  let block = theme.block().title(" Streak & Completion ");
+  let block = themed_block().title(" Streak & Completion ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -90,8 +89,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let bar_gap: u16 = 1;
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
-  let theme = get_current_theme();
-  let block = theme.block().title(" Daily Focus ");
+  let block = themed_block().title(" Daily Focus ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -127,8 +125,7 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 }
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
-  let theme = get_current_theme();
-  let block = theme.block().title(" Daily Focus (4 weeks) ");
+  let block = themed_block().title(" Daily Focus (4 weeks) ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -195,8 +192,7 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     return;
   }
 
-  let theme = get_current_theme();
-  let block = theme.block().title(" Session Types ");
+  let block = themed_block().title(" Session Types ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
@@ -241,8 +237,7 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
-  let theme = get_current_theme();
-  let block = theme.block().title(" Time Summary ");
+  let block = themed_block().title(" Time Summary ");
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 

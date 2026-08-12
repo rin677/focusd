@@ -1,5 +1,8 @@
 use crate::{
-  config::{settings::get_config, themes::get_current_theme},
+  config::{
+    settings::get_config,
+    themes::{get_current_theme, themed_block},
+  },
   daemon::commands::{PayloadMessage, send_message_with_payload},
   database::history::get_full_history_no_err,
   stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
@@ -112,8 +115,7 @@ impl TimerPage {
   }
 
   fn render_stats(&self, area: Rect, frame: &mut Frame) {
-    let theme = get_current_theme();
-    let block = theme.block().title(" Today's stats ");
+    let block = themed_block().title(" Today's stats ");
 
     frame.render_widget(&block, area);
     let inner = block.inner(area);
@@ -134,7 +136,7 @@ impl TimerPage {
 
   fn render_presets(&mut self, area: Rect, frame: &mut Frame) {
     let theme = get_current_theme();
-    let block = theme.block().title(" Presets ");
+    let block = themed_block().title(" Presets ");
 
     frame.render_widget(&block, area);
     let area = block.inner(area);
@@ -164,7 +166,7 @@ impl TimerPage {
       };
       let mut item = Line::from(text);
       if context.is_selected {
-        item = item.style(theme.selected);
+        item = item.style(Style::default().bg(theme.selection));
       }
       (item, 1)
     });
