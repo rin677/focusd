@@ -13,7 +13,7 @@ use crate::{
 use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect, Spacing},
-  style::{Color, Style},
+  style::Style,
   text::{Line, Span, Text},
   widgets::{Bar, BarChart, Paragraph},
 };
@@ -113,9 +113,14 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
     )
   };
 
+  let theme = get_current_theme();
   let bars: Vec<Bar> = data
     .into_iter()
-    .map(|(label, value)| Bar::with_label(label, value).text_value(fmt_duration_short(value)))
+    .map(|(label, value)| {
+      Bar::with_label(label, value)
+        .text_value(fmt_duration_short(value))
+        .value_style(Style::default().fg(theme.bg).bg(theme.fg))
+    })
     .collect();
   let chart = BarChart::new(bars)
     .max(max_value)
@@ -134,8 +139,10 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
     return;
   }
 
+  let theme = get_current_theme();
   let max_val = data.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
   let days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  let heat_chars = [" ", "░", "▒", "▓", "█"];
 
   let mut header = vec![Span::raw(format!("{:>5} ", ""))];
   for (i, d) in days.iter().enumerate() {
@@ -162,8 +169,11 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
         } else {
           0
         };
-        let bg = heat_color(intensity);
-        spans.push(Span::styled("  ", Style::new().bg(bg)));
+        let ch = heat_chars[intensity];
+        spans.push(Span::styled(
+          format!(" {ch}"),
+          Style::new().fg(theme.accent),
+        ));
         if di < days.len() - 1 {
           spans.push(Span::raw(" "));
         }
@@ -175,8 +185,8 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
   lines.push(Line::from(""));
 
   let mut indicator = vec![Span::raw("Less ")];
-  for i in 0..=4 {
-    indicator.push(Span::styled("  ", Style::new().bg(heat_color(i))));
+  for ch in heat_chars {
+    indicator.push(Span::styled(ch, Style::new().fg(theme.accent)));
     indicator.push(Span::raw(" "));
   }
   indicator.push(Span::raw(" More"));
@@ -209,16 +219,6 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     .show_legend(true)
     .show_percentages(false);
   frame.render_widget(chart, inner);
-}
-
-fn heat_color(intensity: usize) -> Color {
-  match intensity {
-    0 => Color::Reset,
-    1 => Color::Rgb(0x1a, 0x1a, 0x2e),
-    2 => Color::Rgb(0x1e, 0x3a, 0x5f),
-    3 => Color::Rgb(0x2d, 0x6a, 0x9f),
-    _ => Color::Rgb(0x4f, 0xad, 0xd7),
-  }
 }
 
 fn fmt_duration_short(seconds: u64) -> String {
