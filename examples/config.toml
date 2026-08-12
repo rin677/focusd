@@ -12,6 +12,12 @@ tui_show_ascii_art = true
 # Show short stats/preset in timer page
 tui_show_stats = true
 
+# Theme for TUI.
+# Available themes: dracula, one-dark-pro, nord, catppuccin-mocha, catppuccin-latte,
+# gruvbox-dark, gruvbox-light, tokyo-night, solarized-dark, solarized-light,
+# monokai-pro, rose-pine, kanagawa, everforest, cyberpunk, midnight-commander
+theme = "tokyo-night"
+
 # Font used by the Clock in TUI.
 # Available fonts: AnsiRegular, AnsiShadow, DosRebel, Future, Mono12, Mono9, SmBlock, Terminus, TubesRegular
 font = "Terminus"
