@@ -1,12 +1,15 @@
 use crate::{
+  config::themes::get_current_theme,
   database::history::get_full_history_no_err,
   timer::utils::name_for_session,
   utils::{figlet::big_text, times_ago::render_duration},
 };
+use ratatui::prelude::Stylize;
 use ratatui::{
   Frame,
   layout::{Constraint, Rect},
-  widgets::{Paragraph, Row, Table},
+  style::Modifier,
+  widgets::{Cell, Paragraph, Row, Table},
 };
 use std::cmp::min;
 
@@ -33,7 +36,11 @@ impl HistoryPage {
       return;
     }
 
-    let table_heading = Row::new(["Date", "Type", "Duration", "Status"]).bottom_margin(1);
+    let theme = get_current_theme();
+    let table_heading = Row::new(["Date", "Type", "Duration", "Status"])
+      .bottom_margin(1)
+      .style(Modifier::BOLD)
+      .fg(theme.accent);
 
     let row_available = area.height as usize - 2;
     let start = min(self.crr_history_index, self.max_history_index);
@@ -47,15 +54,15 @@ impl HistoryPage {
     let mut table_items: Vec<Row> = Vec::new();
     for history in &all_history[start..n] {
       let status = if history.completed_duration == history.planned_duration {
-        "Completed"
+        Cell::from("Completed").style(theme.success)
       } else {
-        "Incomplete"
+        Cell::from("Incomplete").style(theme.error)
       };
-      let r = Row::new([
-        history.end_time.format("%Y-%m-%d").to_string(),
-        name_for_session(history.session_type).to_string(),
-        render_duration(history.completed_duration),
-        status.to_string(),
+      let r = Row::new(vec![
+        Cell::from(history.end_time.format("%Y-%m-%d").to_string()),
+        Cell::from(name_for_session(history.session_type).to_string()),
+        Cell::from(render_duration(history.completed_duration)),
+        status,
       ]);
       table_items.push(r);
     }

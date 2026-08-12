@@ -1,5 +1,5 @@
 use crate::{
-  config::themes::themed_block,
+  config::themes::{get_current_theme, themed_block},
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
@@ -196,13 +196,8 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
   frame.render_widget(&block, area);
   let inner = block.inner(area);
 
-  let colors = [
-    Color::Cyan,
-    Color::Yellow,
-    Color::Magenta,
-    Color::Green,
-    Color::Red,
-  ];
+  let theme = get_current_theme();
+  let colors = [theme.secondary, theme.success, theme.warning];
   let slices: Vec<PieSlice> = dist
     .iter()
     .enumerate()

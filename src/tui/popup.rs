@@ -1,4 +1,4 @@
-use crate::config::themes::themed_block;
+use crate::config::themes::{get_current_theme, themed_block};
 use crate::{config::settings::get_config, tui::app::Pages};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -18,13 +18,16 @@ impl Popup {
     if self.showen {
       let popup_block = themed_block().title("Help");
       let keymaps = self.get_keymaps(current_page);
+      let theme = get_current_theme();
       let text: Vec<Line> = keymaps
         .iter()
         .map(|(key, desc)| {
           Line::from(vec![
             Span::styled(
               format!(" {:<10}", key),
-              Style::default().add_modifier(Modifier::BOLD),
+              Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(theme.accent),
             ),
             Span::raw(desc),
           ])

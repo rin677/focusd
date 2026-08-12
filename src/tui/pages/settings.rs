@@ -184,7 +184,7 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
     SettingsSubItems::TuiFont => format!("{:?}", config.font),
-    SettingsSubItems::TuiTheme => format!("{:?}", config.theme),
+    SettingsSubItems::TuiTheme => config.theme.slug().to_string(),
 
     SettingsSubItems::HookPause => config.hook_pause,
     SettingsSubItems::HookResume => config.hook_resume,

@@ -19,7 +19,7 @@ use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect, Spacing},
   prelude::*,
-  style::Modifier,
+  style::{Modifier, Styled},
   widgets::{LineGauge, Paragraph},
 };
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -183,8 +183,9 @@ impl TimerPage {
   fn render_gauge(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     let percent = (timer_state.time_remaining.as_secs()) as f64
       / (time_for_session(timer_state.session_type).as_secs()) as f64;
+    let theme = get_current_theme();
     let progress = LineGauge::default()
-      .style(Modifier::BOLD)
+      .style(Style::default().fg(theme.secondary))
       .filled_symbol("█")
       .unfilled_symbol("░")
       .label("")

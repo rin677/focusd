@@ -133,11 +133,8 @@ impl App {
     ])
     .spacing(2);
     let [left_space, right_space] = header_inner.layout(&top_layout);
-    frame.render_widget(
-      Text::styled(format!(" Focusd: {current_page} "), theme.accent),
-      left_space,
-    );
-    frame.render_widget(Text::from(right_header_text), right_space);
+    frame.render_widget(Text::from(format!(" Focusd: {current_page} ")), left_space);
+    frame.render_widget(Text::styled(right_header_text, theme.accent), right_space);
     let page_area = content_block.inner(inner_area);
 
     match self.app_state.current_page {
