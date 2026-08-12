@@ -184,6 +184,7 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
     SettingsSubItems::TuiFont => format!("{:?}", config.font),
+    SettingsSubItems::TuiTheme => format!("{:?}", config.theme),
 
     SettingsSubItems::HookPause => config.hook_pause,
     SettingsSubItems::HookResume => config.hook_resume,
@@ -373,6 +374,10 @@ impl SettingsPage {
         SettingsSubItems::TuiProgress => toggle_config_value("tui_show_progress").ignore_type(),
         SettingsSubItems::TuiAsciiArt => toggle_config_value("tui_show_ascii_art").ignore_type(),
         SettingsSubItems::TuiStats => toggle_config_value("tui_show_stats").ignore_type(),
+        SettingsSubItems::TuiTheme => {
+          let next_theme = get_config().theme.next();
+          set_config_value("theme", value(next_theme.slug())).ignore_type();
+        }
         SettingsSubItems::PresetActive => cycle_active_preset(1),
         SettingsSubItems::PresetWork => change_preset_value("work_minutes", 5),
         SettingsSubItems::PresetShortBreak => change_preset_value("short_break_minutes", 5),
@@ -488,7 +493,7 @@ impl SettingsPage {
         SettingsSubItems::TuiProgress
         | SettingsSubItems::TuiAsciiArt
         | SettingsSubItems::TuiStats => "→ toggle · ← back".to_string(),
-        SettingsSubItems::TuiFont => "→ cycle · ← back".to_string(),
+        SettingsSubItems::TuiFont | SettingsSubItems::TuiTheme => "→ cycle · ← back".to_string(),
         SettingsSubItems::PresetActive => "←/→ switch · Esc back".to_string(),
         SettingsSubItems::PresetWork
         | SettingsSubItems::PresetShortBreak
