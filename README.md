@@ -21,7 +21,7 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ## Screenshots
 
-<!-- :FIX: images are rendered correctly -->
+<!-- :FIX: images not rendered correctly -->
 
 ### Timer Page
 

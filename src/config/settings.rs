@@ -101,7 +101,6 @@ impl<'de> Deserialize<'de> for Fonts {
 }
 
 /// Data type of config (which will be stored in `~/.config/focusd/config.toml`)
-// TODO: Allow customizing fonts, hooks, gool and more
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
   pub active_preset: String,

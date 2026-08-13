@@ -88,7 +88,6 @@ enum Command {
   LongBreak,
 }
 
-// TODO: CLI arguments to start work/break directly
 fn main() -> io::Result<()> {
   create_config_file();
 
