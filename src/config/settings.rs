@@ -13,7 +13,7 @@ use std::{
 use toml::Value;
 use toml_edit::{DocumentMut, Item, Table, value};
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Copy)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Fonts {
   AnsiRegular,
   AnsiShadow,
@@ -24,6 +24,80 @@ pub enum Fonts {
   SmBlock,
   Terminus,
   TubesRegular,
+}
+
+impl Fonts {
+  #[must_use]
+  pub const fn slug(self) -> &'static str {
+    match self {
+      Self::AnsiRegular => "ansi-regular",
+      Self::AnsiShadow => "ansi-shadow",
+      Self::DosRebel => "dos-rebel",
+      Self::Future => "future",
+      Self::Mono12 => "mono-12",
+      Self::Mono9 => "mono-9",
+      Self::SmBlock => "sm-block",
+      Self::Terminus => "terminus",
+      Self::TubesRegular => "tubes-regular",
+    }
+  }
+
+  pub fn display_name(self) -> &'static str {
+    match self {
+      Self::AnsiRegular => "Ansi Regular",
+      Self::AnsiShadow => "Ansi Shadow",
+      Self::DosRebel => "DOS Rebel",
+      Self::Future => "Future",
+      Self::Mono12 => "Mono 12",
+      Self::Mono9 => "Mono 9",
+      Self::SmBlock => "Small Block",
+      Self::Terminus => "Terminus",
+      Self::TubesRegular => "Tubes Regular",
+    }
+  }
+}
+
+impl Serialize for Fonts {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    serializer.serialize_str(self.slug())
+  }
+}
+
+impl<'de> Deserialize<'de> for Fonts {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: serde::Deserializer<'de>,
+  {
+    let s = String::deserialize(deserializer)?;
+    match s.as_str() {
+      "ansi-regular" => Ok(Self::AnsiRegular),
+      "ansi-shadow" => Ok(Self::AnsiShadow),
+      "dos-rebel" => Ok(Self::DosRebel),
+      "future" => Ok(Self::Future),
+      "mono-12" => Ok(Self::Mono12),
+      "mono-9" => Ok(Self::Mono9),
+      "sm-block" => Ok(Self::SmBlock),
+      "terminus" => Ok(Self::Terminus),
+      "tubes-regular" => Ok(Self::TubesRegular),
+      _ => Err(serde::de::Error::unknown_variant(
+        &s,
+        &[
+          "ansi-regular",
+          "ansi-shadow",
+          "dos-rebel",
+          "future",
+          "mono-12",
+          "mono-9",
+          "sm-block",
+          "terminus",
+          "tubes-regular",
+        ],
+      )),
+    }
+  }
 }
 
 /// Data type of config (which will be stored in `~/.config/focusd/config.toml`)

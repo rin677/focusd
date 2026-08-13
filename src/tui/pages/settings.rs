@@ -183,8 +183,8 @@ fn value_for_settings_sub_item(item: &SettingsSubItems) -> String {
     SettingsSubItems::TuiStats => enabled(config.tui_show_stats),
     SettingsSubItems::TuiProgress => enabled(config.tui_show_progress),
     SettingsSubItems::TuiAsciiArt => enabled(config.tui_show_ascii_art),
-    SettingsSubItems::TuiFont => format!("{:?}", config.font),
-    SettingsSubItems::TuiTheme => config.theme.slug().to_string(),
+    SettingsSubItems::TuiFont => config.font.display_name().to_string(),
+    SettingsSubItems::TuiTheme => config.theme.display_name().to_string(),
 
     SettingsSubItems::HookPause => config.hook_pause,
     SettingsSubItems::HookResume => config.hook_resume,
@@ -399,8 +399,7 @@ impl SettingsPage {
             Fonts::TubesRegular,
           ];
           let next_font = cycle_item(selected_font, &all_fonts, 1);
-          let f = format!("{:?}", next_font);
-          set_config_value("font", value(f)).ignore_type();
+          set_config_value("font", value(next_font.slug())).ignore_type();
         }
         _ => {
           if hook_config_key(&crr_item).is_some() {

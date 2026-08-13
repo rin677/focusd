@@ -19,8 +19,8 @@ tui_show_stats = true
 theme = "tokyo-night"
 
 # Font used by the Clock in TUI.
-# Available fonts: AnsiRegular, AnsiShadow, DosRebel, Future, Mono12, Mono9, SmBlock, Terminus, TubesRegular
-font = "Terminus"
+# Available fonts: ansi-regular, ansi-shadow, dos-rebel, future, mono-12, mono-9, sm-block, terminus, tubes-regular
+font = "terminus"
 
 ## Presets define your work/break cycle.
 [presets.pomodoro]
