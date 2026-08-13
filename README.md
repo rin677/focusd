@@ -10,7 +10,7 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ## Features
 
-- Beautiful TUI.
+- Beautiful TUI with different themes.
 - Lightning fast (written in rust)
 - Long running daemon so it continues in background even if TUI is closed
 - Configuration and custom presets
@@ -85,6 +85,7 @@ Those commands can also be seen by running `focusd --help`
 
 - `stats` - Launch TUI in stats page.
 - `history` - Launch TUI in history page.
+- `settings` - Launch TUI in settings page.
 - `pause` - Pause the timer if running.
 - `toggle` - Toggle the timer.
 - `reset` - Reset current session.
@@ -144,6 +145,9 @@ If you are using walker as launcher and menu, I recommend creating a picker menu
 choice=$(printf '%s\n' \
   ' Start' \
   ' Pause' \
+  ' Work' \
+  ' Short Break' \
+  '󰒲 Long Break' \
   ' Resume' \
   ' Toggle' \
   ' Reset' \
@@ -151,11 +155,15 @@ choice=$(printf '%s\n' \
   ' Stats' \
   ' History' \
   '󰧨 TUI' \
+  ' Settings' \
   | walker --dmenu -p "focusd:")
 
 case "$choice" in
   ' Start') focusd start ;;
   ' Pause') focusd pause ;;
+  ' Work') focusd work ;;
+  ' Short Break') focusd short-break ;;
+  '󰒲 Long Break') focusd long-break ;;
   ' Resume') focusd resume ;;
   ' Toggle') focusd toggle ;;
   ' Reset') focusd reset ;;
@@ -163,6 +171,7 @@ case "$choice" in
   ' Stats') xdg-terminal-exec focusd stats ;;
   ' History') xdg-terminal-exec focusd history ;;
   '󰧨 TUI') xdg-terminal-exec focusd ;;
+  ' Settings') xdg-terminal-exec focusd settings;;
 esac
 ```
 
@@ -170,47 +179,6 @@ esac
 
 The config file is stored at `~/.config/focusd/config.toml`
 This is the [default config file](./examples/config.toml).
-
-```toml
-# Which preset is currently active
-active_preset = "pomodoro"
-daily_goal_minutes = 0
-
-# Show desktop notifications when session ends
-show_notifications = true
-
-# Show progress of timer
-tui_show_progress = true
-# Show ascci art and animation
-tui_show_ascii_art = true
-# Show short stats/preset in timer page
-tui_show_stats = true
-
-# Font used by the Clock in TUI.
-# Available fonts: AnsiRegular, AnsiShadow, DosRebel, Future, Mono12, Mono9, SmBlock, Terminus, TubesRegular
-font = "Terminus"
-
-## Presets define your work/break cycle.
-[presets.pomodoro]
-work_minutes = 25
-short_break_minutes = 5
-long_break_minutes = 15
-sessions_before_long_break = 4
-
-[presets.deep_work]
-work_minutes = 50
-short_break_minutes = 10
-long_break_minutes = 30
-sessions_before_long_break = 4
-
-## You can add more presets here if you want.
-## Example:
-# [presets.study]
-# work_minutes = 45
-# short_break_minutes = 10
-# long_break_minutes = 20
-# sessions_before_long_break = 4
-```
 
 ### Waybar Configuration
 
@@ -291,10 +259,11 @@ Example:
 
 This project is far from perfect and I will keep improving this. Here are some of the planned features.
 
-- [X] Include hooks (to be triggered when session ends/starts)
-- [X] Make timer page customizable, maybe show dashboard like interface
-- [/] Including settings page so that settings can be changed interactively
-- [ ] Session tags and daily goals
+- [x] Include hooks (to be triggered when session ends/starts)
+- [x] Including settings page so that settings can be changed interactively
+- [x] Daily goals
+- [ ] Play sounds when session ends
+- [ ] Session tags
 
 ## Contributing
 
