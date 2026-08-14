@@ -6,6 +6,7 @@ use crate::{
     },
     themes::{get_current_theme, themed_block},
   },
+  daemon::commands::{PayloadMessage, send_message_with_payload},
   utils::{
     cycle::{cycle_index, cycle_item},
     ignore::IgnoreType,
@@ -271,7 +272,7 @@ fn cycle_active_preset(offset: isize) {
   let config = get_config();
   let names: Vec<&str> = config.presets.keys().map(|s| s.as_str()).collect();
   let next_item = cycle_item(config.active_preset.as_str(), &names, offset);
-  set_config_value("active_preset", value(next_item)).ignore_type();
+  send_message_with_payload(PayloadMessage::SelectPreset, next_item.into()).ignore_type();
 }
 
 fn change_preset_value(field: &str, step: i64) {
