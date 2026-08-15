@@ -304,7 +304,7 @@ This project is far from perfect and I will keep improving this. Here are some o
 
 ## Contributing
 
-Feel free to open issues if you encounter any issues or have some feature ideas. But pull requests are not accepted currently. That's because as stated above main goal for building this project is for me to learn rust.
+Feel free to open issues if you encounter any issues or have some feature ideas.
 
 ## License
 
