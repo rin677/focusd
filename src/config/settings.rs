@@ -278,15 +278,6 @@ pub fn create_config_file() {
   }
 }
 
-/// Saves config file given the configuration
-pub fn save_config(config: &Config) -> io::Result<()> {
-  let Some(path) = config_path() else {
-    throw!("file not found");
-  };
-  let toml_string = toml::to_string_pretty(config).expect("failed to serialize");
-  fs::write(path, toml_string)
-}
-
 pub fn set_config_value<T>(key: &str, value: T) -> io::Result<()>
 where
   T: Into<Item>,

@@ -11,7 +11,7 @@ where
     .iter()
     .position(|f| *f == current_item)
     .unwrap_or(0);
-  let next_index = (index as isize + offset).rem_euclid(len as isize) as usize;
+  let next_index = (index as isize + offset).rem_euclid(len) as usize;
   all_items[next_index]
 }
 

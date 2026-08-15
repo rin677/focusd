@@ -12,7 +12,7 @@ mod waybar;
 use std::io;
 
 use crate::{
-  config::settings::{create_config_file, get_config},
+  config::settings::create_config_file,
   daemon::{
     commands::{Message, PayloadMessage, send_message, send_message_with_payload},
     run::{ensure_daemon_active, run_daemon},

@@ -19,7 +19,6 @@ use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect, Spacing},
   prelude::*,
-  style::{Modifier, Styled},
   widgets::{LineGauge, Paragraph},
 };
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
