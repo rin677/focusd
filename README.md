@@ -41,6 +41,8 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ![Omarchy plugin](media/omarchy-plugin.gif)
 
+See the [omarchy-focusd](https://github.com/BibekBhusal0/omarchy-focusd) for more info.
+
 ## Installation
 
 ### Mac-Os
