@@ -177,6 +177,41 @@ case "$choice" in
 esac
 ```
 
+### Building Custom Menu with Omarchy
+
+Similarly if you are in [omarchy](https://omarchy.org/) you can create menu like this.
+
+Add these entries to `~/.config/omarchy/extensions/omarchy-menu.jsonc` (it hot-reloads on save):
+
+```jsonc
+"focusd": { "icon": "󱎫", "label": "FocusD" },
+"focusd.start": { "icon": "", "label": "Start", "action": "focusd start" },
+"focusd.pause": { "icon": "", "label": "Pause", "action": "focusd pause" },
+"focusd.work": { "icon": "", "label": "Work", "action": "focusd work" },
+"focusd.short-break": { "icon": "", "label": "Short Break", "action": "focusd short-break" },
+"focusd.long-break": { "icon": "󰒲", "label": "Long Break", "action": "focusd long-break" },
+"focusd.resume": { "icon": "", "label": "Resume", "action": "focusd resume" },
+"focusd.toggle": { "icon": "", "label": "Toggle", "action": "focusd toggle" },
+"focusd.reset": { "icon": "", "label": "Reset", "action": "focusd reset" },
+"focusd.next": { "icon": "󰒭", "label": "Next", "action": "focusd next" },
+"focusd.stats": { "icon": "", "label": "Stats", "action": "omarchy-launch-or-focus-tui \"focusd stats\"" },
+"focusd.history": { "icon": "", "label": "History", "action": "omarchy-launch-or-focus-tui \"focusd history\"" },
+"focusd.tui": { "icon": "󰧨", "label": "TUI", "action": "omarchy-launch-or-focus-tui \"focusd\"" },
+"focusd.settings": { "icon": "", "label": "Settings", "action": "omarchy-launch-or-focus-tui \"focusd settings\"" },
+```
+
+Open the menu with `omarchy menu summon focusd` (or bind it to a keybind) to try it out.
+
+### Omarchy Integration
+
+If you use Omarchy 4, install the [FocusD bar plugin](https://github.com/BibekBhusal0/omarchy-focusd) to show the current session and remaining time right in the bar, with a control panel to pause, skip, or stop sessions:
+
+```bash
+omarchy plugin add https://github.com/BibekBhusal0/omarchy-focusd.git --enable
+```
+
+After installing, the widget appears on the right side of the bar. See the [plugin README](https://github.com/BibekBhusal0/omarchy-focusd) for usage and customization.
+
 ## Configuration
 
 The config file is stored at `~/.config/focusd/config.toml`
