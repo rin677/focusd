@@ -19,6 +19,8 @@ struct WaybarModule {
   class: Vec<String>,
   percentage: usize,
   tooltip: String,
+  session: String,
+  next_session: String,
 }
 
 /// Gives status in JSON format mainly to be used in waybar
@@ -72,6 +74,8 @@ Current Streak: {current_streak} {streak_unit}
     class,
     percentage,
     tooltip,
+    session: current_session.to_string(),
+    next_session: next_session_name.to_string(),
   };
 
   println!("{}", serde_json::to_string(&module).unwrap());
