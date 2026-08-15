@@ -21,6 +21,7 @@ use tui_input::backend::crossterm::EventHandler;
 use tui_widget_list::{ListBuilder, ListState, ListView};
 
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub enum SettingsItem {
   Preset,
   Notification,
@@ -99,7 +100,8 @@ impl Default for SettingsPage {
         SettingsItem::Tui,
         SettingsItem::DailyGoal,
         SettingsItem::Hooks,
-        SettingsItem::Sounds,
+        // TODO: implement sounds
+        // SettingsItem::Sounds,
       ],
     }
   }
