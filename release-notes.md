@@ -37,3 +37,17 @@
   - hook_start_short_break
   - hook_start_long_break
   - hook_start_work
+- Omarchy integration:
+  - Focusd now has omarchy shell plugin. Check the [omarchy-focusd](https://github.com/BibekBhusal0/omarchy-focusd) for more info.
+
+## Screenshots
+
+![Timer page](https://raw.githubusercontent.com/BibekBhusal0/focusd/master/media/timer-demo.gif)
+
+![History page](https://raw.githubusercontent.com/BibekBhusal0/focusd/master/media/history-page.png)
+
+![Stats page](https://raw.githubusercontent.com/BibekBhusal0/focusd/master/media/stats-page.png)
+
+![Waybar integration](https://raw.githubusercontent.com/BibekBhusal0/focusd/master/media/waybar-demo.gif)
+
+![Omarchy plugin](https://raw.githubusercontent.com/BibekBhusal0/focusd/master/media/omarchy-plugin.gif)
