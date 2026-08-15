@@ -2,7 +2,7 @@
 
 A beautiful terminal pomodoro timer with daemon, waybar integration and interactive TUI.
 
-<img width="640" height="656" alt="Image" src="https://github.com/user-attachments/assets/bcdf5f8d-bc9d-4934-ad22-055b4bf09b98" />
+![FocusD demo](media/timer-demo.gif)
 
 ## Why Build Another Pomodoro Timer??
 
@@ -10,7 +10,7 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ## Features
 
-- Beautiful TUI.
+- Beautiful TUI with different themes.
 - Lightning fast (written in rust)
 - Long running daemon so it continues in background even if TUI is closed
 - Configuration and custom presets
@@ -23,19 +23,25 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 
 ### Timer Page
 
-<img width="640" height="656" alt="Image" src="https://github.com/user-attachments/assets/bcdf5f8d-bc9d-4934-ad22-055b4bf09b98" />
+![Timer page](media/timer-demo.gif)
 
 ### History Page
 
-<img width="882" height="890" alt="Image" src="https://github.com/user-attachments/assets/98a80a17-f7b2-449e-a465-21e8b6612b2b" />
+![History page](media/history-page.png)
 
 ### Stats Page
 
-<img width="1912" height="1156" alt="Image" src="https://github.com/user-attachments/assets/cec26933-ab86-4387-aadf-bab4453df044" />
+![Stats page](media/stats-page.png)
 
 ### Waybar Integration
 
-<img width="640" height="846" alt="Image" src="https://github.com/user-attachments/assets/26c65dbf-3394-4be3-8076-10587b21bab1" />
+![Waybar integration](media/waybar-demo.gif)
+
+### Omarchy Plugin
+
+![Omarchy plugin](media/omarchy-plugin.gif)
+
+See the [omarchy-focusd](https://github.com/BibekBhusal0/omarchy-focusd) for more info.
 
 ## Installation
 
@@ -83,6 +89,7 @@ Those commands can also be seen by running `focusd --help`
 
 - `stats` - Launch TUI in stats page.
 - `history` - Launch TUI in history page.
+- `settings` - Launch TUI in settings page.
 - `pause` - Pause the timer if running.
 - `toggle` - Toggle the timer.
 - `reset` - Reset current session.
@@ -91,12 +98,14 @@ Those commands can also be seen by running `focusd --help`
 - `prints-stats` - Print stats.
 - `print-history` - Print all the history.
 - `status` - Shows timer status in JSON format, this is mainly for waybar (see the section for [waybar](#waybar-configuration))
-- `stop-daemon` - Stop daemon if running.
+- `work`/`short-break`/`long-break` to start specific session directly.
+- `--preset` - Select specific preset.
+- `--stop-daemon` - Stop daemon if running.
 - `--daemon` - Start daemon (force stops currently running daemon).
 
 ### Keymap
 
-For TUI those are the keymaps:
+For TUI those are the keymaps (You can see those keymaps by pressing `?` which shows help menu):
 
 - `space` toggle pomodoro timer.
 - `n` skip to next session.
@@ -140,6 +149,9 @@ If you are using walker as launcher and menu, I recommend creating a picker menu
 choice=$(printf '%s\n' \
   ' Start' \
   ' Pause' \
+  ' Work' \
+  ' Short Break' \
+  '󰒲 Long Break' \
   ' Resume' \
   ' Toggle' \
   ' Reset' \
@@ -147,11 +159,15 @@ choice=$(printf '%s\n' \
   ' Stats' \
   ' History' \
   '󰧨 TUI' \
+  ' Settings' \
   | walker --dmenu -p "focusd:")
 
 case "$choice" in
   ' Start') focusd start ;;
   ' Pause') focusd pause ;;
+  ' Work') focusd work ;;
+  ' Short Break') focusd short-break ;;
+  '󰒲 Long Break') focusd long-break ;;
   ' Resume') focusd resume ;;
   ' Toggle') focusd toggle ;;
   ' Reset') focusd reset ;;
@@ -159,32 +175,49 @@ case "$choice" in
   ' Stats') xdg-terminal-exec focusd stats ;;
   ' History') xdg-terminal-exec focusd history ;;
   '󰧨 TUI') xdg-terminal-exec focusd ;;
+  ' Settings') xdg-terminal-exec focusd settings;;
 esac
 ```
+
+### Building Custom Menu with Omarchy
+
+Similarly if you are in [omarchy](https://omarchy.org/) you can create menu like this.
+
+Add these entries to `~/.config/omarchy/extensions/omarchy-menu.jsonc` (it hot-reloads on save):
+
+```jsonc
+"focusd": { "icon": "󱎫", "label": "FocusD" },
+"focusd.start": { "icon": "", "label": "Start", "action": "focusd start" },
+"focusd.pause": { "icon": "", "label": "Pause", "action": "focusd pause" },
+"focusd.work": { "icon": "", "label": "Work", "action": "focusd work" },
+"focusd.short-break": { "icon": "", "label": "Short Break", "action": "focusd short-break" },
+"focusd.long-break": { "icon": "󰒲", "label": "Long Break", "action": "focusd long-break" },
+"focusd.resume": { "icon": "", "label": "Resume", "action": "focusd resume" },
+"focusd.toggle": { "icon": "", "label": "Toggle", "action": "focusd toggle" },
+"focusd.reset": { "icon": "", "label": "Reset", "action": "focusd reset" },
+"focusd.next": { "icon": "󰒭", "label": "Next", "action": "focusd next" },
+"focusd.stats": { "icon": "", "label": "Stats", "action": "omarchy-launch-or-focus-tui \"focusd stats\"" },
+"focusd.history": { "icon": "", "label": "History", "action": "omarchy-launch-or-focus-tui \"focusd history\"" },
+"focusd.tui": { "icon": "󰧨", "label": "TUI", "action": "omarchy-launch-or-focus-tui \"focusd\"" },
+"focusd.settings": { "icon": "", "label": "Settings", "action": "omarchy-launch-or-focus-tui \"focusd settings\"" },
+```
+
+Open the menu with `omarchy menu summon focusd` (or bind it to a keybind) to try it out.
+
+### Omarchy Integration
+
+If you use Omarchy 4, install the [FocusD bar plugin](https://github.com/BibekBhusal0/omarchy-focusd) to show the current session and remaining time right in the bar, with a control panel to pause, skip, or stop sessions:
+
+```bash
+omarchy plugin add https://github.com/BibekBhusal0/omarchy-focusd.git --enable
+```
+
+After installing, the widget appears on the right side of the bar. See the [plugin README](https://github.com/BibekBhusal0/omarchy-focusd) for usage and customization.
 
 ## Configuration
 
 The config file is stored at `~/.config/focusd/config.toml`
-This is the default config file.
-
-```toml
-active_preset = "pomodoro"
-show_notifications = true # Show notification when session ends
-
-[presets.pomodoro]
-work_minutes = 25
-short_break_minutes = 5
-long_break_minutes = 15
-sessions_before_long_break = 4
-
-[presets.deep_work]
-work_minutes = 50
-short_break_minutes = 10
-long_break_minutes = 30
-sessions_before_long_break = 4
-
-# ... More presets can be defined here
-```
+This is the [default config file](./examples/config.toml).
 
 ### Waybar Configuration
 
@@ -265,20 +298,15 @@ Example:
 
 This project is far from perfect and I will keep improving this. Here are some of the planned features.
 
-- [ ] Include hooks (to be triggered when session ends/starts)
-- [ ] Make timer page customizable, maybe show dashboard like interface
-- [ ] Including settings page so that settings can be changed interactively
-- [ ] Session tags and daily goals
-
-## Known Issues
-
-This is project is recently made and will be under heavy development so there might be some issues/bugs. Those are knows issues:
-
-- If config file don't contain correct data-type in single field, entire config file will not load (falling back to default config)
+- [x] Include hooks (to be triggered when session ends/starts)
+- [x] Including settings page so that settings can be changed interactively
+- [x] Daily goals
+- [ ] Play sounds when session ends
+- [ ] Session tags
 
 ## Contributing
 
-Feel free to open issues if you encounter any issues or have some feature ideas. But pull requests are not accepted currently. That's because as stated above main goal for building this project is for me to learn rust. But even if you descide to make a Pull request make it to [v-2 branch](https://github.com/BibekBhusal0/focusd/tree/v-2) unless it's a hotfix.
+Feel free to open issues if you encounter any issues or have some feature ideas.
 
 ## License
 

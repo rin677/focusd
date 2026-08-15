@@ -1,18 +1,21 @@
 use crate::{
+  config::themes::{get_current_theme, themed_block},
   database::history::get_full_history_no_err,
   stats::calculate::{
     DurType, get_completed_sessions, get_completion_rate, get_current_streak,
     get_daily_work_durations_7_days, get_daily_work_durations_n_days, get_longest_streak,
     get_session_type_distribution, get_total_time,
   },
+  tui::layout::split_vertical,
   utils::times_ago::render_duration,
 };
+
 use ratatui::{
   Frame,
-  layout::{Constraint, Layout, Rect},
-  style::{Color, Style},
+  layout::{Constraint, Layout, Rect, Spacing},
+  style::Style,
   text::{Line, Span, Text},
-  widgets::{Bar, BarChart, Block, Padding, Paragraph},
+  widgets::{Bar, BarChart, Paragraph},
 };
 use tui_piechart::{PieChart, PieSlice, symbols};
 
@@ -20,8 +23,8 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
   let show_bar_chart = area.height > 15;
   let show_pie_chart = area.height > 25;
   let mut constraints: Vec<Constraint> = vec![
-    Constraint::Max(4), // Total
-    Constraint::Max(4), // Streak
+    Constraint::Max(5), // Total
+    Constraint::Max(5), // Streak
   ];
 
   if show_bar_chart {
@@ -31,8 +34,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
     constraints.push(Constraint::Fill(1));
   }
 
-  let layout = Layout::vertical(constraints).spacing(1);
-
+  let layout = Layout::vertical(constraints).spacing(Spacing::Overlap(1));
   let l = area.layout_vec(&layout);
 
   let first = l[0];
@@ -45,9 +47,7 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
     if show_pie_chart {
       let chart_area = l[3];
 
-      let mid_split =
-        Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).spacing(1);
-      let [heatmap_area, pie_area] = mid.layout(&mid_split);
+      let (heatmap_area, pie_area) = split_vertical(mid);
       render_heatmap(heatmap_area, frame);
       render_pie_chart(pie_area, frame);
       render_bar_chart(chart_area, frame);
@@ -58,11 +58,9 @@ pub fn show_stats(area: Rect, frame: &mut Frame) {
 }
 
 fn render_second_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered()
-    .title("Streak & Completion")
-    .padding(Padding::horizontal(1));
+  let block = themed_block().title(" Streak & Completion ");
+  frame.render_widget(&block, area);
   let inner = block.inner(area);
-  frame.render_widget(block, area);
 
   let layout = Layout::vertical([Constraint::Max(1), Constraint::Max(1)]);
   let [streek, completion] = inner.layout(&layout);
@@ -91,16 +89,16 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
   let bar_gap: u16 = 1;
   let cols_per_bar = (bar_width + bar_gap) as usize;
 
-  let block = Block::bordered().title("Daily Focus");
+  let block = themed_block().title(" Daily Focus ");
+  frame.render_widget(&block, area);
   let inner = block.inner(area);
-  frame.render_widget(block, area);
 
-  let days = ((inner.width as usize) / cols_per_bar).max(7).min(90);
+  let days = ((inner.width as usize) / cols_per_bar).clamp(7, 90);
 
   let (data, max_value) = if days == 7 {
     let d = get_daily_work_durations_7_days();
     let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
-    (d.into_iter().map(|(l, v)| (l, v)).collect::<Vec<_>>(), max)
+    (d.into_iter().collect::<Vec<_>>(), max)
   } else {
     let d = get_daily_work_durations_n_days(days);
     let max = d.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
@@ -115,9 +113,14 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
     )
   };
 
+  let theme = get_current_theme();
   let bars: Vec<Bar> = data
     .into_iter()
-    .map(|(label, value)| Bar::with_label(label, value).text_value(fmt_duration_short(value)))
+    .map(|(label, value)| {
+      Bar::with_label(label, value)
+        .text_value(fmt_duration_short(value))
+        .value_style(Style::default().fg(theme.bg).bg(theme.fg))
+    })
     .collect();
   let chart = BarChart::new(bars)
     .max(max_value)
@@ -127,17 +130,19 @@ fn render_bar_chart(area: Rect, frame: &mut Frame) {
 }
 
 fn render_heatmap(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Daily Focus (4 weeks)");
+  let block = themed_block().title(" Daily Focus (4 weeks) ");
+  frame.render_widget(&block, area);
   let inner = block.inner(area);
-  frame.render_widget(block, area);
 
   let data = get_daily_work_durations_n_days(28);
   if data.is_empty() {
     return;
   }
 
+  let theme = get_current_theme();
   let max_val = data.iter().map(|(_, v)| *v).max().unwrap_or(1).max(1);
   let days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+  let heat_chars = [" ", "░", "▒", "▓", "█"];
 
   let mut header = vec![Span::raw(format!("{:>5} ", ""))];
   for (i, d) in days.iter().enumerate() {
@@ -164,8 +169,11 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
         } else {
           0
         };
-        let bg = heat_color(intensity);
-        spans.push(Span::styled("  ", Style::new().bg(bg)));
+        let ch = heat_chars[intensity];
+        spans.push(Span::styled(
+          format!(" {ch}"),
+          Style::new().fg(theme.accent),
+        ));
         if di < days.len() - 1 {
           spans.push(Span::raw(" "));
         }
@@ -177,8 +185,8 @@ fn render_heatmap(area: Rect, frame: &mut Frame) {
   lines.push(Line::from(""));
 
   let mut indicator = vec![Span::raw("Less ")];
-  for i in 0..=4 {
-    indicator.push(Span::styled("  ", Style::new().bg(heat_color(i))));
+  for ch in heat_chars {
+    indicator.push(Span::styled(ch, Style::new().fg(theme.accent)));
     indicator.push(Span::raw(" "));
   }
   indicator.push(Span::raw(" More"));
@@ -194,13 +202,12 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
     return;
   }
 
-  let colors = [
-    Color::Cyan,
-    Color::Yellow,
-    Color::Magenta,
-    Color::Green,
-    Color::Red,
-  ];
+  let block = themed_block().title(" Session Types ");
+  frame.render_widget(&block, area);
+  let inner = block.inner(area);
+
+  let theme = get_current_theme();
+  let colors = [theme.secondary, theme.success, theme.warning];
   let slices: Vec<PieSlice> = dist
     .iter()
     .enumerate()
@@ -209,20 +216,9 @@ fn render_pie_chart(area: Rect, frame: &mut Frame) {
 
   let chart = PieChart::new(slices)
     .pie_char(symbols::PIE_CHAR_BLOCK)
-    .block(Block::bordered().title("Session Types"))
     .show_legend(true)
     .show_percentages(false);
-  frame.render_widget(chart, area);
-}
-
-fn heat_color(intensity: usize) -> Color {
-  match intensity {
-    0 => Color::Reset,
-    1 => Color::Rgb(0x1a, 0x1a, 0x2e),
-    2 => Color::Rgb(0x1e, 0x3a, 0x5f),
-    3 => Color::Rgb(0x2d, 0x6a, 0x9f),
-    _ => Color::Rgb(0x4f, 0xad, 0xd7),
-  }
+  frame.render_widget(chart, inner);
 }
 
 fn fmt_duration_short(seconds: u64) -> String {
@@ -236,9 +232,9 @@ fn fmt_duration_short(seconds: u64) -> String {
 }
 
 fn redner_total_row(area: Rect, frame: &mut Frame) {
-  let block = Block::bordered().title("Time Summary");
+  let block = themed_block().title(" Time Summary ");
+  frame.render_widget(&block, area);
   let inner = block.inner(area);
-  frame.render_widget(block, area);
 
   let total_layout = Layout::horizontal([
     Constraint::Percentage(25),

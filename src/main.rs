@@ -9,103 +9,143 @@ mod timer;
 mod tui;
 mod utils;
 mod waybar;
-use std::{env, io};
+use std::io;
 
 use crate::{
   config::settings::create_config_file,
   daemon::{
-    commands::{Message, send_command},
+    commands::{Message, PayloadMessage, send_message, send_message_with_payload},
     run::{ensure_daemon_active, run_daemon},
   },
   database::history::print_history,
   stats::calculate::print_stats,
+  timer::{state::SessionType, utils::name_for_session},
   tui::app::Pages,
+  utils::print::Print,
 };
+use clap::{Parser, Subcommand};
+
+#[derive(Parser, Debug)]
+#[command(name = "focusd")]
+#[command(
+  version,
+  about,
+  long_about = "A beautiful and feature rich terminal pomodoro timer.
+Use focusd command to just open the timer."
+)]
+struct Cli {
+  #[command(subcommand)]
+  command: Option<Command>,
+
+  /// Start daemon
+  #[arg(long, short)]
+  daemon: bool,
+
+  /// Stop deamon if already running
+  #[arg(long)]
+  stop_daemon: bool,
+
+  /// Select specific preset
+  #[arg(short, long)]
+  preset: Option<String>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+  /// Launch TUI in stats page
+  Stats,
+  /// Launch TUI in history page
+  History,
+  /// Launch TUI in settings page
+  Settings,
+  /// Print all stats
+  PrintStats,
+  /// Print all history
+  PrintHistory,
+  /// Get status (this is for waybar)
+  Status,
+  /// Pause the running session
+  Pause,
+  /// Resume the paused session
+  Resume,
+  /// Toggle the session
+  Toggle,
+  /// Reset the session if running
+  Reset,
+  /// Reset the session if running
+  Stop,
+  /// Skip to next session
+  Next,
+  /// Skip to next session
+  Skip,
+  /// Start the session
+  Start,
+  /// Start work session directly
+  Work,
+  /// Start short break session directly
+  ShortBreak,
+  /// Start long break session directly
+  LongBreak,
+}
 
 fn main() -> io::Result<()> {
   create_config_file();
 
-  let args: Vec<String> = env::args().collect();
-
-  if args.iter().any(|a| a == "--daemon") {
+  let cli = Cli::parse();
+  if cli.daemon {
     run_daemon();
     return Ok(());
   }
-  if args.iter().any(|a| a == "stop-daemon") {
-    send_command(Message::StopDaemon).map(|m| println!("{m}"))?;
-    return Ok(());
-  }
-  // Don't enable daemon if just help tag
-  if args.iter().any(|a| a == "--help") {
-    println!(
-      "Usage: focusd [command]
-
-  Commands:
-    TUI commands
-      tui|timer|home     Launch TUI in timer page (just running `focusd` also opens this page
-      stats|stat         Launch TUI in stats page
-      history            Launch TUI in history page
-
-    Commands to change timer state:
-      pause|pause-session                      Pause timer if running
-      resume|resume-session                    Resume session if paused
-      toggle|toggle-session                    Toggle between running and paused state
-      reset|stop|reset-session|stop-session    Stop session if running
-      next|next-session|skip|skip-session      Skip to next session
-      start|start-session                      Start the session
-    
-
-    Commands to print:
-      print-stats
-      print-history
-      state|status        Show timer status in JSON format
-
-    Daemon commands:
-      --daemon                 Run daemon in background
-      stop-daemon              Stop daemon if running"
-    );
+  if cli.stop_daemon {
+    send_message(Message::StopDaemon).map(|m| println!("{m}"))?;
     return Ok(());
   }
 
   ensure_daemon_active(true)?;
 
-  let launch_tui = |page| tui::app::main(page);
-  if args.len() > 1 {
-    match args[1].as_str() {
-      // Commands to print stuff
-      "print-stats" => {
-        print_stats();
-        Ok(())
-      }
-      "print-history" => {
-        print_history();
-        Ok(())
-      }
-      "state" | "status" => {
-        waybar::status();
-        Ok(())
-      }
-
-      // Commands to open TUI in specific pages
-      "tui" | "timer" | "home" => launch_tui(Pages::Timer),
-      "stats" | "stat" => launch_tui(Pages::Stats),
-      "history" => launch_tui(Pages::History),
-      // "settings" | "config" => launch_tui(Pages::Settings),
-
-      // Commands to change state of timer
-      "pause" | "pause-session" => send_command(Message::PauseSession).map(|m| println!("{m}")),
-      "resume" | "resume-session" => send_command(Message::ResumeSession).map(|m| println!("{m}")),
-      "toggle" | "toggle-session" => send_command(Message::ToggleSession).map(|m| println!("{m}")),
-      "reset" | "stop" | "reset-session" | "stop-session" => {
-        send_command(Message::ResetSession).map(|m| println!("{m}"))
-      }
-      "next" | "next-session" | "skip" | "skip-session" => {
-        send_command(Message::NextSession).map(|m| println!("{m}"))
-      }
-      "start" | "start-session" => send_command(Message::StartSession).map(|m| println!("{m}")),
-      _ => launch_tui(Pages::Timer),
-    }
-  } else {
-    launch_tui(Pages::Timer)
+  if let Some(p) = cli.preset {
+    send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
+    return Ok(());
   }
+
+  let launch_tui = |page| tui::app::main(page);
+
+  match cli.command {
+    Some(Command::PrintStats) => {
+      print_stats();
+      Ok(())
+    }
+    Some(Command::PrintHistory) => {
+      print_history();
+      Ok(())
+    }
+    Some(Command::Status) => {
+      waybar::status();
+      Ok(())
+    }
+    Some(Command::Stats) => launch_tui(Pages::Stats),
+    Some(Command::History) => launch_tui(Pages::History),
+    Some(Command::Settings) => launch_tui(Pages::Settings),
+
+    Some(Command::Pause) => send_message(Message::PauseSession).print(),
+    Some(Command::Resume) => send_message(Message::ResumeSession).print(),
+    Some(Command::Toggle) => send_message(Message::ToggleSession).print(),
+    Some(Command::Reset) | Some(Command::Stop) => send_message(Message::ResetSession).print(),
+    Some(Command::Next) | Some(Command::Skip) => send_message(Message::NextSession).print(),
+    Some(Command::Start) => send_message(Message::StartSession).print(),
+
+    Some(Command::Work) => start_session(SessionType::Work),
+    Some(Command::ShortBreak) => start_session(SessionType::ShortBreak),
+    Some(Command::LongBreak) => start_session(SessionType::LongBreak),
+
+    None => launch_tui(Pages::Timer),
+  }
+}
+
+fn start_session(session_type: SessionType) -> io::Result<()> {
+  send_message_with_payload(
+    PayloadMessage::SelectSession,
+    name_for_session(session_type).into(),
+  )
+  .print()
 }

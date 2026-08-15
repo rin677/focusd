@@ -27,6 +27,11 @@ notify-rust = "4.18.0"
 figlet-rs = "1.0.0"
 serde_json = "1.0"
 tui-piechart = "1.0.0"
+clap = {version =  "4.6.4", features = ["derive"] }
+tui-widget-list = "0.15.3"
+toml_edit = "0.25.13"
+tui-input = "0.15.3"
+ratatui-themes = "0.3.0"
 
 [features]
 default = ["bundled-sqlite"]

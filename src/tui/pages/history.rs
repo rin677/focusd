@@ -1,76 +1,91 @@
 use crate::{
+  config::themes::get_current_theme,
   database::history::get_full_history_no_err,
   timer::utils::name_for_session,
-  tui::app::AppState,
   utils::{figlet::big_text, times_ago::render_duration},
 };
+use ratatui::prelude::Stylize;
 use ratatui::{
   Frame,
   layout::{Constraint, Rect},
-  widgets::{Paragraph, Row, Table},
+  style::Modifier,
+  widgets::{Cell, Paragraph, Row, Table},
 };
 use std::cmp::min;
-use std::sync::Mutex;
 
-static START_INDEX: Mutex<usize> = Mutex::new(0);
-
-pub fn scroll_history_down() {
-  let mut n = START_INDEX.lock().unwrap();
-  *n = n.saturating_add(1);
+pub struct HistoryPage {
+  pub max_history_index: usize,
+  pub crr_history_index: usize,
 }
 
-pub fn scroll_history_up() {
-  let mut n = START_INDEX.lock().unwrap();
-  *n = n.saturating_sub(1);
-}
-
-pub fn get_history_index() -> usize {
-  *START_INDEX.lock().unwrap()
-}
-
-pub fn show_history(area: Rect, frame: &mut Frame, app_state: &mut AppState) {
-  let all_history = get_full_history_no_err();
-
-  if all_history.is_empty() {
-    frame.render_widget(Paragraph::new(big_text("No history yet")).centered(), area);
-    return;
+impl Default for HistoryPage {
+  fn default() -> Self {
+    Self {
+      max_history_index: 10,
+      crr_history_index: 0,
+    }
   }
+}
 
-  let table_heading = Row::new(["Date", "Type", "Duration", "Status"]).bottom_margin(1);
+impl HistoryPage {
+  pub fn render(&mut self, area: Rect, frame: &mut Frame) {
+    let all_history = get_full_history_no_err();
 
-  let row_available = area.height as usize - 2;
-  let start = min(get_history_index(), app_state.max_history_index);
-  let n = min(start + row_available, all_history.len());
-  if all_history.len() > row_available {
-    app_state.max_history_index = all_history.len() - row_available
-  } else {
-    app_state.max_history_index = 0
-  }
+    if all_history.is_empty() {
+      frame.render_widget(Paragraph::new(big_text("No history yet")).centered(), area);
+      return;
+    }
 
-  let mut table_items: Vec<Row> = Vec::new();
-  for i in start..n {
-    let history = &all_history[i];
-    let status = if history.completed_duration == history.planned_duration {
-      "Completed"
+    let theme = get_current_theme();
+    let table_heading = Row::new(["Date", "Type", "Duration", "Status"])
+      .bottom_margin(1)
+      .style(Modifier::BOLD)
+      .fg(theme.accent);
+
+    let row_available = area.height as usize - 2;
+    let start = min(self.crr_history_index, self.max_history_index);
+    let n = min(start + row_available, all_history.len());
+    if all_history.len() > row_available {
+      self.max_history_index = all_history.len() - row_available
     } else {
-      "Incomplete"
-    };
-    let r = Row::new([
-      history.end_time.format("%Y-%m-%d").to_string(),
-      name_for_session(history.session_type).to_string(),
-      render_duration(history.completed_duration),
-      status.to_string(),
-    ]);
-    table_items.push(r);
+      self.max_history_index = 0
+    }
+
+    let mut table_items: Vec<Row> = Vec::new();
+    for history in &all_history[start..n] {
+      let status = if history.completed_duration == history.planned_duration {
+        Cell::from("Completed").style(theme.success)
+      } else {
+        Cell::from("Incomplete").style(theme.error)
+      };
+      let r = Row::new(vec![
+        Cell::from(history.end_time.format("%Y-%m-%d").to_string()),
+        Cell::from(name_for_session(history.session_type).to_string()),
+        Cell::from(render_duration(history.completed_duration)),
+        status,
+      ]);
+      table_items.push(r);
+    }
+
+    let widths = [
+      Constraint::Percentage(20),
+      Constraint::Percentage(20),
+      Constraint::Percentage(35),
+      Constraint::Percentage(25),
+    ];
+    let list = Table::new(table_items, widths).header(table_heading);
+
+    frame.render_widget(list, area);
   }
 
-  let widths = [
-    Constraint::Percentage(20),
-    Constraint::Percentage(20),
-    Constraint::Percentage(35),
-    Constraint::Percentage(25),
-  ];
-  let list = Table::new(table_items, widths).header(table_heading);
-
-  frame.render_widget(list, area);
+  pub fn up(&mut self) {
+    if self.crr_history_index > 0 {
+      self.crr_history_index -= 1;
+    }
+  }
+  pub fn down(&mut self) {
+    if self.crr_history_index < self.max_history_index {
+      self.crr_history_index += 1;
+    }
+  }
 }
