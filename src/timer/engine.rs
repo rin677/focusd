@@ -4,7 +4,7 @@ use crate::{
   notification::show_complete_notification,
   throw,
   timer::{
-    hooks::session_start_hook,
+    hooks::{pause_hooks, session_start_hook},
     state::{SessionType, TimerState},
     utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
@@ -39,7 +39,8 @@ pub fn render_time(state: &TimerState) -> String {
 
 pub fn start_session(state: &mut TimerState) {
   state.time_remaining = time_for_session(state.session_type);
-  state.running = true
+  state.running = true;
+  session_start_hook(state.session_type);
 }
 
 /// Start timer while going to specific session
@@ -59,6 +60,9 @@ pub fn start_specific_session(state: &mut TimerState, session_type: SessionType)
 }
 
 pub fn reset_session(state: &mut TimerState) {
+  if state.running {
+    pause_hooks(state.session_type);
+  }
   state.running = false;
   state.time_remaining = time_for_session(state.session_type);
 }
