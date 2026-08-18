@@ -25,8 +25,6 @@ struct WaybarModule {
   focused_today: String,
   daily_goal: String,
   current_streak: usize,
-  focused_today_secs: u64,
-  daily_goal_secs: u64,
 }
 
 /// Gives status in JSON format mainly to be used in waybar
@@ -58,11 +56,9 @@ pub fn status() {
   let next_session = next_session(state.session_type, state.session_number);
   let next_session_name = name_for_session(next_session);
   let time_for_next_sessoin = render_duration(time_for_session(next_session).as_secs());
-  let completed_today_secs = get_total_time(DurType::Today) as u64;
-  let completed_today = render_duration(completed_today_secs);
+  let completed_today = render_duration(get_total_time(DurType::Today));
   let sessions_today = get_todays_sessions();
-  let daily_goal_secs = get_config().daily_goal_minutes * 60;
-  let daily_goal = render_duration(daily_goal_secs);
+  let daily_goal = render_duration(get_config().daily_goal_minutes * 60);
   let history = get_full_history_no_err();
   let current_streak = get_current_streak(history);
   let streak_unit = if current_streak <= 1 { "day" } else { "days" };
@@ -90,8 +86,6 @@ Current Streak: {current_streak} {streak_unit}
     focused_today: completed_today,
     daily_goal,
     current_streak: current_streak.try_into().unwrap_or(0),
-    focused_today_secs: completed_today_secs,
-    daily_goal_secs,
   };
 
   println!("{}", serde_json::to_string(&module).unwrap());

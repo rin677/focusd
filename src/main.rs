@@ -19,11 +19,17 @@ use crate::{
   },
   database::history::print_history,
   stats::calculate::print_stats,
-  timer::{state::SessionType, utils::name_for_session},
   tui::app::Pages,
   utils::print::Print,
 };
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
+
+#[derive(ValueEnum, Clone, Debug)]
+enum StartSession {
+  Work,
+  ShortBreak,
+  LongBreak,
+}
 
 #[derive(Parser, Debug)]
 #[command(name = "focusd")]
@@ -48,6 +54,12 @@ struct Cli {
   /// Select specific preset
   #[arg(short, long)]
   preset: Option<String>,
+
+  /// Start a specific session
+  ///
+  /// work, short-break, long-break or current if empty
+  #[arg(short, long, num_args = 0..=1, hide_possible_values = true, value_name = "SESSION")]
+  start: Option<Option<StartSession>>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -78,14 +90,6 @@ enum Command {
   Next,
   /// Skip to next session
   Skip,
-  /// Start the session
-  Start,
-  /// Start work session directly
-  Work,
-  /// Start short break session directly
-  ShortBreak,
-  /// Start long break session directly
-  LongBreak,
 }
 
 fn main() -> io::Result<()> {
@@ -105,6 +109,22 @@ fn main() -> io::Result<()> {
 
   if let Some(p) = cli.preset {
     send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
+    return Ok(());
+  }
+  if let Some(session) = cli.start {
+    match session {
+      None => {
+        send_message(Message::StartSession).print()?;
+      }
+      Some(s) => {
+        let name = match s {
+          StartSession::Work => "Work",
+          StartSession::ShortBreak => "Short Break",
+          StartSession::LongBreak => "Long Break",
+        };
+        send_message_with_payload(PayloadMessage::SelectSession, name.into()).print()?;
+      }
+    }
     return Ok(());
   }
 
@@ -132,20 +152,6 @@ fn main() -> io::Result<()> {
     Some(Command::Toggle) => send_message(Message::ToggleSession).print(),
     Some(Command::Reset) | Some(Command::Stop) => send_message(Message::ResetSession).print(),
     Some(Command::Next) | Some(Command::Skip) => send_message(Message::NextSession).print(),
-    Some(Command::Start) => send_message(Message::StartSession).print(),
-
-    Some(Command::Work) => start_session(SessionType::Work),
-    Some(Command::ShortBreak) => start_session(SessionType::ShortBreak),
-    Some(Command::LongBreak) => start_session(SessionType::LongBreak),
-
     None => launch_tui(Pages::Timer),
   }
-}
-
-fn start_session(session_type: SessionType) -> io::Result<()> {
-  send_message_with_payload(
-    PayloadMessage::SelectSession,
-    name_for_session(session_type).into(),
-  )
-  .print()
 }
