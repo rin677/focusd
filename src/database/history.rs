@@ -1,12 +1,9 @@
 use crate::{
   throw,
-  timer::{
-    state::{SessionType, TimerState},
-    utils::{get_session_type, name_for_session, time_for_session},
-  },
+  timer::state::{SessionType, TimerState},
   utils::{
     profile::Profile,
-    times_ago::{render_duration, times_ago},
+    timer::{render_duration, times_ago},
   },
 };
 use chrono::{DateTime, Local, NaiveDateTime};
@@ -77,7 +74,9 @@ pub fn get_db() -> io::Result<Connection> {
 
 /// Add the given session to history database
 pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
-  let completed_duration = time_for_session(state.session_type)
+  let completed_duration = state
+    .session_type
+    .get_time()
     .saturating_sub(state.time_remaining)
     .as_secs() as i64;
   if completed_duration < 20 {
@@ -87,8 +86,8 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   let cnn = get_db()?;
   let now = Local::now();
   let end_time = now.format(TIME_PATTERN).to_string();
-  let planned_duration = time_for_session(state.session_type).as_secs() as i64;
-  let session_type = name_for_session(state.session_type);
+  let planned_duration = state.session_type.get_time().as_secs() as i64;
+  let session_type = state.session_type.name();
   cnn.execute(
     "INSERT INTO history 
     (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
@@ -119,7 +118,7 @@ pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error
       end_time: time,
       planned_duration: row.get(1)?,
       completed_duration: row.get(2)?,
-      session_type: get_session_type(&s),
+      session_type: SessionType::from_string(&s),
     });
   }
 
@@ -142,7 +141,7 @@ pub fn print_history() {
   for history in all_history {
     println!(
       "{} - target: {}, completed: {}, {}.",
-      name_for_session(history.session_type),
+      history.session_type.name(),
       render_duration(history.planned_duration),
       render_duration(history.completed_duration),
       times_ago(&history.end_time)

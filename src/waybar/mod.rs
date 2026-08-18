@@ -3,12 +3,8 @@ use crate::{
   daemon::commands::get_timer_state,
   database::history::get_full_history_no_err,
   stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
-  timer::{
-    engine::render_time,
-    state::SessionType,
-    utils::{name_for_session, next_session, time_for_session},
-  },
-  utils::times_ago::render_duration,
+  timer::{engine::render_time, state::SessionType},
+  utils::timer::render_duration,
 };
 use serde::{Deserialize, Serialize};
 
@@ -45,17 +41,17 @@ pub fn status() {
   }
   let preset = get_crr_preset();
 
-  let total_time = time_for_session(state.session_type);
+  let total_time = state.session_type.get_time();
   let percentage = (100.0
     - (100_f64 * state.time_remaining.as_secs() as f64 / total_time.as_secs() as f64))
     as usize;
 
-  let current_session = name_for_session(state.session_type);
+  let current_session = state.session_type.name();
   let session_n = state.session_number;
   let total_sessions = preset.sessions_before_long_break;
-  let next_session = next_session(state.session_type, state.session_number);
-  let next_session_name = name_for_session(next_session);
-  let time_for_next_sessoin = render_duration(time_for_session(next_session).as_secs());
+  let next_session = state.session_type.next(state.session_number);
+  let next_session_name = next_session.name();
+  let time_for_next_sessoin = render_duration(next_session.get_time().as_secs());
   let completed_today = render_duration(get_total_time(DurType::Today));
   let sessions_today = get_todays_sessions();
   let daily_goal = render_duration(get_config().daily_goal_minutes * 60);

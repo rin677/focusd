@@ -7,7 +7,6 @@ use crate::{
   timer::{
     engine::{decrease_sec, render_time},
     state::TimerState,
-    utils::name_for_session,
   },
 };
 use std::{
@@ -108,7 +107,7 @@ pub fn run_daemon() {
           println!(
             "Clock is ticking, {} remain in {}",
             render_time(&state),
-            name_for_session(state.session_type)
+            state.session_type.name()
           );
         }
       }

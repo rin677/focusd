@@ -3,16 +3,13 @@ use notify_rust::Notification;
 use crate::{
   config::settings::get_config,
   stats::calculate::{DurType, get_total_time},
-  timer::{
-    state::{SessionType, TimerState},
-    utils::{name_for_session, next_session as next_session_name, time_for_session},
-  },
+  timer::state::{SessionType, TimerState},
 };
 
 /// Show notification after sessioni is complete
 pub fn show_complete_notification(state: &TimerState) {
   let config = get_config();
-  let session_name = name_for_session(state.session_type);
+  let session_name = state.session_type.name();
   if config.show_notifications {
     if state.time_remaining.is_zero() {
       // Timer completed notification
@@ -20,8 +17,8 @@ pub fn show_complete_notification(state: &TimerState) {
         .summary(&format!("Timer for {} finished", session_name))
         .body(&format!(
           "Congrulations in completing timer for {} minutes, Now it's time for {}",
-          time_for_session(state.session_type).as_secs() / 60,
-          name_for_session(next_session_name(state.session_type, state.session_number))
+          state.session_type.get_time().as_secs() / 60,
+          state.session_type.next(state.session_number).name()
         ))
         .show()
         .ok();
@@ -34,7 +31,7 @@ pub fn show_complete_notification(state: &TimerState) {
 
     if focused_today >= goal && state.session_type == SessionType::Work {
       // check if goal was completed in this session
-      let focused_this_session = time_for_session(state.session_type) - state.time_remaining;
+      let focused_this_session = state.session_type.get_time() - state.time_remaining;
       let completed_in_this_session =
         (focused_today - focused_this_session.as_secs() as isize) < goal;
       if !completed_in_this_session {

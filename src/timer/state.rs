@@ -1,4 +1,4 @@
-use crate::timer::utils::time_for_session;
+use crate::config::settings::get_crr_preset;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -7,6 +7,49 @@ pub enum SessionType {
   Work,
   ShortBreak,
   LongBreak,
+}
+
+impl SessionType {
+  pub fn name<'a>(self) -> &'a str {
+    match self {
+      Self::Work => "Work",
+      Self::ShortBreak => "Short Break",
+      Self::LongBreak => "Long Break",
+    }
+  }
+
+  pub fn from_string(name: &str) -> Self {
+    match name.trim().to_lowercase().as_str() {
+      "work" => Self::Work,
+      "short break" => Self::ShortBreak,
+      _ => Self::LongBreak,
+    }
+  }
+
+  pub fn get_time(self) -> Duration {
+    let preset = get_crr_preset();
+
+    match self {
+      Self::Work => Duration::from_mins(preset.work_minutes),
+      Self::ShortBreak => Duration::from_mins(preset.short_break_minutes),
+      Self::LongBreak => Duration::from_mins(preset.long_break_minutes),
+    }
+  }
+
+  pub fn next(self, prev_session_number: u64) -> SessionType {
+    match self {
+      Self::Work => {
+        let preset = get_crr_preset();
+        if preset.sessions_before_long_break == prev_session_number {
+          Self::LongBreak
+        } else {
+          Self::ShortBreak
+        }
+      }
+      Self::ShortBreak => Self::Work,
+      Self::LongBreak => Self::Work,
+    }
+  }
 }
 
 /// Main state of the timer
@@ -52,7 +95,7 @@ impl Default for TimerState {
   fn default() -> Self {
     TimerState {
       running: false,
-      time_remaining: time_for_session(SessionType::Work),
+      time_remaining: SessionType::Work.get_time(),
       session_type: SessionType::Work,
       session_number: 1,
     }

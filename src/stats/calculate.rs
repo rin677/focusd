@@ -1,6 +1,6 @@
 use crate::{
   database::history::{HistoryEntry, get_db, get_full_history_no_err},
-  utils::times_ago::render_duration,
+  utils::timer::render_duration,
 };
 use chrono::{Duration, Local, NaiveDate};
 

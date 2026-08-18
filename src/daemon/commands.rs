@@ -6,8 +6,7 @@ use crate::{
       start_specific_session,
     },
     hooks::{pause_hooks, resume_hooks, session_start_hook},
-    state::{TimerSnapShot, TimerState},
-    utils::{get_session_type, name_for_session, time_for_session},
+    state::{SessionType, TimerSnapShot, TimerState},
   },
 };
 use serde::{Deserialize, Serialize};
@@ -105,7 +104,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       serde_json::to_string(&snapshot).unwrap()
     } else if l == parse_message(Message::StartSession) {
       start_session(&mut s);
-      format!("{} Session started", name_for_session(s.session_type))
+      format!("{} Session started", s.session_type.name())
     } else if l == parse_message(Message::PauseSession)
       || l == parse_message(Message::ResumeSession)
       || l == parse_message(Message::ToggleSession)
@@ -121,7 +120,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
       let mut status = "resumed";
       if new_running {
-        if s.time_remaining == time_for_session(s.session_type) {
+        if s.time_remaining == s.session_type.get_time() {
           session_start_hook(s.session_type);
         } else {
           resume_hooks(s.session_type);
@@ -132,19 +131,19 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       }
       format!(
         "{} {} time remaining: {}",
-        name_for_session(s.session_type),
+        s.session_type.name(),
         status,
         render_time(&s)
       )
     } else if l == parse_message(Message::NextSession) {
       next_session(&mut s);
-      format!("{} Session started", name_for_session(s.session_type))
+      format!("{} Session started", s.session_type.name())
     } else if l == parse_message(Message::StopDaemon) {
       stop_daemon();
       "OK".to_string()
     } else if l == parse_message(Message::ResetSession) {
       reset_session(&mut s);
-      format!("{} Session restarted", name_for_session(s.session_type))
+      format!("{} Session restarted", s.session_type.name())
     } else {
       "Command not found".to_string()
     };
@@ -152,9 +151,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
     let p = seperate_message_and_payload(l)?;
     if p.message == parse_payload_messages(PayloadMessage::SelectSession) {
       let value = p.payload.as_str().unwrap();
-      let session_type = get_session_type(value);
+      let session_type = SessionType::from_string(value);
       start_specific_session(&mut s, session_type);
-      response = format!("{} Session started", name_for_session(session_type));
+      response = format!("{} Session started", session_type.name());
     } else if p.message == parse_payload_messages(PayloadMessage::SelectPreset) {
       let value = p.payload.as_str().unwrap();
       match select_preset(&mut s, value) {

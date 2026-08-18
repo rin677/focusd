@@ -10,7 +10,7 @@ use crate::{
   utils::{
     cycle::{cycle_index, cycle_item},
     ignore::IgnoreType,
-    times_ago::render_duration,
+    timer::render_duration,
   },
 };
 use crossterm::event::{Event, KeyCode, KeyEvent};

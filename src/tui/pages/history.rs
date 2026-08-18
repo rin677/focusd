@@ -1,8 +1,7 @@
 use crate::{
   config::themes::get_current_theme,
   database::history::get_full_history_no_err,
-  timer::utils::name_for_session,
-  utils::{figlet::big_text, times_ago::render_duration},
+  utils::{figlet::big_text, timer::render_duration},
 };
 use ratatui::prelude::Stylize;
 use ratatui::{
@@ -60,7 +59,7 @@ impl HistoryPage {
       };
       let r = Row::new(vec![
         Cell::from(history.end_time.format("%Y-%m-%d").to_string()),
-        Cell::from(name_for_session(history.session_type).to_string()),
+        Cell::from(history.session_type.name().to_string()),
         Cell::from(render_duration(history.completed_duration)),
         status,
       ]);

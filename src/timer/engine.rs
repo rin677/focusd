@@ -6,8 +6,8 @@ use crate::{
   timer::{
     hooks::{pause_hooks, session_start_hook},
     state::{SessionType, TimerState},
-    utils::{min_2_digit, next_session as next_session_name, time_for_session},
   },
+  utils::timer::min_2_digit,
 };
 use std::time::Duration;
 use toml_edit::value;
@@ -38,7 +38,7 @@ pub fn render_time(state: &TimerState) -> String {
 }
 
 pub fn start_session(state: &mut TimerState) {
-  state.time_remaining = time_for_session(state.session_type);
+  state.time_remaining = state.session_type.get_time();
   state.running = true;
   session_start_hook(state.session_type);
 }
@@ -47,7 +47,7 @@ pub fn start_session(state: &mut TimerState) {
 pub fn start_specific_session(state: &mut TimerState, session_type: SessionType) {
   let is_current_session = state.session_type == session_type;
   state.session_type = session_type;
-  state.time_remaining = time_for_session(session_type);
+  state.time_remaining = session_type.get_time();
   state.running = true;
   session_start_hook(session_type);
   if !is_current_session {
@@ -64,7 +64,7 @@ pub fn reset_session(state: &mut TimerState) {
     pause_hooks(state.session_type);
   }
   state.running = false;
-  state.time_remaining = time_for_session(state.session_type);
+  state.time_remaining = state.session_type.get_time();
 }
 
 pub fn select_preset(state: &mut TimerState, preset_name: &str) -> std::io::Result<()> {
@@ -91,7 +91,7 @@ pub fn select_preset(state: &mut TimerState, preset_name: &str) -> std::io::Resu
 pub fn next_session(state: &mut TimerState) {
   add_session_to_db(state).ok();
   show_complete_notification(state);
-  state.session_type = next_session_name(state.session_type, state.session_number);
+  state.session_type = state.session_type.next(state.session_number);
   if state.session_type == SessionType::Work {
     state.session_number = get_next_session_number(state.session_number);
   }
@@ -99,7 +99,7 @@ pub fn next_session(state: &mut TimerState) {
   if state.running {
     session_start_hook(state.session_type);
   }
-  state.time_remaining = time_for_session(state.session_type);
+  state.time_remaining = state.session_type.get_time();
 }
 
 fn get_next_session_number(crr_session_number: u64) -> u64 {

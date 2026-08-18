@@ -1,6 +1,14 @@
 use chrono::{DateTime, Local};
 use std::convert::TryInto;
 
+pub fn min_2_digit(time: u64) -> String {
+  if time >= 10 {
+    format!("{time}")
+  } else {
+    format!("0{time}")
+  }
+}
+
 /// Returns string saying `x days/hours ago` given the date time object
 pub fn times_ago(time: &DateTime<Local>) -> String {
   let now = Local::now();

@@ -7,7 +7,7 @@ use crate::{
     get_session_type_distribution, get_total_time,
   },
   tui::layout::split_vertical,
-  utils::times_ago::render_duration,
+  utils::timer::render_duration,
 };
 
 use ratatui::{

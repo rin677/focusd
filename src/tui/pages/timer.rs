@@ -9,10 +9,9 @@ use crate::{
   timer::{
     engine::render_time,
     state::{SessionType, TimerState},
-    utils::time_for_session,
   },
   tui::layout::split_vertical,
-  utils::{cycle::cycle_index, figlet::big_text, ignore::IgnoreType, times_ago::render_duration},
+  utils::{cycle::cycle_index, figlet::big_text, ignore::IgnoreType, timer::render_duration},
 };
 
 use ratatui::{
@@ -181,7 +180,7 @@ impl TimerPage {
 
   fn render_gauge(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
     let percent = (timer_state.time_remaining.as_secs()) as f64
-      / (time_for_session(timer_state.session_type).as_secs()) as f64;
+      / (timer_state.session_type.get_time().as_secs()) as f64;
     let theme = get_current_theme();
     let progress = LineGauge::default()
       .style(Style::default().fg(theme.secondary))

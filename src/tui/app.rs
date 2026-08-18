@@ -4,7 +4,7 @@ use crate::{
     themes::{get_current_theme, themed_block},
   },
   daemon::commands::{Message, get_timer_state, send_message},
-  timer::{engine::render_time, state::TimerState, utils::name_for_session},
+  timer::{engine::render_time, state::TimerState},
   tui::{
     pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
     popup::Popup,
@@ -99,7 +99,7 @@ impl App {
     let preset = get_crr_preset();
     let right_header_text = format!(
       "{} {}/{}  {icon} {}",
-      name_for_session(self.timer_state.session_type),
+      self.timer_state.session_type.name(),
       self.timer_state.session_number,
       preset.sessions_before_long_break,
       render_time(&self.timer_state),
