@@ -1,10 +1,9 @@
 name: focusd
-root: ~/Code/focusd/
 
 windows:
   - editor: nvim :SessionLoad focusd
 
-  - build/run:
+  - test/run:
       layout: main-vertical
       panes:
         -

@@ -1,0 +1,21 @@
+workspaces:
+  - name: focusd
+    tabs:
+      - label: editor
+        panes:
+          - command: nvim :SessionLoad focusd
+      - label: test/run
+        panes:
+          - {}
+          - split: right
+            ratio: 0.7
+            command: focusd-dev --daemon
+          - split: down
+            ratio: 0.7
+            command: fd -e rs | entr -r cargo build --no-default-features --features dev-build
+      - label: SQL
+        panes:
+          - command: sqlite3 ~/.local/share/focusd/db/history-dev.db
+      - label: misc
+        panes:
+          - {}
