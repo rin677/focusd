@@ -36,6 +36,7 @@ pub enum Message {
   StopDaemon,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum PayloadMessage {
   SelectSession,
   SelectPreset,
@@ -44,7 +45,7 @@ pub enum PayloadMessage {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PayloadType {
-  message: String,
+  message: PayloadMessage,
   payload: Value,
 }
 
@@ -54,14 +55,13 @@ pub fn seperate_message_and_payload(message: String) -> Result<PayloadType> {
   Ok(payload)
 }
 
-pub fn contains_payload(message: &str) -> bool {
-  message.trim().starts_with("MESSAGE_PAYLOAD:")
-}
-
 impl PayloadMessage {
   pub fn send(self, payload: Value) -> Result<String> {
-    let message = self.to_string();
-    let p = PayloadType { message, payload };
+    // let message = self;
+    let p = PayloadType {
+      message: self,
+      payload,
+    };
     let json = serde_json::to_string(&p)?;
     let command = format!("MESSAGE_PAYLOAD: {json}");
     send_command(command)
@@ -114,6 +114,10 @@ impl std::fmt::Display for Message {
       Self::Running => write!(f, "RUNNING"),
     }
   }
+}
+
+pub fn contains_payload(message: &str) -> bool {
+  message.trim().starts_with("MESSAGE_PAYLOAD:")
 }
 
 pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> Result<()> {
@@ -185,20 +189,24 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
     };
   } else {
     let p = seperate_message_and_payload(l)?;
-    if p.message == PayloadMessage::SelectSession.to_string() {
-      let value = p.payload.as_str().unwrap();
-      let session_type = SessionType::from_string(value);
-      start_specific_session(&mut s, session_type);
-      response = format!("{} Session started", session_type.name());
-    } else if p.message == PayloadMessage::SelectPreset.to_string() {
-      let value = p.payload.as_str().unwrap();
-      match select_preset(&mut s, value) {
-        Ok(_) => response = format!("Preset {} selected", value),
-        Err(e) => response = e.to_string(),
+    match p.message {
+      PayloadMessage::SelectSession => {
+        let value = p.payload.as_str().unwrap();
+        let session_type = SessionType::from_string(value);
+        start_specific_session(&mut s, session_type);
+        response = format!("{} Session started", session_type.name());
       }
-    } else if p.message == PayloadMessage::AddMinutes.to_string() {
-      let value = p.payload.as_u64().unwrap();
-      add_time(&mut s, Duration::from_mins(value));
+      PayloadMessage::SelectPreset => {
+        let value = p.payload.as_str().unwrap();
+        match select_preset(&mut s, value) {
+          Ok(_) => response = format!("Preset {} selected", value),
+          Err(e) => response = e.to_string(),
+        }
+      }
+      PayloadMessage::AddMinutes => {
+        let value = p.payload.as_u64().unwrap();
+        add_time(&mut s, Duration::from_mins(value));
+      }
     }
   }
 
