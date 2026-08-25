@@ -55,6 +55,10 @@ struct Cli {
   #[arg(short, long)]
   preset: Option<String>,
 
+  /// Add time to running timer
+  #[arg(short, long, value_name="MINUTES")]
+  add_minutes: Option<u64>,
+
   /// Start a specific session
   ///
   /// work, short-break, long-break or current if empty
@@ -109,6 +113,10 @@ fn main() -> io::Result<()> {
 
   if let Some(p) = cli.preset {
     send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
+    return Ok(());
+  }
+  if let Some(a) = cli.add_minutes {
+    send_message_with_payload(PayloadMessage::AddMinutes, a.into()).print()?;
     return Ok(());
   }
   if let Some(session) = cli.start {

@@ -1,4 +1,5 @@
 ## New Features
+- You can add minutes to the running timer, its keymaps is `a`, or use CLI argument `--add-minutes` or `-a`
 
 ## Fix
 - Hooks works properly when starting session.

@@ -12,6 +12,7 @@ use crate::{
 use std::time::Duration;
 use toml_edit::value;
 
+/// Function for ticking the clock
 pub fn decrease_sec(state: &mut TimerState) {
   let Some(new_time) = state.time_remaining.checked_sub(Duration::from_secs(1)) else {
     on_finish(state);
@@ -20,6 +21,20 @@ pub fn decrease_sec(state: &mut TimerState) {
   state.time_remaining = new_time;
   if new_time.is_zero() {
     on_finish(state);
+  }
+}
+
+/// Adds time to the clock (can't add more than the time for session)
+pub fn add_time(state: &mut TimerState, duration_to_add: Duration) {
+  let max_time = state.session_type.get_time();
+  let crr_time = state.time_remaining;
+  let total_time = crr_time + duration_to_add;
+  if total_time > max_time {
+    state.added_time += total_time - max_time;
+    state.time_remaining = max_time;
+  } else {
+    state.added_time += duration_to_add;
+    state.time_remaining = total_time
   }
 }
 
@@ -92,6 +107,7 @@ pub fn next_session(state: &mut TimerState) {
   add_session_to_db(state).ok();
   show_complete_notification(state);
   state.session_type = state.session_type.next(state.session_number);
+  state.added_time = Duration::from_secs(0);
   if state.session_type == SessionType::Work {
     state.session_number = get_next_session_number(state.session_number);
   }
@@ -100,6 +116,14 @@ pub fn next_session(state: &mut TimerState) {
     session_start_hook(state.session_type);
   }
   state.time_remaining = state.session_type.get_time();
+}
+
+pub fn get_elapsed_time(state: &TimerState) -> Duration {
+  let completed_duration = state
+    .session_type
+    .get_time()
+    .saturating_sub(state.time_remaining);
+  completed_duration + state.added_time
 }
 
 fn get_next_session_number(crr_session_number: u64) -> u64 {

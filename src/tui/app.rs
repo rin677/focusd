@@ -3,7 +3,9 @@ use crate::{
     settings::get_crr_preset,
     themes::{get_current_theme, themed_block},
   },
-  daemon::commands::{Message, get_timer_state, send_message},
+  daemon::commands::{
+    Message, PayloadMessage, get_timer_state, send_message, send_message_with_payload,
+  },
   timer::{engine::render_time, state::TimerState},
   tui::{
     pages::{history::HistoryPage, settings::SettingsPage, stats::show_stats, timer::TimerPage},
@@ -189,6 +191,9 @@ impl App {
       KeyCode::Char(' ') => send_message(Message::ToggleSession).ignore_type(),
       KeyCode::Char('n') => send_message(Message::NextSession).ignore_type(),
       KeyCode::Char('r') => send_message(Message::ResetSession).ignore_type(),
+      KeyCode::Char('a') => {
+        send_message_with_payload(PayloadMessage::AddMinutes, 5.into()).ignore_type()
+      }
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('?') => self.popup.toggle(),

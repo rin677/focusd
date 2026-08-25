@@ -2,7 +2,7 @@ use crate::{
   daemon::{run::stop_daemon, socket_path},
   timer::{
     engine::{
-      next_session, render_time, reset_session, select_preset, start_session,
+      add_time, next_session, render_time, reset_session, select_preset, start_session,
       start_specific_session,
     },
     hooks::{pause_hooks, resume_hooks, session_start_hook},
@@ -15,6 +15,7 @@ use std::{
   io::{BufRead, BufReader, Result, Write},
   os::unix::net::UnixStream,
   sync::{Arc, Mutex},
+  time::Duration,
 };
 
 pub enum Message {
@@ -37,6 +38,7 @@ pub enum Message {
 pub enum PayloadMessage {
   SelectSession,
   SelectPreset,
+  AddMinutes,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -67,6 +69,7 @@ pub fn parse_payload_messages(message: PayloadMessage) -> String {
   match message {
     PayloadMessage::SelectPreset => String::from("SelectPreset"),
     PayloadMessage::SelectSession => String::from("SelectSession"),
+    PayloadMessage::AddMinutes => String::from("AddMinutes"),
   }
 }
 
@@ -160,6 +163,9 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
         Ok(_) => response = format!("Preset {} selected", value),
         Err(e) => response = e.to_string(),
       }
+    } else if p.message == parse_payload_messages(PayloadMessage::AddMinutes) {
+      let value = p.payload.as_u64().unwrap();
+      add_time(&mut s, Duration::from_mins(value));
     }
   }
 

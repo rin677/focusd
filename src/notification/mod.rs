@@ -3,7 +3,10 @@ use notify_rust::Notification;
 use crate::{
   config::settings::get_config,
   stats::calculate::{DurType, get_total_time},
-  timer::state::{SessionType, TimerState},
+  timer::{
+    engine::get_elapsed_time,
+    state::{SessionType, TimerState},
+  },
 };
 
 /// Show notification after sessioni is complete
@@ -31,7 +34,7 @@ pub fn show_complete_notification(state: &TimerState) {
 
     if focused_today >= goal && state.session_type == SessionType::Work {
       // check if goal was completed in this session
-      let focused_this_session = state.session_type.get_time() - state.time_remaining;
+      let focused_this_session = get_elapsed_time(state);
       let completed_in_this_session =
         (focused_today - focused_this_session.as_secs() as isize) < goal;
       if !completed_in_this_session {

@@ -1,6 +1,9 @@
 use crate::{
   throw,
-  timer::state::{SessionType, TimerState},
+  timer::{
+    engine::get_elapsed_time,
+    state::{SessionType, TimerState},
+  },
   utils::{
     profile::Profile,
     timer::{render_duration, times_ago},
@@ -74,11 +77,7 @@ pub fn get_db() -> io::Result<Connection> {
 
 /// Add the given session to history database
 pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::Error>> {
-  let completed_duration = state
-    .session_type
-    .get_time()
-    .saturating_sub(state.time_remaining)
-    .as_secs() as i64;
+  let completed_duration = get_elapsed_time(state).as_secs() as i64;
   if completed_duration < 20 {
     println!("Not adding session shorter than 20 seconds to database");
     return Ok(());

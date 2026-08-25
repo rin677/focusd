@@ -61,6 +61,7 @@ pub struct TimerState {
   pub time_remaining: Duration,
   pub session_type: SessionType,
   pub session_number: u64,
+  pub added_time: Duration,
 }
 
 /// Duplicate of timer state just to take snapshot to serialize it to communicate between processes
@@ -70,6 +71,7 @@ pub struct TimerSnapShot {
   pub time_remaining: Duration,
   pub session_type: SessionType,
   pub session_number: u64,
+  pub added_time: Duration,
 }
 
 impl From<&TimerState> for TimerSnapShot {
@@ -79,6 +81,7 @@ impl From<&TimerState> for TimerSnapShot {
       time_remaining: t.time_remaining,
       session_type: t.session_type,
       session_number: t.session_number,
+      added_time: t.added_time,
     }
   }
 }
@@ -90,6 +93,7 @@ impl From<&TimerSnapShot> for TimerState {
       time_remaining: t.time_remaining,
       session_type: t.session_type,
       session_number: t.session_number,
+      added_time: t.added_time,
     }
   }
 }
@@ -101,6 +105,7 @@ impl Default for TimerState {
       time_remaining: SessionType::Work.get_time(),
       session_type: SessionType::Work,
       session_number: 1,
+      added_time: Duration::from_secs(0),
     }
   }
 }
