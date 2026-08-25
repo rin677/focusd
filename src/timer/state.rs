@@ -18,6 +18,7 @@ impl SessionType {
     }
   }
 
+  /// Session type from string
   pub fn from_string(name: &str) -> Self {
     match name.trim().to_lowercase().as_str() {
       "work" => Self::Work,
@@ -26,6 +27,7 @@ impl SessionType {
     }
   }
 
+  /// Total time for specific session
   pub fn get_time(self) -> Duration {
     let preset = get_crr_preset();
 
@@ -36,6 +38,7 @@ impl SessionType {
     }
   }
 
+  /// Next session
   pub fn next(self, prev_session_number: u64) -> SessionType {
     match self {
       Self::Work => {
