@@ -1,6 +1,6 @@
 use crate::{
   daemon::{
-    commands::{Message, handle_stream, parse_message, send_message},
+    commands::{Message, handle_stream, send_message},
     socket_path,
   },
   throw,
@@ -26,7 +26,7 @@ use std::{
 pub fn daemon_active() -> bool {
   match UnixStream::connect(socket_path()) {
     Ok(mut stream) => {
-      let cmd = parse_message(Message::Running);
+      let cmd = Message::Running.to_string();
       stream.write_all(format!("{cmd}\n").as_bytes()).ok();
       let mut reader = BufReader::new(stream);
       let mut line = String::new();

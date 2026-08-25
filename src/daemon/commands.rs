@@ -58,32 +58,36 @@ pub fn contains_payload(message: &str) -> bool {
 }
 
 pub fn send_message_with_payload(message: PayloadMessage, payload: Value) -> Result<String> {
-  let message = parse_payload_messages(message);
+  let message = message.to_string();
   let p = PayloadType { message, payload };
   let json = serde_json::to_string(&p)?;
   let command = format!("MESSAGE_PAYLOAD: {json}");
   send_command(command)
 }
 
-pub fn parse_payload_messages(message: PayloadMessage) -> String {
-  match message {
-    PayloadMessage::SelectPreset => String::from("SelectPreset"),
-    PayloadMessage::SelectSession => String::from("SelectSession"),
-    PayloadMessage::AddMinutes => String::from("AddMinutes"),
+impl std::fmt::Display for PayloadMessage {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::SelectPreset => write!(f, "SelectPreset"),
+      Self::SelectSession => write!(f, "SelectSession"),
+      Self::AddMinutes => write!(f, "AddMinutes"),
+    }
   }
 }
 
-pub fn parse_message(message: Message) -> String {
-  match message {
-    Message::StartSession => String::from("StartSession"),
-    Message::PauseSession => String::from("PauseSession"),
-    Message::ResumeSession => String::from("ResumeSession"),
-    Message::ToggleSession => String::from("ToggleSession"),
-    Message::NextSession => String::from("NextSession"),
-    Message::GetSession => String::from("GetSession"),
-    Message::ResetSession => String::from("ResetSession"),
-    Message::StopDaemon => String::from("StopDaemon"),
-    Message::Running => String::from("RUNNING"),
+impl std::fmt::Display for Message {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::StartSession => write!(f, "StartSession"),
+      Self::PauseSession => write!(f, "PauseSession"),
+      Self::ResumeSession => write!(f, "ResumeSession"),
+      Self::ToggleSession => write!(f, "ToggleSession"),
+      Self::NextSession => write!(f, "NextSession"),
+      Self::GetSession => write!(f, "GetSession"),
+      Self::ResetSession => write!(f, "ResetSession"),
+      Self::StopDaemon => write!(f, "StopDaemon"),
+      Self::Running => write!(f, "RUNNING"),
+    }
   }
 }
 
@@ -100,21 +104,21 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
   let mut response = "".to_string();
   if !contains_payload(&l) {
-    response = if l == parse_message(Message::Running) {
+    response = if l == Message::Running.to_string() {
       "YES".to_string()
-    } else if l == parse_message(Message::GetSession) {
+    } else if l == Message::GetSession.to_string() {
       let snapshot = TimerSnapShot::from(&*s);
       serde_json::to_string(&snapshot).unwrap()
-    } else if l == parse_message(Message::StartSession) {
+    } else if l == Message::StartSession.to_string() {
       start_session(&mut s);
       format!("{} Session started", s.session_type.name())
-    } else if l == parse_message(Message::PauseSession)
-      || l == parse_message(Message::ResumeSession)
-      || l == parse_message(Message::ToggleSession)
+    } else if l == Message::PauseSession.to_string()
+      || l == Message::ResumeSession.to_string()
+      || l == Message::ToggleSession.to_string()
     {
-      let new_running = if l == parse_message(Message::ResumeSession) {
+      let new_running = if l == Message::ResumeSession.to_string() {
         true
-      } else if l == parse_message(Message::ToggleSession) {
+      } else if l == Message::ToggleSession.to_string() {
         !s.running
       } else {
         false
@@ -138,13 +142,13 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
         status,
         render_time(&s)
       )
-    } else if l == parse_message(Message::NextSession) {
+    } else if l == Message::NextSession.to_string() {
       next_session(&mut s);
       format!("{} Session started", s.session_type.name())
-    } else if l == parse_message(Message::StopDaemon) {
+    } else if l == Message::StopDaemon.to_string() {
       stop_daemon();
       "OK".to_string()
-    } else if l == parse_message(Message::ResetSession) {
+    } else if l == Message::ResetSession.to_string() {
       reset_session(&mut s);
       format!("{} Session restarted", s.session_type.name())
     } else {
@@ -152,18 +156,18 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
     };
   } else {
     let p = seperate_message_and_payload(l)?;
-    if p.message == parse_payload_messages(PayloadMessage::SelectSession) {
+    if p.message == PayloadMessage::SelectSession.to_string() {
       let value = p.payload.as_str().unwrap();
       let session_type = SessionType::from_string(value);
       start_specific_session(&mut s, session_type);
       response = format!("{} Session started", session_type.name());
-    } else if p.message == parse_payload_messages(PayloadMessage::SelectPreset) {
+    } else if p.message == PayloadMessage::SelectPreset.to_string() {
       let value = p.payload.as_str().unwrap();
       match select_preset(&mut s, value) {
         Ok(_) => response = format!("Preset {} selected", value),
         Err(e) => response = e.to_string(),
       }
-    } else if p.message == parse_payload_messages(PayloadMessage::AddMinutes) {
+    } else if p.message == PayloadMessage::AddMinutes.to_string() {
       let value = p.payload.as_u64().unwrap();
       add_time(&mut s, Duration::from_mins(value));
     }
@@ -183,7 +187,7 @@ pub fn send_command(command: String) -> Result<String> {
 }
 
 pub fn send_message(message: Message) -> Result<String> {
-  let cmd = parse_message(message);
+  let cmd = message.to_string();
   send_command(cmd)
 }
 
