@@ -3,7 +3,7 @@ use crate::{
     settings::get_config,
     themes::{get_current_theme, themed_block},
   },
-  daemon::commands::{PayloadMessage, send_message_with_payload},
+  daemon::commands::PayloadMessage,
   database::history::get_full_history_no_err,
   stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
   timer::{
@@ -60,7 +60,7 @@ impl TimerPage {
     names.sort();
     let preset = names.get(self.preset_selected_index);
     if let Some(p) = preset {
-      send_message_with_payload(PayloadMessage::SelectPreset, p.to_string().into()).ignore_type();
+      PayloadMessage::SelectPreset.send(p.to_string().into()).ignore_type();
     }
   }
 

@@ -57,12 +57,21 @@ pub fn contains_payload(message: &str) -> bool {
   message.trim().starts_with("MESSAGE_PAYLOAD:")
 }
 
-pub fn send_message_with_payload(message: PayloadMessage, payload: Value) -> Result<String> {
-  let message = message.to_string();
-  let p = PayloadType { message, payload };
-  let json = serde_json::to_string(&p)?;
-  let command = format!("MESSAGE_PAYLOAD: {json}");
-  send_command(command)
+impl PayloadMessage {
+  pub fn send(self, payload: Value) -> Result<String> {
+    let message = self.to_string();
+    let p = PayloadType { message, payload };
+    let json = serde_json::to_string(&p)?;
+    let command = format!("MESSAGE_PAYLOAD: {json}");
+    send_command(command)
+  }
+}
+
+impl Message {
+  pub fn send(self) -> Result<String> {
+    let cmd = self.to_string();
+    send_command(cmd)
+  }
 }
 
 impl std::fmt::Display for PayloadMessage {
@@ -186,13 +195,8 @@ pub fn send_command(command: String) -> Result<String> {
   Ok(line)
 }
 
-pub fn send_message(message: Message) -> Result<String> {
-  let cmd = message.to_string();
-  send_command(cmd)
-}
-
 pub fn get_timer_state() -> Result<TimerState> {
-  let m = send_message(Message::GetSession)?;
+  let m = Message::GetSession.send()?;
   let state: TimerSnapShot = serde_json::from_str(&m)?;
   Ok(TimerState::from(&state))
 }

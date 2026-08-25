@@ -1,6 +1,6 @@
 use crate::{
   daemon::{
-    commands::{Message, handle_stream, send_message},
+    commands::{Message, handle_stream},
     socket_path,
   },
   throw,
@@ -83,7 +83,7 @@ pub fn run_daemon() {
   println!("Starting Daemon");
   if daemon_active() {
     println!("Daemon already running stopping it");
-    let _ = send_message(Message::StopDaemon);
+    let _ = Message::StopDaemon.send();
   }
   // Delete the socket path if already exists
   let sp = socket_path();

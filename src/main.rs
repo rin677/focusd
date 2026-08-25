@@ -14,7 +14,7 @@ use std::io;
 use crate::{
   config::settings::create_config_file,
   daemon::{
-    commands::{Message, PayloadMessage, send_message, send_message_with_payload},
+    commands::{Message, PayloadMessage},
     run::{ensure_daemon_active, run_daemon},
   },
   database::history::print_history,
@@ -56,7 +56,7 @@ struct Cli {
   preset: Option<String>,
 
   /// Add time to running timer
-  #[arg(short, long, value_name="MINUTES")]
+  #[arg(short, long, value_name = "MINUTES")]
   add_minutes: Option<u64>,
 
   /// Start a specific session
@@ -105,24 +105,24 @@ fn main() -> io::Result<()> {
     return Ok(());
   }
   if cli.stop_daemon {
-    send_message(Message::StopDaemon).map(|m| println!("{m}"))?;
+    Message::StopDaemon.send().map(|m| println!("{m}"))?;
     return Ok(());
   }
 
   ensure_daemon_active(true)?;
 
   if let Some(p) = cli.preset {
-    send_message_with_payload(PayloadMessage::SelectPreset, p.into()).print()?;
+    PayloadMessage::SelectPreset.send(p.into()).print()?;
     return Ok(());
   }
   if let Some(a) = cli.add_minutes {
-    send_message_with_payload(PayloadMessage::AddMinutes, a.into()).print()?;
+    PayloadMessage::AddMinutes.send(a.into()).print()?;
     return Ok(());
   }
   if let Some(session) = cli.start {
     match session {
       None => {
-        send_message(Message::StartSession).print()?;
+        Message::StartSession.send().print()?;
       }
       Some(s) => {
         let name = match s {
@@ -130,7 +130,7 @@ fn main() -> io::Result<()> {
           StartSession::ShortBreak => "Short Break",
           StartSession::LongBreak => "Long Break",
         };
-        send_message_with_payload(PayloadMessage::SelectSession, name.into()).print()?;
+        PayloadMessage::SelectSession.send(name.into()).print()?;
       }
     }
     return Ok(());
@@ -155,11 +155,11 @@ fn main() -> io::Result<()> {
     Some(Command::History) => launch_tui(Pages::History),
     Some(Command::Settings) => launch_tui(Pages::Settings),
 
-    Some(Command::Pause) => send_message(Message::PauseSession).print(),
-    Some(Command::Resume) => send_message(Message::ResumeSession).print(),
-    Some(Command::Toggle) => send_message(Message::ToggleSession).print(),
-    Some(Command::Reset) | Some(Command::Stop) => send_message(Message::ResetSession).print(),
-    Some(Command::Next) | Some(Command::Skip) => send_message(Message::NextSession).print(),
+    Some(Command::Pause) => Message::PauseSession.send().print(),
+    Some(Command::Resume) => Message::ResumeSession.send().print(),
+    Some(Command::Toggle) => Message::ToggleSession.send().print(),
+    Some(Command::Reset) | Some(Command::Stop) => Message::ResetSession.send().print(),
+    Some(Command::Next) | Some(Command::Skip) => Message::NextSession.send().print(),
     None => launch_tui(Pages::Timer),
   }
 }
