@@ -219,6 +219,66 @@ After installing, the widget appears on the right side of the bar. See the [plug
 The config file is stored at `~/.config/focusd/config.toml`
 This is the [default config file](./examples/config.toml).
 
+### Hooks
+
+Hooks allow you to run custom commands when a session starts, pauses, or resumes. This can be used to control music, block websites, or integrate Focusd with other tools.
+
+These are all the available hooks:
+
+```toml
+# Generic hooks
+hook_pause = ""
+hook_resume = ""
+
+# Work session hooks
+hook_start_work = ""
+hook_pause_work = ""
+hook_resume_work = ""
+
+# Short break hooks
+hook_start_short_break = ""
+hook_pause_short_break = ""
+hook_resume_short_break = ""
+
+# Long break hooks
+hook_start_long_break = ""
+hook_pause_long_break = ""
+hook_resume_long_break = ""
+```
+
+Generic hooks run for every session. Session-specific hooks run only for that session type. When both are configured, the generic hook runs first, followed by the session-specific hook.
+
+#### Playing and Pausing Music
+
+On Linux, [playerctl](https://github.com/altdesktop/playerctl) can control media players that support MPRIS.
+
+```toml
+# Pause music when work starts and resume it when work is paused.
+hook_start_work = "playerctl pause"
+hook_pause_work = "playerctl play"
+
+# Pause and resume music using the generic hooks.
+hook_pause = "playerctl pause"
+hook_resume = "playerctl play"
+```
+
+#### Website Blocking
+
+Focusd does not implement website blocking itself. You can use hooks with an external blocker such as [FreeBlock](https://github.com/Mikuel210/FreeBlock), which supports Linux and macOS.
+
+For example, if FreeBlock is configured to block your chosen websites:
+
+```toml
+# blocking/unblocking based on session
+hook_start_work = "freeblock block"
+hook_start_short_break = "freeblock unblock"
+hook_resume_short_break = "freeblock unblock"
+
+# unblock when paused
+hook_pause_work = "freeblock unblock"
+hook_resume_work = "freeblock block"
+```
+
 ### Waybar Configuration
 
 The command `focusd status` gives output in JSON format which can be used for Waybar.
