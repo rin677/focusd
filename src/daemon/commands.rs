@@ -18,6 +18,7 @@ use std::{
   time::Duration,
 };
 
+#[derive(PartialEq)]
 pub enum Message {
   // Sessions
   StartSession,
@@ -72,6 +73,21 @@ impl Message {
     let cmd = self.to_string();
     send_command(cmd)
   }
+
+  pub fn from_string(s: String) -> Option<Self> {
+    match s.trim() {
+      "StartSession" => Some(Self::StartSession),
+      "PauseSession" => Some(Self::PauseSession),
+      "ResumeSession" => Some(Self::ResumeSession),
+      "ToggleSession" => Some(Self::ToggleSession),
+      "NextSession" => Some(Self::NextSession),
+      "GetSession" => Some(Self::GetSession),
+      "ResetSession" => Some(Self::ResetSession),
+      "Running" => Some(Self::Running),
+      "StopDaemon" => Some(Self::StopDaemon),
+      _ => None,
+    }
+  }
 }
 
 impl std::fmt::Display for PayloadMessage {
@@ -113,55 +129,59 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
   let mut response = "".to_string();
   if !contains_payload(&l) {
-    response = if l == Message::Running.to_string() {
-      "YES".to_string()
-    } else if l == Message::GetSession.to_string() {
-      let snapshot = TimerSnapShot::from(&*s);
-      serde_json::to_string(&snapshot).unwrap()
-    } else if l == Message::StartSession.to_string() {
-      start_session(&mut s);
-      format!("{} Session started", s.session_type.name())
-    } else if l == Message::PauseSession.to_string()
-      || l == Message::ResumeSession.to_string()
-      || l == Message::ToggleSession.to_string()
-    {
-      let new_running = if l == Message::ResumeSession.to_string() {
-        true
-      } else if l == Message::ToggleSession.to_string() {
-        !s.running
-      } else {
-        false
-      };
-      s.running = new_running;
-
-      let mut status = "resumed";
-      if new_running {
-        if s.time_remaining == s.session_type.get_time() {
-          session_start_hook(s.session_type);
-        } else {
-          resume_hooks(s.session_type);
+    match Message::from_string(l) {
+      Some(m) => match m {
+        Message::Running => "YES".to_string(),
+        Message::GetSession => {
+          let snapshot = TimerSnapShot::from(&*s);
+          serde_json::to_string(&snapshot).unwrap()
         }
-      } else {
-        pause_hooks(s.session_type);
-        status = "paused";
-      }
-      format!(
-        "{} {} time remaining: {}",
-        s.session_type.name(),
-        status,
-        render_time(&s)
-      )
-    } else if l == Message::NextSession.to_string() {
-      next_session(&mut s);
-      format!("{} Session started", s.session_type.name())
-    } else if l == Message::StopDaemon.to_string() {
-      stop_daemon();
-      "OK".to_string()
-    } else if l == Message::ResetSession.to_string() {
-      reset_session(&mut s);
-      format!("{} Session restarted", s.session_type.name())
-    } else {
-      "Command not found".to_string()
+        Message::NextSession => {
+          next_session(&mut s);
+          format!("{} Session started", s.session_type.name())
+        }
+        Message::StopDaemon => {
+          stop_daemon();
+          "OK".to_string()
+        }
+        Message::ResetSession => {
+          reset_session(&mut s);
+          format!("{} Session restarted", s.session_type.name())
+        }
+        Message::StartSession => {
+          start_session(&mut s);
+          format!("{} Session started", s.session_type.name())
+        }
+        Message::ResumeSession | Message::PauseSession | Message::ToggleSession => {
+          let new_running = if m == Message::ResumeSession {
+            true
+          } else if m == Message::PauseSession {
+            false
+          } else {
+            !s.running
+          };
+          s.running = new_running;
+
+          let mut status = "resumed";
+          if new_running {
+            if s.time_remaining == s.session_type.get_time() {
+              session_start_hook(s.session_type);
+            } else {
+              resume_hooks(s.session_type);
+            }
+          } else {
+            pause_hooks(s.session_type);
+            status = "paused";
+          }
+          format!(
+            "{} {} time remaining: {}",
+            s.session_type.name(),
+            status,
+            render_time(&s)
+          )
+        }
+      },
+      None => "Unknown command".to_string(),
     };
   } else {
     let p = seperate_message_and_payload(l)?;
