@@ -83,7 +83,7 @@ impl Message {
       "NextSession" => Some(Self::NextSession),
       "GetSession" => Some(Self::GetSession),
       "ResetSession" => Some(Self::ResetSession),
-      "Running" => Some(Self::Running),
+      "RUNNING" => Some(Self::Running),
       "StopDaemon" => Some(Self::StopDaemon),
       _ => None,
     }
@@ -133,7 +133,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
 
   let mut response = "".to_string();
   if !contains_payload(&l) {
-    match Message::from_string(l) {
+    response = match Message::from_string(l) {
       Some(m) => match m {
         Message::Running => "YES".to_string(),
         Message::GetSession => {
