@@ -30,7 +30,7 @@ pub fn add_time(state: &mut TimerState, duration_to_add: Duration) {
   let crr_time = state.time_remaining;
   let total_time = crr_time + duration_to_add;
   if total_time > max_time {
-    state.added_time += total_time - max_time;
+    state.added_time += max_time - crr_time;
     state.time_remaining = max_time;
   } else {
     state.added_time += duration_to_add;
