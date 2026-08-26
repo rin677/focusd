@@ -1,5 +1,3 @@
-use notify_rust::Notification;
-
 use crate::{
   config::settings::get_config,
   stats::calculate::{DurType, get_total_time},
@@ -8,6 +6,7 @@ use crate::{
     state::{SessionType, TimerState},
   },
 };
+use notify_rust::Notification;
 
 /// Show notification after sessioni is complete
 pub fn show_complete_notification(state: &TimerState) {

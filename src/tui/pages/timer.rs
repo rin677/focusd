@@ -13,7 +13,6 @@ use crate::{
   tui::layout::split_vertical,
   utils::{cycle::cycle_index, figlet::big_text, ignore::IgnoreType, timer::render_duration},
 };
-
 use ratatui::{
   Frame,
   layout::{Constraint, Layout, Rect, Spacing},
@@ -60,7 +59,9 @@ impl TimerPage {
     names.sort();
     let preset = names.get(self.preset_selected_index);
     if let Some(p) = preset {
-      PayloadMessage::SelectPreset.send(p.to_string().into()).ignore_type();
+      PayloadMessage::SelectPreset
+        .send(p.to_string().into())
+        .ignore_type();
     }
   }
 

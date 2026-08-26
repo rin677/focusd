@@ -11,17 +11,16 @@ use crate::{
   },
   utils::{cycle::cycle_item, ignore::IgnoreType},
 };
-use std::{
-  io,
-  time::{Duration, Instant},
-};
-
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
   DefaultTerminal, Frame,
   layout::{Constraint, Layout, Spacing},
   text::Text,
   widgets::Paragraph,
+};
+use std::{
+  io,
+  time::{Duration, Instant},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]

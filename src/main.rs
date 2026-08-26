@@ -9,8 +9,6 @@ mod timer;
 mod tui;
 mod utils;
 mod waybar;
-use std::io;
-
 use crate::{
   config::settings::create_config_file,
   daemon::{
@@ -23,6 +21,7 @@ use crate::{
   utils::print::Print,
 };
 use clap::{Parser, Subcommand, ValueEnum};
+use std::io;
 
 #[derive(ValueEnum, Clone, Debug)]
 enum StartSession {
