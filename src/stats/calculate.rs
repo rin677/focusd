@@ -66,7 +66,7 @@ pub fn get_completed_sessions() -> i32 {
     Err(_) => return 0,
   };
 
-  db.query_row("SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration", [], |row| row.get(0)).unwrap_or(0)
+  db.query_row("SELECT COUNT(*) FROM history WHERE session_type='Work' AND is_completed = 1", [], |row| row.get(0)).unwrap_or(0)
 }
 
 /// Returns completion percentage of work session
@@ -78,7 +78,7 @@ pub fn get_completion_rate() -> f32 {
     Err(_) => return 0_f32,
   };
 
-  db.query_row("SELECT 100.0 * (SELECT COUNT(*) FROM history WHERE session_type='Work' AND completed_duration==planned_duration) / (SELECT COUNT(*) FROM history WHERE session_type='Work')", [], |row| row.get(0)).unwrap_or(0_f32)
+  db.query_row("SELECT 100.0 * (SELECT COUNT(*) FROM history WHERE session_type='Work' AND is_completed = 1) / (SELECT COUNT(*) FROM history WHERE session_type='Work')", [], |row| row.get(0)).unwrap_or(0_f32)
 }
 
 /// Returns current streak

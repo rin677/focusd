@@ -13,7 +13,8 @@ conn.execute("""
     end_time TEXT NOT NULL,
     planned_duration INTEGER NOT NULL,
     completed_duration INTEGER NOT NULL,
-    session_type TEXT NOT NULL
+    session_type TEXT NOT NULL,
+    is_completed BOOLEAN NOT NULL DEFAULT 0
   )
 """)
 
@@ -31,9 +32,10 @@ def daily_session_count(day: datetime) -> int:
 
 
 def insert_session(dt, planned, completed, stype):
+    is_completed = 1 if completed >= planned else 0
     conn.execute(
-        "INSERT INTO history (end_time, planned_duration, completed_duration, session_type) VALUES (?, ?, ?, ?)",
-        (dt.strftime("%Y-%m-%d %H:%M:%S"), planned, completed, stype),
+        "INSERT INTO history (end_time, planned_duration, completed_duration, session_type, is_completed) VALUES (?, ?, ?, ?, ?)",
+        (dt.strftime("%Y-%m-%d %H:%M:%S"), planned, completed, stype, is_completed),
     )
 
 

@@ -25,6 +25,7 @@ pub struct HistoryEntry {
   pub planned_duration: i64,
   pub completed_duration: i64,
   pub session_type: SessionType,
+  pub is_completed: bool,
 }
 
 fn history_db_path() -> Option<PathBuf> {
@@ -54,24 +55,48 @@ pub fn get_db() -> io::Result<Connection> {
     Err(_) => throw!("Database could not be loaded"),
   };
 
-  // TODO: Session tags
-  let s = cnn.execute(
-    "CREATE TABLE IF NOT EXISTS history(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          end_time TEXT NOT NULL,
-          planned_duration INTEGER NOT NULL,
-          completed_duration INTEGER NOT NULL,
-          session_type TEXT NOT NULL
-  )
-      ",
-    [],
-  );
-  match s {
-    Ok(_) => {}
-    Err(e) => {
-      println!("Got error while creating database {e}")
+  let user_version: i32 = cnn
+    .query_row("PRAGMA user_version", [], |row| row.get(0))
+    .unwrap_or(0);
+
+  if user_version < 1 {
+    // TODO: Session tags
+    let s = cnn.execute(
+      "CREATE TABLE IF NOT EXISTS history(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            end_time TEXT NOT NULL,
+            planned_duration INTEGER NOT NULL,
+            completed_duration INTEGER NOT NULL,
+            session_type TEXT NOT NULL,
+            is_completed BOOLEAN NOT NULL DEFAULT 0
+    )
+        ",
+      [],
+    );
+    if let Err(e) = s {
+      println!("Got error while creating database {e}");
     }
+
+    let has_is_completed = cnn
+      .prepare("SELECT is_completed FROM history LIMIT 1")
+      .is_ok();
+
+    if !has_is_completed {
+      if let Err(e) = cnn.execute(
+        "ALTER TABLE history ADD COLUMN is_completed BOOLEAN NOT NULL DEFAULT 0",
+        [],
+      ) {
+        println!("Got error while altering database {e}");
+      }
+      let _ = cnn.execute(
+        "UPDATE history SET is_completed = 1 WHERE completed_duration >= planned_duration",
+        [],
+      );
+    }
+
+    let _ = cnn.execute("PRAGMA user_version = 1", []);
   }
+
   Ok(cnn)
 }
 
@@ -87,10 +112,11 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   let end_time = now.format(TIME_PATTERN).to_string();
   let planned_duration = state.session_type.get_time().as_secs() as i64;
   let session_type = state.session_type.name();
+  let is_completed = state.time_remaining.is_zero() || completed_duration >= planned_duration;
   cnn.execute(
     "INSERT INTO history 
-    (end_time, planned_duration, completed_duration, session_type) VALUES (?1, ?2, ?3, ?4)",
-    (end_time, planned_duration, completed_duration, session_type),
+    (end_time, planned_duration, completed_duration, session_type, is_completed) VALUES (?1, ?2, ?3, ?4, ?5)",
+    (end_time, planned_duration, completed_duration, session_type, is_completed),
   )?;
   println!("Session added to database");
   Ok(())
@@ -100,7 +126,7 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
 pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error>> {
   let db = get_db()?;
   let mut stmt = db
-    .prepare("SELECT end_time, planned_duration, completed_duration, session_type FROM history ORDER BY datetime(end_time) DESC")
+    .prepare("SELECT end_time, planned_duration, completed_duration, session_type, is_completed FROM history ORDER BY datetime(end_time) DESC")
     ?;
 
   let mut history: Vec<HistoryEntry> = Vec::new();
@@ -113,11 +139,13 @@ pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error
       .and_local_timezone(Local)
       .single()
       .unwrap();
+    let is_completed: bool = row.get(4)?;
     history.push(HistoryEntry {
       end_time: time,
       planned_duration: row.get(1)?,
       completed_duration: row.get(2)?,
       session_type: SessionType::from_string(&s),
+      is_completed,
     });
   }
 
@@ -138,9 +166,15 @@ pub fn get_full_history_no_err() -> Vec<HistoryEntry> {
 pub fn print_history() {
   let all_history = get_full_history_no_err();
   for history in all_history {
+    let status = if history.is_completed {
+      "completed"
+    } else {
+      "incomplete"
+    };
     println!(
-      "{} - target: {}, completed: {}, {}.",
+      "{} ({}) - target: {}, completed: {}, {}.",
       history.session_type.name(),
+      status,
       render_duration(history.planned_duration),
       render_duration(history.completed_duration),
       times_ago(&history.end_time)

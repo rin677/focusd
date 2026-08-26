@@ -52,7 +52,7 @@ impl HistoryPage {
 
     let mut table_items: Vec<Row> = Vec::new();
     for history in &all_history[start..n] {
-      let status = if history.completed_duration == history.planned_duration {
+      let status = if history.is_completed {
         Cell::from("Completed").style(theme.success)
       } else {
         Cell::from("Incomplete").style(theme.error)
