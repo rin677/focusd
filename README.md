@@ -94,11 +94,11 @@ Those commands can also be seen by running `focusd --help`
 - `toggle` - Toggle the timer.
 - `reset` - Reset current session.
 - `next`/`skip` - Skip to next session.
-- `start` - Start the session.
 - `prints-stats` - Print stats.
 - `print-history` - Print all the history.
 - `status` - Shows timer status in JSON format, this is mainly for waybar (see the section for [waybar](#waybar-configuration))
-- `work`/`short-break`/`long-break` to start specific session directly.
+- `--add-minutes` - Add minutes to the timer, but this will not go over the duration of the timer.
+- `--start` - Start session, options: `work`, `short-break`, `long-break` or empty (it will restart current session if empty).
 - `--preset` - Select specific preset.
 - `--stop-daemon` - Stop daemon if running.
 - `--daemon` - Start daemon (force stops currently running daemon).
