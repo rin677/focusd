@@ -1,6 +1,6 @@
 [package]
 name = "focusd"
-version = "0.2.1"
+version = "0.2.11"
 edition = "2024"
 authors= ["bibekbhusal0"]
 description = "A beautiful terminal pomodoro timer with daemon, waybar integration and interactive TUI"
