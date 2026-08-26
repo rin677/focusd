@@ -87,13 +87,11 @@ enum Command {
   /// Toggle the session
   Toggle,
   /// Reset the session if running
+  #[command(alias = "stop")]
   Reset,
-  /// Reset the session if running
-  Stop,
   /// Skip to next session
+  #[command(alias = "skip")]
   Next,
-  /// Skip to next session
-  Skip,
 }
 
 fn main() -> io::Result<()> {
@@ -158,8 +156,8 @@ fn main() -> io::Result<()> {
     Some(Command::Pause) => Message::PauseSession.send().print(),
     Some(Command::Resume) => Message::ResumeSession.send().print(),
     Some(Command::Toggle) => Message::ToggleSession.send().print(),
-    Some(Command::Reset) | Some(Command::Stop) => Message::ResetSession.send().print(),
-    Some(Command::Next) | Some(Command::Skip) => Message::NextSession.send().print(),
+    Some(Command::Reset) => Message::ResetSession.send().print(),
+    Some(Command::Next) => Message::NextSession.send().print(),
     None => launch_tui(Pages::Timer),
   }
 }
