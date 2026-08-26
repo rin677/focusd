@@ -206,6 +206,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
       PayloadMessage::AddMinutes => {
         let value = p.payload.as_u64().unwrap();
         add_time(&mut s, Duration::from_mins(value));
+        response = format!("Added {} minutes", value);
       }
     }
   }
