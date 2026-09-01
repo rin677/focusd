@@ -21,6 +21,8 @@ struct WaybarModule {
   focused_today: String,
   daily_goal: String,
   current_streak: usize,
+  work_sessions_before_long_break: u64,
+  completed_sessions: u64,
 }
 
 /// Gives status in JSON format mainly to be used in waybar
@@ -82,6 +84,8 @@ Current Streak: {current_streak} {streak_unit}
     focused_today: completed_today,
     daily_goal,
     current_streak: current_streak.try_into().unwrap_or(0),
+    work_sessions_before_long_break: total_sessions,
+    completed_sessions: session_n - 1,
   };
 
   println!("{}", serde_json::to_string(&module).unwrap());
