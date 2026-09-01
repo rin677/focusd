@@ -131,7 +131,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
   let l = line.trim().to_string();
   println!("Got message {l}");
 
-  let mut response = "".to_string();
+  let response;
   if !contains_payload(&l) {
     response = match Message::from_string(l) {
       Some(m) => match m {
