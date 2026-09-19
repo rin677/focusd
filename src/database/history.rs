@@ -105,9 +105,12 @@ pub fn get_db() -> io::Result<Connection> {
       cnn.execute(
         "ALTER TABLE history ADD COLUMN category TEXT NOT NULL DEFAULT 'General'",
         [],
-      )?;
+      )
+      .map_err(io::Error::other)?;
     }
-    cnn.execute("PRAGMA user_version = 2", [])?;
+    cnn
+      .execute("PRAGMA user_version = 2", [])
+      .map_err(io::Error::other)?;
   }
 
   Ok(cnn)
