@@ -41,6 +41,7 @@ pub enum PayloadMessage {
   SelectSession,
   SelectPreset,
   AddMinutes,
+  SelectCategory,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -96,6 +97,7 @@ impl std::fmt::Display for PayloadMessage {
       Self::SelectPreset => write!(f, "SelectPreset"),
       Self::SelectSession => write!(f, "SelectSession"),
       Self::AddMinutes => write!(f, "AddMinutes"),
+      Self::SelectCategory => write!(f, "SelectCategory"),
     }
   }
 }
@@ -207,6 +209,17 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
         let value = p.payload.as_u64().unwrap();
         add_time(&mut s, Duration::from_mins(value));
         response = format!("Added {} minutes", value);
+      }
+      PayloadMessage::SelectCategory => {
+        let value = p.payload.as_str().unwrap().trim();
+        let config = crate::config::settings::get_config();
+        if config.categories.contains_key(value) {
+          s.category = value.to_string();
+          crate::config::settings::set_config_value("active_category", toml_edit::value(value))?;
+          response = format!("Category {value} selected");
+        } else {
+          response = format!("Category {value} not found");
+        }
       }
     }
   }

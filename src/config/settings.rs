@@ -105,6 +105,8 @@ impl<'de> Deserialize<'de> for Fonts {
 pub struct Config {
   pub active_preset: String,
   pub presets: HashMap<String, Preset>,
+  pub active_category: String,
+  pub categories: HashMap<String, Category>,
   pub show_notifications: bool,
   pub daily_goal_minutes: u64,
 
@@ -128,6 +130,12 @@ pub struct Config {
   pub hook_start_short_break: String,
   pub hook_start_long_break: String,
   pub hook_start_work: String,
+}
+
+/// A user-defined focus category and its daily target.
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+pub struct Category {
+  pub daily_goal_minutes: u64,
 }
 
 /// Preset type for session
@@ -160,9 +168,18 @@ impl Default for Config {
         sessions_before_long_break: 4,
       },
     );
+    let mut categories = HashMap::new();
+    categories.insert(
+      "General".to_string(),
+      Category {
+        daily_goal_minutes: 0,
+      },
+    );
     Self {
       active_preset: "pomodoro".to_string(),
       presets,
+      active_category: "General".to_string(),
+      categories,
       show_notifications: true,
       daily_goal_minutes: 0,
       tui_show_progress: true,
@@ -213,6 +230,8 @@ fn load_config(path: &PathBuf) -> io::Result<Config> {
   if let Some(val) = table {
     cfg.active_preset = get(val, "active_preset", cfg.active_preset);
     cfg.presets = get(val, "presets", cfg.presets);
+    cfg.active_category = get(val, "active_category", cfg.active_category);
+    cfg.categories = get(val, "categories", cfg.categories);
     cfg.tui_show_stats = get(val, "tui_show_stats", cfg.tui_show_stats);
     cfg.font = get(val, "font", cfg.font);
     cfg.theme = get(val, "theme", cfg.theme);
@@ -275,6 +294,31 @@ pub fn create_config_file() {
   if !path.exists() {
     let config = include_str!("../../examples/config.toml");
     fs::write(path, config).ok();
+    return;
+  }
+
+  // Migrate older config files without replacing any user settings.
+  let Ok(contents) = fs::read_to_string(&path) else {
+    return;
+  };
+  let Ok(mut doc) = contents.parse::<DocumentMut>() else {
+    return;
+  };
+  let mut changed = false;
+  if doc.get("active_category").is_none() {
+    doc["active_category"] = value("General");
+    changed = true;
+  }
+  if doc.get("categories").is_none() {
+    let mut categories = Table::new();
+    let mut general = Table::new();
+    general["daily_goal_minutes"] = value(0);
+    categories.insert("General", Item::Table(general));
+    doc["categories"] = Item::Table(categories);
+    changed = true;
+  }
+  if changed {
+    fs::write(path, doc.to_string()).ok();
   }
 }
 
@@ -400,4 +444,86 @@ pub fn delete_preset(name: &str) -> io::Result<()> {
 pub fn delete_active_preset() {
   let name = get_config().active_preset.clone();
   delete_preset(&name).ignore_type();
+}
+
+/// Creates a category with a daily goal in minutes.
+pub fn create_category(name: &str, daily_goal_minutes: u64) -> io::Result<()> {
+  let name = name.trim();
+  if name.is_empty() {
+    throw!("category name cannot be empty");
+  }
+  let config = get_config();
+  if config.categories.contains_key(name) {
+    return Err(io::Error::new(
+      io::ErrorKind::AlreadyExists,
+      "category already exists",
+    ));
+  }
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+  if doc.get("categories").is_none() {
+    doc["categories"] = Item::Table(Table::new());
+  }
+  let Some(categories) = doc["categories"].as_table_mut() else {
+    throw!("categories is not a table");
+  };
+  let mut table = Table::new();
+  table["daily_goal_minutes"] = value(daily_goal_minutes as i64);
+  categories.insert(name, Item::Table(table));
+  fs::write(path, doc.to_string())
+}
+
+pub fn delete_category(name: &str) -> io::Result<()> {
+  let config = get_config();
+  if !config.categories.contains_key(name) {
+    throw!("category not found");
+  }
+  if config.categories.len() <= 1 {
+    throw!("cannot delete the last category");
+  }
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+  let Some(categories) = doc["categories"].as_table_mut() else {
+    throw!("categories not found");
+  };
+  categories.remove(name);
+  fs::write(&path, doc.to_string())?;
+  if config.active_category == name {
+    let mut names: Vec<&str> = config
+      .categories
+      .keys()
+      .map(String::as_str)
+      .filter(|category| *category != name)
+      .collect();
+    names.sort();
+    if let Some(next) = names.first() {
+      set_config_value("active_category", value(*next))?;
+    }
+  }
+  Ok(())
+}
+
+pub fn set_category_goal(name: &str, daily_goal_minutes: u64) -> io::Result<()> {
+  let Some(path) = config_path() else {
+    throw!("file not found");
+  };
+  let contents = fs::read_to_string(&path)?;
+  let mut doc = contents
+    .parse::<DocumentMut>()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+  let Some(category) = doc["categories"][name].as_table_mut() else {
+    throw!("category not found");
+  };
+  category["daily_goal_minutes"] = value(daily_goal_minutes as i64);
+  fs::write(path, doc.to_string())
 }

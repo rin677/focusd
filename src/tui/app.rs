@@ -97,7 +97,8 @@ impl App {
     };
     let preset = get_crr_preset();
     let right_header_text = format!(
-      "{} {}/{}  {icon} {}",
+      "{} · {} {}/{}  {icon} {}",
+      self.timer_state.category,
       self.timer_state.session_type.name(),
       self.timer_state.session_number,
       preset.sessions_before_long_break,
@@ -189,6 +190,16 @@ impl App {
       KeyCode::Char('n') => Message::NextSession.send().ignore_type(),
       KeyCode::Char('r') => Message::ResetSession.send().ignore_type(),
       KeyCode::Char('a') => PayloadMessage::AddMinutes.send(5.into()).ignore_type(),
+      KeyCode::Char('c')
+        if !key_event
+          .modifiers
+          .contains(crossterm::event::KeyModifiers::CONTROL) =>
+      {
+        self
+          .app_state
+          .timer_page
+          .select_next_category(&self.timer_state.category)
+      }
       KeyCode::Char('[') => self.select_page(-1),
       KeyCode::Char(']') => self.select_page(1),
       KeyCode::Char('?') => self.popup.toggle(),

@@ -5,7 +5,9 @@ use crate::{
   },
   daemon::commands::PayloadMessage,
   database::history::get_full_history_no_err,
-  stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
+  stats::calculate::{
+    DurType, get_category_time_today, get_current_streak, get_todays_sessions, get_total_time,
+  },
   timer::{
     engine::render_time,
     state::{SessionType, TimerState},
@@ -63,6 +65,20 @@ impl TimerPage {
         .send(p.to_string().into())
         .ignore_type();
     }
+  }
+
+  pub fn select_next_category(&mut self, current: &str) {
+    let config = get_config();
+    let mut names: Vec<&str> = config.categories.keys().map(String::as_str).collect();
+    names.sort();
+    if names.is_empty() {
+      return;
+    }
+    let current_index = names.iter().position(|name| *name == current).unwrap_or(0);
+    let next = names[(current_index + 1) % names.len()];
+    PayloadMessage::SelectCategory
+      .send(next.to_string().into())
+      .ignore_type();
   }
 
   fn render_timer_no_stats(&self, timer_state: &TimerState, area: Rect, frame: &mut Frame) {
@@ -123,13 +139,23 @@ impl TimerPage {
       "Focused: {}",
       render_duration(get_total_time(DurType::Today))
     );
-    let goal = format!(
-      "Goal: {}",
-      render_duration(get_config().daily_goal_minutes * 60)
+    let config = get_config();
+    let category = config
+      .categories
+      .get(&config.active_category)
+      .copied()
+      .unwrap_or(crate::config::settings::Category {
+        daily_goal_minutes: 0,
+      });
+    let category_goal = format!(
+      "{}: {} / {}",
+      config.active_category,
+      render_duration(get_category_time_today(&config.active_category)),
+      render_duration((category.daily_goal_minutes * 60) as i64)
     );
     let streak = format!("Streak: {}", get_current_streak(history));
     let sessions = format!("Sessions: {}", get_todays_sessions());
-    let text = format!(" {focused}\n {goal}\n {sessions}\n {streak}");
+    let text = format!(" {focused}\n {category_goal}\n {sessions}\n {streak}");
     frame.render_widget(Paragraph::new(text), inner);
   }
 

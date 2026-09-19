@@ -36,7 +36,7 @@ impl HistoryPage {
     }
 
     let theme = get_current_theme();
-    let table_heading = Row::new(["Date", "Type", "Duration", "Status"])
+    let table_heading = Row::new(["Date", "Type", "Category", "Duration", "Status"])
       .bottom_margin(1)
       .style(Modifier::BOLD)
       .fg(theme.accent);
@@ -60,6 +60,7 @@ impl HistoryPage {
       let r = Row::new(vec![
         Cell::from(history.end_time.format("%Y-%m-%d").to_string()),
         Cell::from(history.session_type.name().to_string()),
+        Cell::from(history.category.clone()),
         Cell::from(render_duration(history.completed_duration)),
         status,
       ]);
@@ -67,10 +68,11 @@ impl HistoryPage {
     }
 
     let widths = [
-      Constraint::Percentage(20),
-      Constraint::Percentage(20),
-      Constraint::Percentage(35),
-      Constraint::Percentage(25),
+      Constraint::Percentage(18),
+      Constraint::Percentage(18),
+      Constraint::Percentage(24),
+      Constraint::Percentage(22),
+      Constraint::Percentage(18),
     ];
     let list = Table::new(table_items, widths).header(table_heading);
 

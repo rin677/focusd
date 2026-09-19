@@ -26,6 +26,7 @@ pub struct HistoryEntry {
   pub completed_duration: i64,
   pub session_type: SessionType,
   pub is_completed: bool,
+  pub category: String,
 }
 
 fn history_db_path() -> Option<PathBuf> {
@@ -68,7 +69,8 @@ pub fn get_db() -> io::Result<Connection> {
             planned_duration INTEGER NOT NULL,
             completed_duration INTEGER NOT NULL,
             session_type TEXT NOT NULL,
-            is_completed BOOLEAN NOT NULL DEFAULT 0
+            is_completed BOOLEAN NOT NULL DEFAULT 0,
+            category TEXT NOT NULL DEFAULT 'General'
     )
         ",
       [],
@@ -97,6 +99,21 @@ pub fn get_db() -> io::Result<Connection> {
     let _ = cnn.execute("PRAGMA user_version = 1", []);
   }
 
+  if user_version < 2 {
+    let has_category = cnn.prepare("SELECT category FROM history LIMIT 1").is_ok();
+    if !has_category {
+      cnn
+        .execute(
+          "ALTER TABLE history ADD COLUMN category TEXT NOT NULL DEFAULT 'General'",
+          [],
+        )
+        .map_err(io::Error::other)?;
+    }
+    cnn
+      .execute("PRAGMA user_version = 2", [])
+      .map_err(io::Error::other)?;
+  }
+
   Ok(cnn)
 }
 
@@ -115,8 +132,8 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
   let is_completed = state.time_remaining.is_zero() || completed_duration >= planned_duration;
   cnn.execute(
     "INSERT INTO history 
-    (end_time, planned_duration, completed_duration, session_type, is_completed) VALUES (?1, ?2, ?3, ?4, ?5)",
-    (end_time, planned_duration, completed_duration, session_type, is_completed),
+    (end_time, planned_duration, completed_duration, session_type, is_completed, category) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+    (end_time, planned_duration, completed_duration, session_type, is_completed, &state.category),
   )?;
   println!("Session added to database");
   Ok(())
@@ -126,7 +143,7 @@ pub fn add_session_to_db(state: &TimerState) -> Result<(), Box<dyn std::error::E
 pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error>> {
   let db = get_db()?;
   let mut stmt = db
-    .prepare("SELECT end_time, planned_duration, completed_duration, session_type, is_completed FROM history ORDER BY datetime(end_time) DESC")
+    .prepare("SELECT end_time, planned_duration, completed_duration, session_type, is_completed, category FROM history ORDER BY datetime(end_time) DESC")
     ?;
 
   let mut history: Vec<HistoryEntry> = Vec::new();
@@ -146,6 +163,7 @@ pub fn get_full_history() -> Result<Vec<HistoryEntry>, Box<dyn std::error::Error
       completed_duration: row.get(2)?,
       session_type: SessionType::from_string(&s),
       is_completed,
+      category: row.get(5)?,
     });
   }
 
@@ -172,8 +190,9 @@ pub fn print_history() {
       "incomplete"
     };
     println!(
-      "{} ({}) - target: {}, completed: {}, {}.",
+      "{} [{}] ({}) - target: {}, completed: {}, {}.",
       history.session_type.name(),
+      history.category,
       status,
       render_duration(history.planned_duration),
       render_duration(history.completed_duration),
