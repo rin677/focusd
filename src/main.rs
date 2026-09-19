@@ -147,7 +147,11 @@ fn handle_category_command(command: CategoryCommand) -> io::Result<()> {
       for name in names {
         let category = config.categories[name];
         let focused = stats::calculate::get_category_time_today(name);
-        let active = if *name == config.active_category { ">" } else { " " };
+        let active = if *name == config.active_category {
+          ">"
+        } else {
+          " "
+        };
         println!(
           "{active} {name}: {} / {}",
           utils::timer::render_duration(focused),

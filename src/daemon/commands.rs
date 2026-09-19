@@ -215,10 +215,7 @@ pub fn handle_stream(mut stream: UnixStream, state: Arc<Mutex<TimerState>>) -> R
         let config = crate::config::settings::get_config();
         if config.categories.contains_key(value) {
           s.category = value.to_string();
-          crate::config::settings::set_config_value(
-            "active_category",
-            toml_edit::value(value),
-          )?;
+          crate::config::settings::set_config_value("active_category", toml_edit::value(value))?;
           response = format!("Category {value} selected");
         } else {
           response = format!("Category {value} not found");

@@ -105,7 +105,12 @@ pub fn get_completed_sessions() -> i32 {
     Err(_) => return 0,
   };
 
-  db.query_row("SELECT COUNT(*) FROM history WHERE session_type='Work' AND is_completed = 1", [], |row| row.get(0)).unwrap_or(0)
+  db.query_row(
+    "SELECT COUNT(*) FROM history WHERE session_type='Work' AND is_completed = 1",
+    [],
+    |row| row.get(0),
+  )
+  .unwrap_or(0)
 }
 
 /// Returns completion percentage of work session
