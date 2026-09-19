@@ -102,11 +102,12 @@ pub fn get_db() -> io::Result<Connection> {
   if user_version < 2 {
     let has_category = cnn.prepare("SELECT category FROM history LIMIT 1").is_ok();
     if !has_category {
-      cnn.execute(
-        "ALTER TABLE history ADD COLUMN category TEXT NOT NULL DEFAULT 'General'",
-        [],
-      )
-      .map_err(io::Error::other)?;
+      cnn
+        .execute(
+          "ALTER TABLE history ADD COLUMN category TEXT NOT NULL DEFAULT 'General'",
+          [],
+        )
+        .map_err(io::Error::other)?;
     }
     cnn
       .execute("PRAGMA user_version = 2", [])
