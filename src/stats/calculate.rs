@@ -3,6 +3,7 @@ use crate::{
   utils::timer::render_duration,
 };
 use chrono::{Duration, Local, NaiveDate};
+use rusqlite::params;
 
 #[derive(PartialEq)]
 pub enum DurType {
@@ -42,6 +43,44 @@ pub fn get_total_time(dur: DurType) -> isize {
   let r#where = get_sql_condition(dur, true);
   let sql = format!("SELECT SUM(completed_duration) FROM history {where}");
   db.query_row(&sql, [], |row| row.get(0)).unwrap_or(0)
+}
+
+/// Returns today's recorded work time for a category, in seconds.
+pub fn get_category_time_today(category: &str) -> i64 {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return 0,
+  };
+  db.query_row(
+    "SELECT COALESCE(SUM(completed_duration), 0) FROM history
+     WHERE session_type='Work' AND category=?1
+       AND date(end_time) = date('now', 'localtime')",
+    params![category],
+    |row| row.get(0),
+  )
+  .unwrap_or(0)
+}
+
+pub fn get_category_distribution() -> Vec<(String, i64)> {
+  let db = match get_db() {
+    Ok(db) => db,
+    Err(_) => return vec![],
+  };
+  let mut stmt = match db.prepare(
+    "SELECT category, COALESCE(SUM(completed_duration), 0)
+     FROM history WHERE session_type='Work'
+     GROUP BY category ORDER BY SUM(completed_duration) DESC",
+  ) {
+    Ok(stmt) => stmt,
+    Err(_) => return vec![],
+  };
+  let mut result = Vec::new();
+  if let Ok(rows) = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?))) {
+    for row in rows.flatten() {
+      result.push(row);
+    }
+  }
+  result
 }
 
 /// Returns total number sessions completed today (including breaks and work)
@@ -254,4 +293,7 @@ pub fn print_stats() {
   let history = get_full_history_no_err();
   println!("Current streek {}", get_current_streak(history));
   println!("Longest streek {}", get_longest_streak());
+  for (category, seconds) in get_category_distribution() {
+    println!("{category}: {}", render_duration(seconds));
+  }
 }

@@ -2,7 +2,9 @@ use crate::{
   config::settings::{get_config, get_crr_preset},
   daemon::commands::get_timer_state,
   database::history::get_full_history_no_err,
-  stats::calculate::{DurType, get_current_streak, get_todays_sessions, get_total_time},
+  stats::calculate::{
+    DurType, get_category_time_today, get_current_streak, get_todays_sessions, get_total_time,
+  },
   timer::{engine::render_time, state::SessionType},
   utils::timer::render_duration,
 };
@@ -23,6 +25,8 @@ struct WaybarModule {
   current_streak: usize,
   work_sessions_before_long_break: u64,
   completed_sessions: u64,
+  category: String,
+  category_progress: String,
 }
 
 /// Gives status in JSON format mainly to be used in waybar
@@ -56,18 +60,32 @@ pub fn status() {
   let time_for_next_sessoin = render_duration(next_session.get_time().as_secs());
   let completed_today = render_duration(get_total_time(DurType::Today));
   let sessions_today = get_todays_sessions();
-  let daily_goal = render_duration(get_config().daily_goal_minutes * 60);
+  let config = get_config();
+  let daily_goal = render_duration(config.daily_goal_minutes * 60);
+  let category = state.category.clone();
+  let category_focused = get_category_time_today(&category);
+  let category_target = config
+    .categories
+    .get(&category)
+    .map(|entry| entry.daily_goal_minutes * 60)
+    .unwrap_or(0);
+  let category_progress = format!(
+    "{} / {}",
+    render_duration(category_focused),
+    render_duration(category_target as i64)
+  );
   let history = get_full_history_no_err();
   let current_streak = get_current_streak(history);
   let streak_unit = if current_streak <= 1 { "day" } else { "days" };
 
   let tooltip = format!(
-    "{current_session} Session,
+    "{current_session} Session · {category},
 Cycle {session_n}/{total_sessions}
 
 Next Session: {next_session_name} ({time_for_next_sessoin}),
 
 Focused today: {completed_today},
+{category}: {category_progress},
 Current Streak: {current_streak} {streak_unit}
 "
   );
@@ -86,6 +104,8 @@ Current Streak: {current_streak} {streak_unit}
     current_streak: current_streak.try_into().unwrap_or(0),
     work_sessions_before_long_break: total_sessions,
     completed_sessions: session_n - 1,
+    category,
+    category_progress,
   };
 
   println!("{}", serde_json::to_string(&module).unwrap());

@@ -10,7 +10,9 @@ mod tui;
 mod utils;
 mod waybar;
 use crate::{
-  config::settings::create_config_file,
+  config::settings::{
+    create_category, create_config_file, delete_category, get_config, set_category_goal,
+  },
   daemon::{
     commands::{Message, PayloadMessage},
     run::{ensure_daemon_active, run_daemon},
@@ -91,6 +93,79 @@ enum Command {
   /// Skip to next session
   #[command(alias = "skip")]
   Next,
+  /// Create, select, inspect, and remove focus categories
+  Category {
+    #[command(subcommand)]
+    command: CategoryCommand,
+  },
+}
+
+#[derive(Subcommand, Debug)]
+enum CategoryCommand {
+  /// Add a category with an optional daily target in hours
+  Add {
+    name: String,
+    #[arg(long, default_value_t = 0.0, value_name = "HOURS")]
+    goal_hours: f64,
+  },
+  /// Select the category recorded by future work sessions
+  Select { name: String },
+  /// Change a category's daily target in hours
+  Goal { name: String, hours: f64 },
+  /// List categories, today's time, and daily targets
+  List,
+  /// Remove a category (existing history is kept)
+  Remove { name: String },
+}
+
+fn hours_to_minutes(hours: f64) -> io::Result<u64> {
+  if !hours.is_finite() || hours < 0.0 {
+    return Err(io::Error::new(
+      io::ErrorKind::InvalidInput,
+      "hours must be a non-negative number",
+    ));
+  }
+  Ok((hours * 60.0).round() as u64)
+}
+
+fn handle_category_command(command: CategoryCommand) -> io::Result<()> {
+  match command {
+    CategoryCommand::Add { name, goal_hours } => {
+      create_category(&name, hours_to_minutes(goal_hours)?)?;
+      PayloadMessage::SelectCategory.send(name.into()).print()
+    }
+    CategoryCommand::Select { name } => PayloadMessage::SelectCategory.send(name.into()).print(),
+    CategoryCommand::Goal { name, hours } => {
+      set_category_goal(&name, hours_to_minutes(hours)?)?;
+      println!("Updated {name}'s daily goal");
+      Ok(())
+    }
+    CategoryCommand::List => {
+      let config = get_config();
+      let mut names: Vec<_> = config.categories.keys().collect();
+      names.sort();
+      for name in names {
+        let category = config.categories[name];
+        let focused = stats::calculate::get_category_time_today(name);
+        let active = if *name == config.active_category { ">" } else { " " };
+        println!(
+          "{active} {name}: {} / {}",
+          utils::timer::render_duration(focused),
+          utils::timer::render_duration((category.daily_goal_minutes * 60) as i64)
+        );
+      }
+      Ok(())
+    }
+    CategoryCommand::Remove { name } => {
+      let was_active = get_config().active_category == name;
+      delete_category(&name)?;
+      if was_active {
+        let active = get_config().active_category;
+        PayloadMessage::SelectCategory.send(active.into()).print()?;
+      }
+      Ok(())
+    }
+  }
 }
 
 fn main() -> io::Result<()> {
@@ -136,6 +211,7 @@ fn main() -> io::Result<()> {
   let launch_tui = |page| tui::app::main(page);
 
   match cli.command {
+    Some(Command::Category { command }) => handle_category_command(command),
     Some(Command::PrintStats) => {
       print_stats();
       Ok(())

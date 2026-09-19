@@ -16,6 +16,7 @@ I know lots of pomodoro timer exists for terminal and for waybar. But none of th
 - Configuration and custom presets
 - Full history of all sessions
 - Detailed statistics and streak to keep you motivated
+- Custom focus categories with per-category daily hour goals
 - Notification in timer completion
 - Synced state between different TUIs.
 
@@ -97,6 +98,11 @@ Those commands can also be seen by running `focusd --help`
 - `prints-stats` - Print stats.
 - `print-history` - Print all the history.
 - `status` - Shows timer status in JSON format, this is mainly for waybar (see the section for [waybar](#waybar-configuration))
+- `category add <name> --goal-hours <hours>` - Create and select a category.
+- `category select <name>` - Select the category for future work sessions.
+- `category goal <name> <hours>` - Change a category's daily target.
+- `category list` - Show today's progress for every category.
+- `category remove <name>` - Remove a category without deleting its history.
 - `--add-minutes` - Add minutes to the timer, but this will not go over the duration of the timer.
 - `--start` - Start session, options: `work`, `short-break`, `long-break` or empty (it will restart current session if empty).
 - `--preset` - Select specific preset.
@@ -114,6 +120,26 @@ For TUI those are the keymaps (You can see those keymaps by pressing `?` which s
 - `[` to go to next page.
 - `]` to go to previous page.
 - `j`/`k` to scroll in history page.
+- `c` to switch to the next focus category.
+
+### Categories and Daily Targets
+
+Categories let one Pomodoro timer track separate areas such as study, programming, music, or exercise. A category's goal is measured per day; completed and partial work sessions both contribute their actual elapsed time.
+
+```bash
+# Create categories. Decimal hours are supported.
+focusd category add Study --goal-hours 2
+focusd category add Guitar --goal-hours 0.5
+
+# Choose what the next work session should count toward.
+focusd category select Study
+focusd --start work
+
+# Review today's progress.
+focusd category list
+```
+
+The active category is displayed in the TUI header. Press `c` to cycle categories before starting a work session. Old history is migrated automatically and assigned to `General`.
 
 ### Shell Aliases
 
@@ -270,14 +296,16 @@ For example, if FreeBlock is configured to block your chosen websites:
 
 ```toml
 # blocking/unblocking based on session
-hook_start_work = "freeblock block"
-hook_start_short_break = "freeblock unblock"
-hook_resume_short_break = "freeblock unblock"
+hook_start_work = "printf '\\n' | freeblock block @distractions"
+hook_start_short_break = "freeblock unblock @distractions"
+hook_resume_short_break = "freeblock unblock @distractions"
 
 # unblock when paused
-hook_pause_work = "freeblock unblock"
-hook_resume_work = "freeblock block"
+hook_pause_work = "freeblock unblock @distractions"
+hook_resume_work = "printf '\\n' | freeblock block @distractions"
 ```
+
+`@distractions` is a FreeBlock list. Create it with `freeblock list add distractions`, with one website per line and app process names prefixed by `+`. The piped newline accepts FreeBlock's default browser-closing confirmation when the hook runs without an interactive terminal.
 
 ### Waybar Configuration
 

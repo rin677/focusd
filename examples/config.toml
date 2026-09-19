@@ -1,6 +1,7 @@
 # Which preset is currently active
 active_preset = "pomodoro"
 daily_goal_minutes = 0
+active_category = "General"
 
 # Show desktop notifications when session ends
 show_notifications = true
@@ -57,6 +58,10 @@ work_minutes = 50
 short_break_minutes = 10
 long_break_minutes = 30
 sessions_before_long_break = 4
+
+## Categories track where your focus time goes. Goals are daily.
+[categories.General]
+daily_goal_minutes = 0
 
 ## You can add more presets here if you want.
 ## Example:

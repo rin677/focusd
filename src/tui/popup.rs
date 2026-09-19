@@ -54,6 +54,7 @@ impl Popup {
       ("n".to_string(), "Next Session".to_string()),
       ("r".to_string(), "Reset Session".to_string()),
       ("a".to_string(), "To add 5 minutes".to_string()),
+      ("c".to_string(), "Next focus category".to_string()),
       ("q".to_string(), "Quit".to_string()),
       ("]".to_string(), "Next page".to_string()),
       ("[".to_string(), "Previous page".to_string()),
